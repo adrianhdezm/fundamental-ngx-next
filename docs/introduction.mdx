@@ -1,0 +1,63 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Introduction" />
+
+# fundamental-ngx-next
+
+SAP Fiori Horizon components for Angular, styled with Tailwind CSS v4 and built on the Angular CDK.
+The components are a port of [`@fundamental-ngx/core`](https://sap.github.io/fundamental-ngx/#/core/home): the same
+behaviour, ARIA and keyboard support, with the visuals of [fundamental-styles](https://sap.github.io/fundamental-styles/)
+rebuilt as Tailwind utilities on the SAP theme tokens.
+
+They are not an npm package. Like [shadcn/ui](https://ui.shadcn.com), each component is source you copy into your
+app and own.
+
+## Toolbar
+
+- **Theme**: SAP Horizon, Horizon Dark, Horizon High Contrast Black and Horizon High Contrast White.
+- **Density**: cozy (touch) and compact (mouse and keyboard).
+- **Direction**: left-to-right and right-to-left.
+
+## Setup in your app
+
+1. Install the runtime dependencies: `pnpm add @angular/cdk clsx tailwind-merge class-variance-authority`.
+2. Copy `styles/` (or `npx shadcn add <registry>/r/theme.json`) and import it after Tailwind in your global stylesheet:
+
+    ```css
+    @import 'tailwindcss';
+    @import './styles/fundamental.css';
+    ```
+
+3. Copy `lib/utils.ts` and add the path aliases the components import from:
+
+    ```json
+    "paths": { "@/lib/*": ["./src/lib/*"], "@/ui/*": ["./src/components/ui/*"] }
+    ```
+
+4. Add components: copy `registry/ui/<name>/` or run `npx shadcn add <registry>/r/<name>.json`.
+
+## Theming and density
+
+Set `data-sap-theme` on `<html>` (or any element, to theme a subtree) to `sap_horizon`, `sap_horizon_dark`,
+`sap_horizon_hcb` or `sap_horizon_hcw`. Set `data-density="compact"` the same way, or use the `fdCompact`
+directive from **content-density**. Set `dir="rtl"` for right-to-left layouts.
+
+## Tokens as utilities
+
+Every `--sap*` variable of the theme is a Tailwind value, named by one rule: drop `sap`, split camelCase and `_`,
+kebab-case it, and prefix `sap-`.
+
+| SAP variable                    | Tailwind utility                         |
+| ------------------------------- | ---------------------------------------- |
+| `--sapButton_Hover_Background`  | `bg-sap-button-hover-background`         |
+| `--sapContent_Shadow1`          | `shadow-sap-content-shadow1`             |
+| `--sapElement_Compact_Height`   | `h-sap-element-compact-height`           |
+| `--sapFontSmallSize`            | `text-sap-font-small-size`               |
+| `--sapField_BorderCornerRadius` | `rounded-sap-field-border-corner-radius` |
+| `--sapFontBoldFamily`           | `font-sap-font-bold-family`              |
+| `--sapElement_BorderWidth`      | `border-width-sap-element-border-width`  |
+
+Tokens without a Tailwind namespace use the variable shorthand, e.g. `opacity-(--sapContent_DisabledOpacity)`.
+
+Variants: `compact:`, `condensed:`, `hc:` (high contrast themes), `toggled:` (`aria-pressed`/`aria-selected`),
+`enabled-hover:` and `enabled-active:` (not while disabled), plus Tailwind's `rtl:` and `ltr:`.

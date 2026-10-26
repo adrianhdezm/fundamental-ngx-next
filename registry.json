@@ -1,0 +1,56 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "fundamental-ngx-next",
+  "homepage": "https://github.com/adrianhdezm/fundamental-ngx-next",
+  "items": [
+    {
+      "name": "utils",
+      "type": "registry:lib",
+      "title": "cn() and variants",
+      "description": "Class name merging (clsx + tailwind-merge, aware of the SAP token utilities) and cva variants.",
+      "dependencies": ["clsx", "tailwind-merge", "class-variance-authority"],
+      "files": [{ "path": "registry/lib/utils.ts", "type": "registry:lib", "target": "src/lib/utils.ts" }]
+    },
+    {
+      "name": "theme",
+      "type": "registry:style",
+      "title": "SAP Horizon theme",
+      "description": "SAP theme tokens for Tailwind v4: Horizon, Horizon Dark, Horizon HC Black and Horizon HC White, the 72 and SAP icon fonts, density and state variants.",
+      "files": [
+        { "path": "registry/styles/fundamental.css", "type": "registry:file", "target": "src/styles/fundamental.css" },
+        { "path": "registry/styles/tokens.css", "type": "registry:file", "target": "src/styles/tokens.css" },
+        { "path": "registry/styles/fonts.css", "type": "registry:file", "target": "src/styles/fonts.css" },
+        { "path": "registry/styles/themes/sap_horizon.css", "type": "registry:file", "target": "src/styles/themes/sap_horizon.css" },
+        { "path": "registry/styles/themes/sap_horizon_dark.css", "type": "registry:file", "target": "src/styles/themes/sap_horizon_dark.css" },
+        { "path": "registry/styles/themes/sap_horizon_hcb.css", "type": "registry:file", "target": "src/styles/themes/sap_horizon_hcb.css" },
+        { "path": "registry/styles/themes/sap_horizon_hcw.css", "type": "registry:file", "target": "src/styles/themes/sap_horizon_hcw.css" }
+      ]
+    },
+    {
+      "name": "content-density",
+      "type": "registry:ui",
+      "title": "Content Density",
+      "description": "Sets cozy, compact or condensed density on an element and its subtree.",
+      "files": [{ "path": "registry/ui/content-density/content-density.ts", "type": "registry:ui" }]
+    },
+    {
+      "name": "icon",
+      "type": "registry:ui",
+      "title": "Icon",
+      "description": "Icons from the SAP-icons, SAP-icons-TNT and Business Suite fonts.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        { "path": "registry/ui/icon/icon.ts", "type": "registry:ui" },
+        { "path": "registry/ui/icon/icon-glyphs.ts", "type": "registry:ui" }
+      ]
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "title": "Button",
+      "description": "Standard, emphasized, ghost, positive, negative, attention and transparent buttons, toggle and menu buttons, badges.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [{ "path": "registry/ui/button/button.ts", "type": "registry:ui" }]
+    }
+  ]
+}

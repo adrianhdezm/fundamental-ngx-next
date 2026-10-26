@@ -1,0 +1,88 @@
+/*
+ * SAP Fiori Horizon foundation for Tailwind CSS v4.
+ *
+ * Import it once from your global stylesheet, right after Tailwind:
+ *
+ *   @import 'tailwindcss';
+ *   @import './styles/fundamental.css';
+ *
+ * Theme:   set data-sap-theme="sap_horizon | sap_horizon_dark | sap_horizon_hcb | sap_horizon_hcw"
+ *          on <html> (or any element, to theme a subtree). sap_horizon is the default.
+ * Density: set data-density="compact" on <html> (or any element). Cozy is the default.
+ * RTL:     set dir="rtl"; components use logical utilities (ps-, me-, start-, ...) and CDK Directionality.
+ */
+@import './fonts.css';
+@import './themes/sap_horizon.css';
+@import './themes/sap_horizon_dark.css';
+@import './themes/sap_horizon_hcb.css';
+@import './themes/sap_horizon_hcw.css';
+@import './tokens.css';
+
+/* compact: content density. Applies inside [data-density=compact|condensed] unless a nested
+ * [data-density=cozy] resets it (condensed is a denser compact, used by tables and lists). */
+@custom-variant compact (&:where([data-density='compact'], [data-density='compact'] *, [data-density='condensed'], [data-density='condensed'] *):not(:where(:is([data-density='compact'], [data-density='condensed']) [data-density='cozy'], :is([data-density='compact'], [data-density='condensed']) [data-density='cozy'] *)));
+
+/* condensed: the table/list density below compact. */
+@custom-variant condensed (&:where([data-density='condensed'], [data-density='condensed'] *));
+
+/* enabled-hover / enabled-active: interaction states that do not apply while disabled or aria-disabled. */
+@custom-variant enabled-hover {
+    @media (hover: hover) {
+        &:hover:not(:disabled, [aria-disabled='true']) {
+            @slot;
+        }
+    }
+}
+@custom-variant enabled-active (&:active:not(:disabled, [aria-disabled='true']));
+
+/* toggled: pressed toggle buttons and selected items. */
+@custom-variant toggled (&:is([aria-pressed='true'], [aria-selected='true']));
+
+/* hc: SAP high contrast themes. */
+@custom-variant hc (&:where([data-sap-theme='sap_horizon_hcb'], [data-sap-theme='sap_horizon_hcb'] *, [data-sap-theme='sap_horizon_hcw'], [data-sap-theme='sap_horizon_hcw'] *));
+
+/* SAP focus indicator: a solid outline in the theme focus colour, drawn inside the element. */
+@utility focus-sap {
+    outline: var(--sapContent_FocusWidth) var(--sapContent_FocusStyle) var(--sapContent_FocusColor);
+    outline-offset: calc(-1 * var(--sapContent_FocusWidth) - 0.0625rem);
+}
+
+/* Same indicator on a contrast (dark/brand) background. */
+@utility focus-sap-contrast {
+    outline: var(--sapContent_FocusWidth) var(--sapContent_FocusStyle) var(--sapContent_ContrastFocusColor);
+    outline-offset: calc(-1 * var(--sapContent_FocusWidth) - 0.0625rem);
+}
+
+/* Visually hidden but available to assistive technology. */
+@utility sr-only-sap {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+@layer base {
+    html {
+        font-family: var(--sapFontFamily);
+        font-size: 100%;
+        color: var(--sapTextColor);
+        background-color: var(--sapBackgroundColor);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+        font-size: var(--sapFontSize);
+        line-height: normal;
+    }
+
+    ::selection {
+        background-color: var(--sapSelectedColor);
+        color: var(--sapContent_ContrastTextColor);
+    }
+}

@@ -1,0 +1,64 @@
+{
+  "name": "fundamental-ngx-next",
+  "version": "0.0.0",
+  "private": true,
+  "description": "SAP Fiori Horizon components for Angular, styled with Tailwind CSS and built on Angular CDK. Copy the source into your app, shadcn-style.",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "tokens": "node scripts/generate-tokens.mjs",
+    "registry:build": "node scripts/build-registry.mjs",
+    "storybook": "pnpm registry:build && ng run ui:storybook",
+    "build-storybook": "pnpm registry:build && ng run ui:build-storybook",
+    "typecheck": "ngc -p tsconfig.json --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check:styles": "node scripts/check-styles.mjs",
+    "registry:check": "node scripts/build-registry.mjs --check",
+    "check": "pnpm typecheck && pnpm check:styles && pnpm registry:check"
+  },
+  "dependencies": {
+    "@angular/animations": "^22.2.3",
+    "@angular/cdk": "^22.2.4",
+    "@angular/common": "^22.2.3",
+    "@angular/compiler": "^22.2.3",
+    "@angular/core": "^22.2.3",
+    "@angular/forms": "^22.2.3",
+    "@angular/platform-browser": "^22.2.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "rxjs": "^7.8.2",
+    "tailwind-merge": "^3.7.0",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@analogjs/storybook-angular": "^2.9.2",
+    "@analogjs/vite-plugin-angular": "^2.9.2",
+    "@angular/build": "^22.2.4",
+    "@angular/cli": "^22.2.4",
+    "@angular/compiler-cli": "^22.2.3",
+    "@sap-theming/theming-base-content": "11.36.5",
+    "@storybook/addon-a11y": "^10.6.4",
+    "@storybook/addon-docs": "^10.6.4",
+    "@storybook/angular": "^10.6.4",
+    "@tailwindcss/oxide": "4.3.3",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^26.6.5",
+    "prettier": "^3.6.2",
+    "storybook": "^10.6.4",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.0",
+    "vite": "^8.3.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "@parcel/watcher",
+      "lmdb",
+      "msgpackr-extract"
+    ]
+  },
+  "engines": {
+    "node": ">=22.22.3"
+  }
+}

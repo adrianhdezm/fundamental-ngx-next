@@ -1,0 +1,10 @@
+@import 'tailwindcss';
+@import '../registry/styles/fundamental.css';
+
+@source '../registry';
+@source './';
+@source '../docs';
+
+body {
+    background-color: var(--sapBackgroundColor);
+}
