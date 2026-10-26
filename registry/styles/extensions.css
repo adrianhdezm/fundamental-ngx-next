@@ -1,0 +1,29 @@
+/*
+ * Theme values that fundamental-styles defines on top of the SAP theme tokens, for visuals
+ * that have no --sap* token. Components use them through the variable shorthand,
+ * e.g. border-(--fdPopover_Border_Color).
+ */
+:root,
+[data-sap-theme='sap_horizon'] {
+    --fdPopover_Border_Width: 0.0625rem;
+    --fdPopover_Border_Color: #acb8c1;
+    --fdModal_BackgroundColor: rgb(0 0 0 / 20%);
+}
+
+[data-sap-theme='sap_horizon_dark'] {
+    --fdPopover_Border_Width: 0.0625rem;
+    --fdPopover_Border_Color: #636669;
+    --fdModal_BackgroundColor: rgb(0 0 0 / 20%);
+}
+
+[data-sap-theme='sap_horizon_hcb'] {
+    --fdPopover_Border_Width: 0.1875rem;
+    --fdPopover_Border_Color: #fff;
+    --fdModal_BackgroundColor: rgb(0 0 0 / 30%);
+}
+
+[data-sap-theme='sap_horizon_hcw'] {
+    --fdPopover_Border_Width: 0.1875rem;
+    --fdPopover_Border_Color: #000;
+    --fdModal_BackgroundColor: rgb(255 255 255 / 80%);
+}

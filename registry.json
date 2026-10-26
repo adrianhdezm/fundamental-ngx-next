@@ -8,8 +8,18 @@
       "type": "registry:lib",
       "title": "cn() and variants",
       "description": "Class name merging (clsx + tailwind-merge, aware of the SAP token utilities) and cva variants.",
-      "dependencies": ["clsx", "tailwind-merge", "class-variance-authority"],
-      "files": [{ "path": "registry/lib/utils.ts", "type": "registry:lib", "target": "src/lib/utils.ts" }]
+      "dependencies": [
+        "clsx",
+        "tailwind-merge",
+        "class-variance-authority"
+      ],
+      "files": [
+        {
+          "path": "registry/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "src/lib/utils.ts"
+        }
+      ]
     },
     {
       "name": "theme",
@@ -17,13 +27,49 @@
       "title": "SAP Horizon theme",
       "description": "SAP theme tokens for Tailwind v4: Horizon, Horizon Dark, Horizon HC Black and Horizon HC White, the 72 and SAP icon fonts, density and state variants.",
       "files": [
-        { "path": "registry/styles/fundamental.css", "type": "registry:file", "target": "src/styles/fundamental.css" },
-        { "path": "registry/styles/tokens.css", "type": "registry:file", "target": "src/styles/tokens.css" },
-        { "path": "registry/styles/fonts.css", "type": "registry:file", "target": "src/styles/fonts.css" },
-        { "path": "registry/styles/themes/sap_horizon.css", "type": "registry:file", "target": "src/styles/themes/sap_horizon.css" },
-        { "path": "registry/styles/themes/sap_horizon_dark.css", "type": "registry:file", "target": "src/styles/themes/sap_horizon_dark.css" },
-        { "path": "registry/styles/themes/sap_horizon_hcb.css", "type": "registry:file", "target": "src/styles/themes/sap_horizon_hcb.css" },
-        { "path": "registry/styles/themes/sap_horizon_hcw.css", "type": "registry:file", "target": "src/styles/themes/sap_horizon_hcw.css" }
+        {
+          "path": "registry/styles/fundamental.css",
+          "type": "registry:file",
+          "target": "src/styles/fundamental.css"
+        },
+        {
+          "path": "registry/styles/tokens.css",
+          "type": "registry:file",
+          "target": "src/styles/tokens.css"
+        },
+        {
+          "path": "registry/styles/extensions.css",
+          "type": "registry:file",
+          "target": "src/styles/extensions.css"
+        },
+        {
+          "path": "registry/styles/fonts.css",
+          "type": "registry:file",
+          "target": "src/styles/fonts.css"
+        },
+        {
+          "path": "registry/styles/themes/sap_horizon.css",
+          "type": "registry:file",
+          "target": "src/styles/themes/sap_horizon.css"
+        },
+        {
+          "path": "registry/styles/themes/sap_horizon_dark.css",
+          "type": "registry:file",
+          "target": "src/styles/themes/sap_horizon_dark.css"
+        },
+        {
+          "path": "registry/styles/themes/sap_horizon_hcb.css",
+          "type": "registry:file",
+          "target": "src/styles/themes/sap_horizon_hcb.css"
+        },
+        {
+          "path": "registry/styles/themes/sap_horizon_hcw.css",
+          "type": "registry:file",
+          "target": "src/styles/themes/sap_horizon_hcw.css"
+        }
+      ],
+      "dependencies": [
+        "@angular/cdk"
       ]
     },
     {
@@ -31,17 +77,31 @@
       "type": "registry:ui",
       "title": "Content Density",
       "description": "Sets cozy, compact or condensed density on an element and its subtree.",
-      "files": [{ "path": "registry/ui/content-density/content-density.ts", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/ui/content-density/content-density.ts",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "icon",
       "type": "registry:ui",
       "title": "Icon",
       "description": "Icons from the SAP-icons, SAP-icons-TNT and Business Suite fonts.",
-      "registryDependencies": ["utils", "theme"],
+      "registryDependencies": [
+        "utils",
+        "theme"
+      ],
       "files": [
-        { "path": "registry/ui/icon/icon.ts", "type": "registry:ui" },
-        { "path": "registry/ui/icon/icon-glyphs.ts", "type": "registry:ui" }
+        {
+          "path": "registry/ui/icon/icon.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ui/icon/icon-glyphs.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -49,8 +109,90 @@
       "type": "registry:ui",
       "title": "Button",
       "description": "Standard, emphasized, ghost, positive, negative, attention and transparent buttons, toggle and menu buttons, badges.",
-      "registryDependencies": ["utils", "theme", "icon"],
-      "files": [{ "path": "registry/ui/button/button.ts", "type": "registry:ui" }]
+      "registryDependencies": [
+        "utils",
+        "theme",
+        "icon"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/button/button.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "link",
+      "type": "registry:ui",
+      "title": "Link",
+      "description": "Standard, emphasized, subtle, undecorated and inverted links, with icons.",
+      "registryDependencies": [
+        "utils",
+        "theme"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/link/link.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "avatar",
+      "type": "registry:ui",
+      "title": "Avatar",
+      "description": "Image, initials or icon avatars in five sizes, with accent and indication colours, zoom icon and value states.",
+      "registryDependencies": [
+        "utils",
+        "theme",
+        "icon"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/avatar/avatar.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "title": "Input",
+      "description": "SAP field styling and value states for native input and textarea elements.",
+      "registryDependencies": [
+        "utils",
+        "theme"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/input/input.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "popover",
+      "type": "registry:ui",
+      "title": "Popover",
+      "description": "Overlay content anchored to a trigger, built on the CDK overlay: placements, triggers, arrow, focus handling, fill modes and resizing.",
+      "dependencies": [
+        "@angular/cdk",
+        "rxjs"
+      ],
+      "registryDependencies": [
+        "utils",
+        "theme"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/popover/popover.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ui/popover/popover-position.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

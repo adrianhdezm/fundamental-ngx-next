@@ -17,6 +17,8 @@
 @import './themes/sap_horizon_hcb.css';
 @import './themes/sap_horizon_hcw.css';
 @import './tokens.css';
+@import './extensions.css';
+@import '@angular/cdk/overlay-prebuilt.css';
 
 /* compact: content density. Applies inside [data-density=compact|condensed] unless a nested
  * [data-density=cozy] resets it (condensed is a denser compact, used by tables and lists). */
@@ -35,22 +37,48 @@
 }
 @custom-variant enabled-active (&:active:not(:disabled, [aria-disabled='true']));
 
+/* readonly: [readonly] and aria-readonly fields (unlike :read-only, not disabled ones). */
+@custom-variant readonly (&:is([readonly], [aria-readonly='true']));
+
 /* toggled: pressed toggle buttons and selected items. */
 @custom-variant toggled (&:is([aria-pressed='true'], [aria-selected='true']));
 
 /* hc: SAP high contrast themes. */
 @custom-variant hc (&:where([data-sap-theme='sap_horizon_hcb'], [data-sap-theme='sap_horizon_hcb'] *, [data-sap-theme='sap_horizon_hcw'], [data-sap-theme='sap_horizon_hcw'] *));
 
-/* SAP focus indicator: a solid outline in the theme focus colour, drawn inside the element. */
-@utility focus-sap {
-    outline: var(--sapContent_FocusWidth) var(--sapContent_FocusStyle) var(--sapContent_FocusColor);
-    outline-offset: calc(-1 * var(--sapContent_FocusWidth) - 0.0625rem);
+/* SAP focus indicator as an outline: width and style from the theme, colour from the theme focus colour.
+ * Change the colour with an outline-color utility, e.g. `outline-sap focus:outline-sap-field-invalid-color`. */
+@utility outline-sap {
+    outline-style: var(--sapContent_FocusStyle);
+    outline-width: var(--sapContent_FocusWidth);
+    outline-color: var(--sapContent_FocusColor);
 }
 
-/* Same indicator on a contrast (dark/brand) background. */
-@utility focus-sap-contrast {
-    outline: var(--sapContent_FocusWidth) var(--sapContent_FocusStyle) var(--sapContent_ContrastFocusColor);
-    outline-offset: calc(-1 * var(--sapContent_FocusWidth) - 0.0625rem);
+/* SAP scrollbars: theme colours, thumb inset from the track. */
+@utility scrollbar-sap {
+    scrollbar-color: var(--sapScrollBar_FaceColor) var(--sapScrollBar_TrackColor);
+
+    &::-webkit-scrollbar {
+        width: var(--sapScrollBar_Dimension);
+        height: var(--sapScrollBar_Dimension);
+    }
+    &::-webkit-scrollbar-track,
+    &::-webkit-scrollbar-corner {
+        background-color: var(--sapScrollBar_TrackColor);
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+        box-shadow: inset 0 0 0 var(--sapScrollBar_Dimension) var(--sapScrollBar_FaceColor);
+        border: 0.125rem solid transparent;
+        border-radius: calc(var(--sapScrollBar_Dimension) - 0.125rem);
+    }
+    &::-webkit-scrollbar-thumb:hover,
+    &::-webkit-scrollbar-thumb:active {
+        box-shadow: inset 0 0 0 var(--sapScrollBar_Dimension) var(--sapScrollBar_Hover_FaceColor);
+    }
+    &:focus {
+        outline: none;
+    }
 }
 
 /* Visually hidden but available to assistive technology. */

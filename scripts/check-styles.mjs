@@ -24,7 +24,9 @@ const compiler = await compile(
         async loadStylesheet(id, base) {
             const path = id.startsWith('tailwindcss/')
                 ? resolve(twDir, id.slice('tailwindcss/'.length))
-                : resolve(base, id);
+                : id.startsWith('.')
+                  ? resolve(base, id)
+                  : resolve(root, 'node_modules', id);
             return { path, base: dirname(path), content: readFileSync(path, 'utf8') };
         }
     }
