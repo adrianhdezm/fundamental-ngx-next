@@ -1,0 +1,228 @@
+import { JsonPipe } from '@angular/common';
+import { FormControl as NgFormControl, FormGroup as NgFormGroup, ReactiveFormsModule } from '@angular/forms';
+import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { ContentDensityDirective } from '@/ui/content-density/content-density';
+import { Fieldset, FormHeader, FormItem, FormLabel } from '@/ui/form/form';
+import { FormInputMessageGroup } from '@/ui/form/form-input-message-group';
+import { FormMessage } from '@/ui/form/form-message';
+import { Link } from '@/ui/link/link';
+import { FormControl } from './input';
+
+const meta: Meta<FormControl> = {
+    title: 'Components/Input',
+    component: FormControl,
+    decorators: [
+        moduleMetadata({
+            imports: [
+                FormControl,
+                FormItem,
+                FormLabel,
+                FormHeader,
+                Fieldset,
+                FormMessage,
+                FormInputMessageGroup,
+                ContentDensityDirective,
+                ReactiveFormsModule,
+                JsonPipe,
+                Link
+            ]
+        })
+    ],
+    parameters: {
+        docs: {
+            description: {
+                component:
+                    'Text fields for a single line (`<input fdFormControl>`) or several lines (`<textarea fdFormControl>`). ' +
+                    'Pair every field with a label, and use value states with a form message that explains them.'
+            }
+        }
+    },
+    argTypes: { state: { control: 'select', options: ['default', 'success', 'error', 'warning', 'information'] } },
+    args: { state: 'default' }
+};
+export default meta;
+type Story = StoryObj<FormControl>;
+
+export const Playground: Story = {
+    render: (args) => ({
+        props: args,
+        template: `<div class="max-w-sm"><input fdFormControl ${argsToTemplate(args)} placeholder="Field placeholder text" aria-label="Playground" /></div>`
+    })
+};
+
+export const Examples: Story = {
+    render: () => ({
+        template: `
+            <div class="flex max-w-md flex-col gap-2">
+                <h4 fdFormHeader>Examples</h4>
+                <div fdFormItem>
+                    <label fdFormLabel for="input-1" colon>Default Input</label>
+                    <input fdFormControl id="input-1" placeholder="Field placeholder text" />
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="input-2" required colon>Required Input</label>
+                    <input fdFormControl id="input-2" placeholder="Field placeholder text" aria-required="true" />
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="input-3">Password</label>
+                    <input fdFormControl id="input-3" type="password" placeholder="Field placeholder text" />
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="input-4">Compact</label>
+                    <input fdFormControl fdCompact id="input-4" placeholder="Field placeholder text" />
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="input-5">Number without spinner</label>
+                    <input fdFormControl noNumberSpinner type="number" id="input-5" value="42" />
+                </div>
+            </div>`
+    })
+};
+
+export const States: Story = {
+    parameters: {
+        docs: {
+            description: {
+                story: 'Read-only fields show a dotted line; disabled fields are dimmed and not focusable.'
+            }
+        }
+    },
+    render: () => ({
+        props: { states: ['default', 'success', 'information', 'warning', 'error'] },
+        template: `
+            <div class="flex max-w-md flex-col gap-2">
+                @for (s of states; track s) {
+                    <div fdFormItem>
+                        <label fdFormLabel [for]="'state-' + s">{{ s }}</label>
+                        <input fdFormControl [id]="'state-' + s" [state]="s" placeholder="Field placeholder text" />
+                    </div>
+                }
+                <div fdFormItem>
+                    <label fdFormLabel for="state-ro">Read-only</label>
+                    <input fdFormControl id="state-ro" readonly value="Read-only value" />
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="state-dis" disabled>Disabled</label>
+                    <input fdFormControl id="state-dis" disabled value="Disabled value" />
+                </div>
+            </div>`
+    })
+};
+
+export const ValueStateMessages: Story = {
+    name: 'Value state messages',
+    parameters: {
+        docs: {
+            description: {
+                story: 'A form input message group shows the message under the field (on focus by default) and links it with aria-describedby.'
+            }
+        }
+    },
+    render: () => ({
+        template: `
+            <div class="flex max-w-md flex-col gap-4">
+                <div fdFormItem>
+                    <label fdFormLabel for="input-success">Email Address</label>
+                    <fd-form-input-message-group>
+                        <input fdFormControl id="input-success" placeholder="your.name&#64;company.com" state="success" />
+                        <fd-form-message type="success">Email format is valid and the domain is verified. You will receive notifications at this address.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="input-error">VAT Number - Message appears on hover</label>
+                    <fd-form-input-message-group [triggers]="['mouseenter', 'mouseleave']">
+                        <input fdFormControl id="input-error" placeholder="DE123456789" state="error" />
+                        <fd-form-message type="error">Invalid VAT number format. Must start with <b>country code</b> (2 letters) followed by <b>9-12 digits</b>. See <a fdLink href="#">validation rules</a>.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="input-warning">Purchase Order Amount</label>
+                    <fd-form-input-message-group>
+                        <input fdFormControl id="input-warning" placeholder="0.00" state="warning" />
+                        <fd-form-message type="warning">The amount exceeds your approval limit and needs a second approval.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="input-info">Cost Center</label>
+                    <fd-form-input-message-group>
+                        <input fdFormControl id="input-info" placeholder="CC-1000" state="information" />
+                        <fd-form-message type="information">The cost center is taken from your user profile.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+            </div>`
+    })
+};
+
+export const InlineHelp: Story = {
+    name: 'Inline help',
+    render: () => ({
+        template: `
+            <div class="flex max-w-md flex-col gap-2">
+                <div fdFormItem>
+                    <label fdFormLabel for="input-41" inlineHelpContent="Inline Help">Input with inline help</label>
+                    <input fdFormControl id="input-41" placeholder="Field placeholder text" />
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="input-42" inlineHelpContent="Inline Help" inlineHelpPlacement="before">Input with inline help</label>
+                    <input fdFormControl id="input-42" placeholder="Field placeholder text" />
+                </div>
+            </div>`
+    })
+};
+
+export const ReactiveForms: Story = {
+    name: 'Reactive forms',
+    render: () => {
+        const form = new NgFormGroup({
+            inputControl: new NgFormControl('Default value'),
+            disabledInputControl: new NgFormControl({ value: 'Disabled value', disabled: true })
+        });
+        return {
+            props: { form },
+            template: `
+                <form [formGroup]="form" class="flex max-w-md flex-col gap-2">
+                    <div fdFormItem>
+                        <label fdFormLabel for="form-input-1">Default Input:</label>
+                        <input fdFormControl formControlName="inputControl" id="form-input-1" placeholder="Field placeholder text" />
+                    </div>
+                    <div fdFormItem>
+                        <label fdFormLabel for="form-input-2">Disabled Input:</label>
+                        <input fdFormControl formControlName="disabledInputControl" id="form-input-2" />
+                    </div>
+                </form>
+                <pre class="text-sap-font-small-size">{{ form.getRawValue() | json }}</pre>`
+        };
+    }
+};
+
+export const Textarea: Story = {
+    render: () => ({
+        template: `
+            <div class="flex max-w-md flex-col gap-2">
+                <h4 fdFormHeader>Form Header</h4>
+                <div fdFormItem>
+                    <label fdFormLabel colon for="textarea-11">Default textarea</label>
+                    <textarea fdFormControl id="textarea-11" placeholder="Field placeholder text"></textarea>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel required for="textarea-12">Required textarea:</label>
+                    <textarea fdFormControl id="textarea-12" rows="4" placeholder="Field placeholder text" aria-required="true"></textarea>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel required for="textarea-13">Compact and Required textarea:</label>
+                    <textarea fdFormControl fdCompact id="textarea-13" placeholder="Field placeholder text" aria-required="true"></textarea>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="textarea-14">Read-only textarea</label>
+                    <textarea fdFormControl readonly id="textarea-14">Read-only text that cannot be changed.</textarea>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel colon for="textarea-success">Project Description</label>
+                    <fd-form-input-message-group>
+                        <textarea fdFormControl id="textarea-success" state="error" placeholder="Describe the project"></textarea>
+                        <fd-form-message type="error">The description must have at least 20 characters.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+            </div>`
+    })
+};

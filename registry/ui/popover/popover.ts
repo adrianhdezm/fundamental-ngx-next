@@ -8,7 +8,7 @@ import {
     type OverlayRef,
     type ScrollStrategy
 } from '@angular/cdk/overlay';
-import { TemplatePortal } from '@angular/cdk/portal';
+import { ComponentPortal, TemplatePortal } from '@angular/cdk/portal';
 import { NgTemplateOutlet } from '@angular/common';
 import {
     ChangeDetectionStrategy,
@@ -18,6 +18,8 @@ import {
     ElementRef,
     Injectable,
     InjectionToken,
+    Injector,
+    type OutputRefSubscription,
     Renderer2,
     TemplateRef,
     ViewContainerRef,
@@ -25,9 +27,7 @@ import {
     booleanAttribute,
     computed,
     contentChild,
-    type OutputRefSubscription,
     effect,
-    forwardRef,
     inject,
     input,
     model,
@@ -36,8 +36,9 @@ import {
     untracked,
     viewChild
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, merge } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
+import { filter, take, takeUntil } from 'rxjs/operators';
 import { cn, type ClassValue } from '@/lib/utils';
 import {
     type ArrowAlign,
@@ -355,180 +356,187 @@ export class PopoverControl {
     }
 }
 
-let nextId = 0;
+/** Configuration of a popover; every field is optional. */
+export interface PopoverConfig {
+    placement?: Placement | null;
+    cdkPositions?: ConnectedPosition[] | null;
+    fixedPosition?: boolean;
+    triggers?: (string | TriggerConfig)[];
+    disabled?: boolean;
+    noArrow?: boolean;
+    closeOnOutsideClick?: boolean;
+    closeOnEscapeKey?: boolean;
+    closeOnNavigation?: boolean;
+    focusTrapped?: boolean;
+    focusAutoCapture?: boolean;
+    restoreFocusOnClose?: boolean;
+    fillControlMode?: PopoverFillMode | null;
+    maxWidth?: number | null;
+    disableScrollbar?: boolean;
+    resizable?: boolean;
+    applyOverlay?: boolean;
+    scrollStrategy?: ScrollStrategy | null;
+    appendTo?: ElementRef<HTMLElement> | HTMLElement | null;
+    additionalBodyClass?: string | null;
+    bodyRole?: string | null;
+    bodyAriaLabel?: string | null;
+    bodyAriaLabelledBy?: string | null;
+    bodyId?: string | null;
+}
+
+const DEFAULT_CONFIG: Required<PopoverConfig> = {
+    placement: 'bottom-start',
+    cdkPositions: null,
+    fixedPosition: false,
+    triggers: ['click'],
+    disabled: false,
+    noArrow: true,
+    closeOnOutsideClick: true,
+    closeOnEscapeKey: true,
+    closeOnNavigation: true,
+    focusTrapped: true,
+    focusAutoCapture: true,
+    restoreFocusOnClose: true,
+    fillControlMode: null,
+    maxWidth: null,
+    disableScrollbar: false,
+    resizable: false,
+    applyOverlay: false,
+    scrollStrategy: null,
+    appendTo: null,
+    additionalBodyClass: null,
+    bodyRole: 'dialog',
+    bodyAriaLabel: null,
+    bodyAriaLabelledBy: null,
+    bodyId: null
+};
 
 /**
- * Popover: content in an overlay next to a trigger. Positioned with the CDK overlay, flips when it
- * does not fit, closes on outside click and Escape, and returns focus to the trigger.
+ * Overlay behaviour of a popover: trigger listeners, positioning with fallbacks, outside click and
+ * Escape handling, focus capture and restore, fill modes and the modal backdrop.
  *
- * ```html
- * <fd-popover placement="bottom-start">
- *   <fd-popover-control><button fdButton label="Open"></button></fd-popover-control>
- *   <fd-popover-body><div class="p-4">Content</div></fd-popover-body>
- * </fd-popover>
- *
- * <button fdButton [fdPopoverTrigger]="pop" label="External trigger"></button>
- * <fd-popover #pop><fd-popover-body>...</fd-popover-body></fd-popover>
- * ```
+ * Provide it on a component or directive that owns a popover (`<fd-popover>`, inline help, menus,
+ * pickers) and call `initialise()` with the trigger element.
  */
-@Component({
-    selector: 'fd-popover',
-    exportAs: 'fdPopover',
-    imports: [PopoverBody],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [{ provide: FD_POPOVER, useExisting: forwardRef(() => Popover) }],
-    host: {
-        '[class]': 'hostClass()',
-        '[attr.id]': 'id()',
-        '(keydown.escape)': 'onEscape($event)',
-        '(keydown.space)': 'onControlKey($event)',
-        '(keydown.enter)': 'onControlKey($event)'
-    },
-    template: `
-        @if (!trigger()) {
-            <div #origin [class]="controlClass()" (keydown)="onTriggerKeydown($event)">
-                <ng-content select="fd-popover-control, [fdPopoverControl]" />
-            </div>
-        }
-        <ng-template #bodyTemplate>
-            <ng-content select="fd-popover-body" />
-            <ng-content />
-        </ng-template>
-        <ng-template #defaultBody>
-            <fd-popover-body />
-        </ng-template>
-    `
-})
-export class Popover implements PopoverBodyHost {
-    /** Element id; also referenced by aria-controls of the trigger. */
-    readonly id = input(`fd-popover-${nextId++}`);
-    /** Opens and closes the popover; two-way bindable. */
-    readonly isOpen = model(false);
-    /** Preferred placement. The popover flips when it does not fit. */
-    readonly placement = input<Placement>('bottom-start');
-    /** Exact CDK positions; replaces `placement`. */
-    readonly cdkPositions = input<ConnectedPosition[] | null>(null);
-    /** Keeps the placement even when it does not fit. */
-    readonly fixedPosition = input(false, { transform: booleanAttribute });
-    /** Events on the trigger that open/close the popover. */
-    readonly triggers = input<(string | TriggerConfig)[]>(['click']);
-    /** External trigger element; used instead of `fd-popover-control`. */
-    readonly trigger = model<ElementRef<HTMLElement> | HTMLElement | null>(null);
-    /** Element the popover is positioned against, when different from the trigger. */
-    readonly appendTo = input<ElementRef<HTMLElement> | HTMLElement | null>(null);
-    /** Disables opening. */
-    readonly disabled = input(false, { transform: booleanAttribute });
-    /** Hides the arrow (default, as in fundamental-ngx). */
-    readonly noArrow = input(true, { transform: booleanAttribute });
-    readonly closeOnOutsideClick = input(true, { transform: booleanAttribute });
-    readonly closeOnEscapeKey = input(true, { transform: booleanAttribute });
-    /** Keeps Tab inside the body. */
-    readonly focusTrapped = input(true, { transform: booleanAttribute });
-    /** Moves focus into the body when it opens. */
-    readonly focusAutoCapture = input(true, { transform: booleanAttribute });
-    /** Returns focus to the previously focused element on close. */
-    readonly restoreFocusOnClose = input(true, { transform: booleanAttribute });
-    /** Body width relative to the trigger. */
-    readonly fillControlMode = input<PopoverFillMode | null>(null);
-    /** Maximum body width in px. */
-    readonly maxWidth = input<number | null>(null);
-    /** Renders the content without the scrolling wrapper. */
-    readonly disableScrollbar = input(false, { transform: booleanAttribute });
-    /** Lets the user resize the body with a corner handle. */
-    readonly resizable = input(false, { transform: booleanAttribute });
-    /** Dims the page behind the popover while it is open (with outside-click or Escape closing disabled). */
-    readonly applyOverlay = input(false, { transform: booleanAttribute });
-    readonly scrollStrategy = input<ScrollStrategy | null>(null);
-    readonly closeOnNavigation = input(true, { transform: booleanAttribute });
-    /** Prevents page scrolling when Space toggles the popover. */
-    readonly preventSpaceKeyScroll = input(true, { transform: booleanAttribute });
-    readonly additionalBodyClass = input<string | null>(null);
-    readonly additionalTriggerClass = input<string | null>(null);
-    readonly bodyRole = input<PopoverBodyRole | (string & {}) | null>('dialog');
-    readonly bodyAriaLabel = input<string | null>(null);
-    readonly bodyAriaLabelledBy = input<string | null>(null);
-    /** Plain text content, for simple popovers without a body. */
-    readonly text = input<string | null>(null);
-    readonly userClass = input<ClassValue>('', { alias: 'class' });
-
-    readonly beforeOpen = output<void>();
-
-    /** The body rendered by this popover: projected, or the default one of text-only popovers. */
+@Injectable()
+export class PopoverService implements PopoverBodyHost {
+    readonly config = signal<Required<PopoverConfig>>({ ...DEFAULT_CONFIG });
+    readonly isOpen = signal(false);
+    readonly triggerElement = signal<HTMLElement | null>(null);
+    /** Body rendered by this popover: projected, or the default body attached for text/template content. */
     readonly body = signal<PopoverBody | null>(null);
-    readonly control = contentChild(PopoverControl);
-    private readonly origin = viewChild<ElementRef<HTMLElement>>('origin');
-    private readonly bodyTemplate = viewChild.required<TemplateRef<unknown>>('bodyTemplate');
-    private readonly defaultBody = viewChild.required<TemplateRef<unknown>>('defaultBody');
+    /** Text content for a popover without its own body. */
+    readonly text = signal<string | null>(null);
+    /** Template content for a popover without its own body. */
+    readonly template = signal<TemplateRef<unknown> | null>(null);
 
     private readonly overlay = inject(Overlay);
-    private readonly vcr = inject(ViewContainerRef);
     private readonly renderer = inject(Renderer2);
+    private readonly injector = inject(Injector);
     private readonly destroyRef = inject(DestroyRef);
     private readonly dir = inject(Directionality, { optional: true });
     private readonly containerRefresh = inject(PopoverContainerRefresh, { optional: true });
 
     private overlayRef: OverlayRef | null = null;
-    private closeRequest: OutputRefSubscription | null = null;
+    private bodyTemplate: { template: TemplateRef<unknown>; vcr: ViewContainerRef } | null = null;
     private readonly closed$ = new Subject<void>();
     private listeners: (() => void)[] = [];
     private hoverCloseTimer: ReturnType<typeof setTimeout> | null = null;
     private lastFocused: HTMLElement | null = null;
     private ignoreTriggers = false;
+    private closeRequest: OutputRefSubscription | null = null;
 
-    protected readonly hostClass = computed(() => cn('relative inline-block max-w-full', this.userClass()));
-    protected readonly controlClass = computed(() =>
-        cn(
-            'relative cursor-pointer focus-visible:outline-sap',
-            this.disabled() && 'cursor-auto pointer-events-none',
-            '[&>a]:whitespace-nowrap',
-            this.additionalTriggerClass()
-        )
-    );
-
-    private readonly triggerElement = computed<HTMLElement | null>(() => {
-        const t = this.trigger();
-        if (t) return t instanceof ElementRef ? t.nativeElement : t;
-        return this.origin()?.nativeElement ?? null;
-    });
-
-    private readonly direction = computed(() => this.dir?.valueSignal() ?? 'ltr');
+    readonly direction = computed(() => this.dir?.valueSignal() ?? 'ltr');
 
     constructor() {
-        // (re)attach trigger listeners
+        // re-attach trigger listeners when the trigger or the triggers change
         effect(() => {
             const el = this.triggerElement();
-            const triggers = normalizeTriggers(this.triggers());
+            const triggers = normalizeTriggers(this.config().triggers);
             untracked(() => this.listen(el, triggers));
         });
-        // open/close from the model
+        // keep an open body in sync with the configuration
         effect(() => {
-            const open = this.isOpen();
-            untracked(() => (open ? this.attach() : this.detach(true)));
+            const body = this.body();
+            const config = this.config();
+            const text = this.text();
+            const template = this.template();
+            if (body) untracked(() => this.configureBody(body, config, text, template));
         });
-        // live body configuration
-        effect(() => {
-            this.configureBody();
-        });
-        afterNextRender(() => {
-            if (this.triggers().some((t) => (typeof t === 'string' ? t : t.trigger) === 'click')) {
-                this.control()?.makeTabbable();
-            }
-        });
-        this.containerRefresh?.refresh$.pipe(takeUntil(this.closed$)).subscribe(() => this.refreshPosition());
+        this.containerRefresh?.refresh$.pipe(takeUntilDestroyed()).subscribe(() => this.refreshPosition());
         this.destroyRef.onDestroy(() => {
             this.removeListeners();
             this.clearHoverTimer();
-            this.disposeOverlay();
-            this.setModal(false);
+            this.detach(false);
         });
     }
 
+    /** Connects the trigger and, optionally, the template that holds a projected `<fd-popover-body>`. */
+    initialise(
+        trigger: HTMLElement | ElementRef<HTMLElement>,
+        bodyTemplate?: { template: TemplateRef<unknown>; vcr: ViewContainerRef } | null
+    ): void {
+        this.triggerElement.set(trigger instanceof ElementRef ? trigger.nativeElement : trigger);
+        this.bodyTemplate = bodyTemplate ?? null;
+    }
+
+    /** Merges configuration; undefined fields keep their value. */
+    refreshConfiguration(config: PopoverConfig): void {
+        const defined = Object.fromEntries(Object.entries(config).filter(([, v]) => v !== undefined));
+        this.config.update((c) => ({ ...c, ...defined }));
+    }
+
+    /** Sets text or template content for popovers without their own body. */
+    updateContent(content: string | TemplateRef<unknown> | null | undefined): void {
+        this.text.set(typeof content === 'string' ? content : null);
+        this.template.set(content instanceof TemplateRef ? content : null);
+    }
+
+    registerBody(body: PopoverBody | null): void {
+        this.body.set(body);
+    }
+
     open(): void {
-        if (!this.disabled()) this.isOpen.set(true);
+        const trigger = this.triggerElement();
+        if (this.overlayRef?.hasAttached() || this.config().disabled || !trigger) return;
+        const config = this.config();
+        const strategy = this.positionStrategy();
+        this.overlayRef = this.overlay.create({
+            direction: this.direction(),
+            positionStrategy: strategy,
+            scrollStrategy: config.scrollStrategy ?? this.overlay.scrollStrategies.reposition(),
+            disposeOnNavigation: config.closeOnNavigation,
+            hasBackdrop: this.isModal(),
+            backdropClass: 'bg-(--fdModal_BackgroundColor)'
+        });
+        if (this.bodyTemplate && this.body() && !this.template()) {
+            this.overlayRef
+                .attach(new TemplatePortal(this.bodyTemplate.template, this.bodyTemplate.vcr))
+                .detectChanges();
+        } else {
+            const injector = Injector.create({
+                providers: [{ provide: FD_POPOVER, useValue: this }],
+                parent: this.injector
+            });
+            this.overlayRef.attach(new ComponentPortal(PopoverBody, null, injector));
+        }
+        const body = this.body();
+        if (body) this.configureBody(body, config, this.text(), this.template());
+        this.isOpen.set(true);
+        this.trackPosition(strategy);
+        this.listenForClose(trigger);
+        this.setupOverlayHover();
+        this.fillWidth(trigger);
+        this.setModal(true);
+        if (config.focusAutoCapture) {
+            this.lastFocused = document.activeElement as HTMLElement | null;
+            this.body()?.focusFirstTabbable();
+        }
+        this.overlayRef.updatePosition();
     }
 
     close(restoreFocus = true): void {
-        if (!this.isOpen()) return;
+        if (!this.overlayRef) return;
         this.detach(restoreFocus);
         this.isOpen.set(false);
     }
@@ -541,7 +549,6 @@ export class Popover implements PopoverBodyHost {
         }
     }
 
-    /** Ignores trigger events, e.g. while another interaction owns the trigger. */
     setIgnoreTriggers(ignore: boolean): void {
         this.ignoreTriggers = ignore;
     }
@@ -550,7 +557,6 @@ export class Popover implements PopoverBodyHost {
         this.overlayRef?.updatePosition();
     }
 
-    /** Re-positions with new CDK positions. */
     applyNewPosition(positions: ConnectedPosition[]): void {
         if (!this.overlayRef) return;
         const strategy = this.positionStrategy(positions);
@@ -558,31 +564,31 @@ export class Popover implements PopoverBodyHost {
         this.trackPosition(strategy);
     }
 
-    /** Alt+ArrowDown opens the popover from the trigger. */
-    onTriggerKeydown(event: KeyboardEvent): void {
-        if (event.key === 'ArrowDown' && event.altKey && !this.disabled()) {
-            event.preventDefault();
-            event.stopPropagation();
-            this.open();
-        }
+    /** The overlay pane element while open. */
+    get overlayElement(): HTMLElement | null {
+        return this.overlayRef?.overlayElement ?? null;
     }
 
-    protected onEscape(event: Event): void {
-        if (this.closeOnEscapeKey() && this.isOpen()) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            this.close();
-        }
-    }
-
-    protected onControlKey(event: Event): void {
-        if (!this.preventSpaceKeyScroll()) return;
-        const active = document.activeElement as HTMLElement | null;
-        const control = this.control()?.elementRef.nativeElement.children[0];
-        if (control && control === active && !['INPUT', 'TEXTAREA', 'BUTTON', 'A'].includes(active.tagName)) {
-            event.preventDefault();
-            this.toggle();
-        }
+    private configureBody(
+        body: PopoverBody,
+        config: Required<PopoverConfig>,
+        text: string | null,
+        template: TemplateRef<unknown> | null
+    ): void {
+        body.noArrow.set(config.noArrow);
+        body.focusTrapped.set(config.focusTrapped);
+        body.closeOnEscape.set(config.closeOnEscapeKey);
+        body.disableScrollbar.set(config.disableScrollbar);
+        body.resizable.set(config.resizable);
+        body.role.set(config.bodyRole);
+        body.ariaLabel.set(config.bodyAriaLabel);
+        body.ariaLabelledBy.set(config.bodyAriaLabelledBy);
+        body.bodyId.set(config.bodyId);
+        body.bodyMaxWidth.set(config.maxWidth);
+        body.fillMode.set(config.fillControlMode);
+        body.additionalClass.set(config.additionalBodyClass);
+        body.text.set(text);
+        body.template.set(template);
     }
 
     private listen(el: HTMLElement | null, triggers: TriggerConfig[]): void {
@@ -592,7 +598,7 @@ export class Popover implements PopoverBodyHost {
         for (const t of triggers) {
             this.listeners.push(
                 this.renderer.listen(el, t.trigger, (event: Event) => {
-                    if (this.ignoreTriggers || this.disabled()) return;
+                    if (this.ignoreTriggers || this.config().disabled) return;
                     if (hover && t.trigger === 'mouseenter' && t.openAction) {
                         this.clearHoverTimer();
                         if (!this.isOpen()) this.open();
@@ -612,102 +618,28 @@ export class Popover implements PopoverBodyHost {
         this.listeners = [];
     }
 
-    private attach(): void {
-        const trigger = this.triggerElement();
-        if (this.overlayRef?.hasAttached() || this.disabled() || !trigger) return;
-        this.beforeOpen.emit();
-        const strategy = this.positionStrategy();
-        this.overlayRef = this.overlay.create({
-            direction: this.direction(),
-            positionStrategy: strategy,
-            scrollStrategy: this.scrollStrategy() ?? this.overlay.scrollStrategies.reposition(),
-            disposeOnNavigation: this.closeOnNavigation(),
-            hasBackdrop: this.isModal(),
-            backdropClass: 'bg-(--fdModal_BackgroundColor)'
-        });
-        // a projected body registered when the popover was created; otherwise render the default body
-        const template = this.body() ? this.bodyTemplate() : this.defaultBody();
-        this.overlayRef.attach(new TemplatePortal(template, this.vcr)).detectChanges();
-        this.configureBody();
-        this.trackPosition(strategy);
-        this.listenForClose(trigger);
-        this.setupOverlayHover();
-        this.fillWidth(trigger);
-        this.setModal(true);
-        if (this.focusAutoCapture()) {
-            this.lastFocused = document.activeElement as HTMLElement | null;
-            this.currentBody()?.focusFirstTabbable();
-        }
-        this.overlayRef.updatePosition();
-    }
-
     private detach(restoreFocus: boolean): void {
         if (!this.overlayRef) return;
         this.closed$.next();
         this.closeRequest?.unsubscribe();
         this.closeRequest = null;
         this.clearHoverTimer();
-        this.disposeOverlay();
+        this.overlayRef.dispose();
+        this.overlayRef = null;
         this.setModal(false);
-        if (restoreFocus && this.restoreFocusOnClose() && this.focusAutoCapture() && this.lastFocused) {
+        const config = this.config();
+        if (restoreFocus && config.restoreFocusOnClose && config.focusAutoCapture && this.lastFocused) {
             this.lastFocused.focus();
         }
         this.lastFocused = null;
     }
 
-    private disposeOverlay(): void {
-        this.overlayRef?.dispose();
-        this.overlayRef = null;
-    }
-
-    private currentBody(): PopoverBody | null {
-        return this.body();
-    }
-
-    registerBody(body: PopoverBody | null): void {
-        this.body.set(body);
-    }
-
-    private configureBody(): void {
-        const body = this.body();
-        const config = {
-            noArrow: this.noArrow(),
-            focusTrapped: this.focusTrapped(),
-            closeOnEscape: this.closeOnEscapeKey(),
-            disableScrollbar: this.disableScrollbar(),
-            resizable: this.resizable(),
-            role: this.bodyRole(),
-            ariaLabel: this.bodyAriaLabel(),
-            ariaLabelledBy: this.bodyAriaLabelledBy(),
-            maxWidth: this.maxWidth(),
-            fillMode: this.fillControlMode(),
-            additionalClass: this.additionalBodyClass(),
-            text: this.text(),
-            id: this.id()
-        };
-        if (!body) return;
-        untracked(() => {
-            body.noArrow.set(config.noArrow);
-            body.focusTrapped.set(config.focusTrapped);
-            body.closeOnEscape.set(config.closeOnEscape);
-            body.disableScrollbar.set(config.disableScrollbar);
-            body.resizable.set(config.resizable);
-            body.role.set(config.role);
-            body.ariaLabel.set(config.ariaLabel);
-            body.ariaLabelledBy.set(config.ariaLabelledBy);
-            body.bodyMaxWidth.set(config.maxWidth);
-            body.fillMode.set(config.fillMode);
-            body.additionalClass.set(config.additionalClass);
-            body.bodyId.set(`${config.id}-body`);
-            if (config.text) body.text.set(config.text);
-        });
-    }
-
     private positionStrategy(forced?: ConnectedPosition[]): FlexibleConnectedPositionStrategy {
-        const dir = this.direction();
-        let positions = forced ?? this.cdkPositions() ?? [getCdkPlacement(this.placement(), dir)];
-        if (!this.fixedPosition()) positions = withFallbackPositions(positions);
-        const appendTo = this.appendTo();
+        const config = this.config();
+        let positions = forced ??
+            config.cdkPositions ?? [getCdkPlacement(config.placement ?? 'bottom-start', this.direction())];
+        if (!config.fixedPosition) positions = withFallbackPositions(positions);
+        const appendTo = config.appendTo;
         const anchor = appendTo
             ? appendTo instanceof ElementRef
                 ? appendTo.nativeElement
@@ -724,39 +656,44 @@ export class Popover implements PopoverBodyHost {
     private trackPosition(strategy: FlexibleConnectedPositionStrategy): void {
         strategy.positionChanges.pipe(takeUntil(this.closed$)).subscribe((change: ConnectedOverlayPositionChange) => {
             const { side, align } = arrowFor(change.connectionPair);
-            const body = this.currentBody();
-            body?.arrowSide.set(side);
-            body?.arrowAlign.set(align);
+            this.body()?.arrowSide.set(side);
+            this.body()?.arrowAlign.set(align);
         });
     }
 
     private listenForClose(trigger: HTMLElement): void {
         const ref = this.overlayRef!;
-        const body = this.currentBody();
-        const outside$ = ref
-            .outsidePointerEvents()
-            .pipe(filter((e) => this.closeOnOutsideClick() && !trigger.contains(e.composedPath()[0] as Node)));
-        merge(ref.detachments(), ref.keydownEvents().pipe(filter((e) => e.key === 'Escape' && this.closeOnEscapeKey())))
+        merge(
+            ref.detachments(),
+            ref.keydownEvents().pipe(filter((e) => e.key === 'Escape' && this.config().closeOnEscapeKey))
+        )
             .pipe(takeUntil(this.closed$))
             .subscribe(() => this.close());
-        outside$.pipe(takeUntil(this.closed$)).subscribe(() => {
-            // restore focus only if it is still in the popover or on the trigger
-            const active = document.activeElement;
-            this.close(
-                !active || active === document.body || active.contains(trigger) || ref.overlayElement.contains(active)
-            );
-        });
-        this.closeRequest?.unsubscribe();
-        this.closeRequest = body?.closeRequest.subscribe(() => this.close()) ?? null;
+        ref.outsidePointerEvents()
+            .pipe(
+                filter((e) => this.config().closeOnOutsideClick && !trigger.contains(e.composedPath()[0] as Node)),
+                takeUntil(this.closed$)
+            )
+            .subscribe(() => {
+                // restore focus only when it is still inside the popover or on the trigger
+                const active = document.activeElement;
+                this.close(
+                    !active ||
+                        active === document.body ||
+                        active.contains(trigger) ||
+                        ref.overlayElement.contains(active)
+                );
+            });
+        this.closeRequest = this.body()?.closeRequest.subscribe(() => this.close()) ?? null;
     }
 
     private setupOverlayHover(): void {
-        const triggers = normalizeTriggers(this.triggers());
+        const triggers = normalizeTriggers(this.config().triggers);
         if (!this.overlayRef || !triggers.some((t) => t.trigger === 'mouseenter' || t.trigger === 'mouseleave')) return;
         const el = this.overlayRef.overlayElement;
         const enter = this.renderer.listen(el, 'mouseenter', () => this.clearHoverTimer());
         const leave = this.renderer.listen(el, 'mouseleave', () => this.scheduleHoverClose());
-        this.closed$.subscribe(() => {
+        this.closed$.pipe(take(1)).subscribe(() => {
             enter();
             leave();
         });
@@ -778,20 +715,20 @@ export class Popover implements PopoverBodyHost {
     }
 
     private fillWidth(trigger: HTMLElement): void {
-        const mode = this.fillControlMode();
-        const body = this.currentBody();
-        if (!body || !mode || mode === 'fit-content') return;
-        const update = () =>
-            body.fillWidth.set(Math.min(trigger.offsetWidth, this.maxWidth() ?? Number.MAX_SAFE_INTEGER));
+        const { fillControlMode, maxWidth } = this.config();
+        const body = this.body();
+        if (!body || !fillControlMode || fillControlMode === 'fit-content') return;
+        const update = () => body.fillWidth.set(Math.min(trigger.offsetWidth, maxWidth ?? Number.MAX_SAFE_INTEGER));
         update();
         const observer = new ResizeObserver(update);
         observer.observe(trigger);
-        this.closed$.subscribe(() => observer.disconnect());
+        this.closed$.pipe(take(1)).subscribe(() => observer.disconnect());
     }
 
     /** Modal popovers dim the page; only when outside click or Escape cannot close them. */
     private isModal(): boolean {
-        return this.applyOverlay() && (!this.closeOnOutsideClick() || !this.closeOnEscapeKey());
+        const c = this.config();
+        return c.applyOverlay && (!c.closeOnOutsideClick || !c.closeOnEscapeKey);
     }
 
     /** Keeps the trigger above the dimmed page of a modal popover. */
@@ -801,6 +738,244 @@ export class Popover implements PopoverBodyHost {
         trigger?.classList.toggle('relative', open);
         trigger?.classList.toggle('z-[1001]', open);
     }
+}
+
+let nextId = 0;
+
+/**
+ * Popover: content in an overlay next to a trigger. Positioned with the CDK overlay, flips when it
+ * does not fit, closes on outside click and Escape, and returns focus to the trigger.
+ *
+ * ```html
+ * <fd-popover placement="bottom-start">
+ *   <fd-popover-control><button fdButton label="Open"></button></fd-popover-control>
+ *   <fd-popover-body><div class="p-4">Content</div></fd-popover-body>
+ * </fd-popover>
+ *
+ * <button fdButton [fdPopoverTrigger]="pop" label="External trigger"></button>
+ * <fd-popover #pop><fd-popover-body>...</fd-popover-body></fd-popover>
+ * ```
+ */
+@Component({
+    selector: 'fd-popover',
+    exportAs: 'fdPopover',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [PopoverService, { provide: FD_POPOVER, useExisting: PopoverService }],
+    host: {
+        '[class]': 'hostClass()',
+        '[attr.id]': 'id()',
+        '(keydown.escape)': 'onEscape($event)',
+        '(keydown.space)': 'onControlKey($event)',
+        '(keydown.enter)': 'onControlKey($event)'
+    },
+    template: `
+        @if (!trigger()) {
+            <div #origin [class]="controlClass()" (keydown)="onTriggerKeydown($event)">
+                <ng-content select="fd-popover-control, [fdPopoverControl]" />
+            </div>
+        }
+        <ng-template #bodyTemplate>
+            <ng-content select="fd-popover-body" />
+            <ng-content />
+        </ng-template>
+    `
+})
+export class Popover {
+    /** Element id; also referenced by aria-controls of the trigger. */
+    readonly id = input(`fd-popover-${nextId++}`);
+    /** Opens and closes the popover; two-way bindable. */
+    readonly isOpen = model(false);
+    /** All options at once; individual inputs take precedence when set. */
+    readonly config = input<PopoverConfig>({});
+    /** Preferred placement. The popover flips when it does not fit. */
+    readonly placement = input<Placement | undefined>(undefined);
+    /** Exact CDK positions; replaces `placement`. */
+    readonly cdkPositions = input<ConnectedPosition[] | null | undefined>(undefined);
+    /** Keeps the placement even when it does not fit. */
+    readonly fixedPosition = input<boolean | undefined, unknown>(undefined, { transform: optionalBoolean });
+    /** Events on the trigger that open/close the popover (default: click). */
+    readonly triggers = input<(string | TriggerConfig)[] | undefined>(undefined);
+    /** External trigger element; used instead of `fd-popover-control`. */
+    readonly trigger = model<ElementRef<HTMLElement> | HTMLElement | null>(null);
+    /** Element the popover is positioned against, when different from the trigger. */
+    readonly appendTo = input<ElementRef<HTMLElement> | HTMLElement | null | undefined>(undefined);
+    readonly disabled = input<boolean | undefined, unknown>(undefined, { transform: optionalBoolean });
+    /** Hides the arrow (default true, as in fundamental-ngx). */
+    readonly noArrow = input<boolean | undefined, unknown>(undefined, { transform: optionalBoolean });
+    readonly closeOnOutsideClick = input<boolean | undefined, unknown>(undefined, { transform: optionalBoolean });
+    readonly closeOnEscapeKey = input<boolean | undefined, unknown>(undefined, { transform: optionalBoolean });
+    /** Keeps Tab inside the body (default true). */
+    readonly focusTrapped = input<boolean | undefined, unknown>(undefined, { transform: optionalBoolean });
+    /** Moves focus into the body when it opens (default true). */
+    readonly focusAutoCapture = input<boolean | undefined, unknown>(undefined, { transform: optionalBoolean });
+    /** Returns focus to the previously focused element on close (default true). */
+    readonly restoreFocusOnClose = input<boolean | undefined, unknown>(undefined, { transform: optionalBoolean });
+    /** Body width relative to the trigger. */
+    readonly fillControlMode = input<PopoverFillMode | null | undefined>(undefined);
+    /** Maximum body width in px. */
+    readonly maxWidth = input<number | null | undefined>(undefined);
+    /** Renders the content without the scrolling wrapper. */
+    readonly disableScrollbar = input<boolean | undefined, unknown>(undefined, { transform: optionalBoolean });
+    /** Lets the user resize the body with a corner handle. */
+    readonly resizable = input<boolean | undefined, unknown>(undefined, { transform: optionalBoolean });
+    /** Dims the page while open, when outside click or Escape closing is disabled. */
+    readonly applyOverlay = input<boolean | undefined, unknown>(undefined, { transform: optionalBoolean });
+    readonly scrollStrategy = input<ScrollStrategy | null | undefined>(undefined);
+    readonly closeOnNavigation = input<boolean | undefined, unknown>(undefined, { transform: optionalBoolean });
+    /** Prevents page scrolling when Space toggles the popover. */
+    readonly preventSpaceKeyScroll = input(true, { transform: booleanAttribute });
+    readonly additionalBodyClass = input<string | null | undefined>(undefined);
+    readonly additionalTriggerClass = input<string | null>(null);
+    readonly bodyRole = input<PopoverBodyRole | (string & {}) | null | undefined>(undefined);
+    readonly bodyAriaLabel = input<string | null | undefined>(undefined);
+    readonly bodyAriaLabelledBy = input<string | null | undefined>(undefined);
+    /** Plain text content, for simple popovers without a body. */
+    readonly text = input<string | null>(null);
+    readonly userClass = input<ClassValue>('', { alias: 'class' });
+
+    readonly beforeOpen = output<void>();
+
+    readonly service = inject(PopoverService);
+    readonly control = contentChild(PopoverControl);
+    private readonly projectedBody = contentChild(PopoverBody);
+    private readonly origin = viewChild<ElementRef<HTMLElement>>('origin');
+    private readonly bodyTemplate = viewChild.required<TemplateRef<unknown>>('bodyTemplate');
+    private readonly vcr = inject(ViewContainerRef);
+
+    protected readonly hostClass = computed(() => cn('relative inline-block max-w-full', this.userClass()));
+    protected readonly controlClass = computed(() =>
+        cn(
+            'relative cursor-pointer focus-visible:outline-sap [&>a]:whitespace-nowrap',
+            this.disabled() && 'cursor-auto pointer-events-none',
+            this.additionalTriggerClass()
+        )
+    );
+
+    constructor() {
+        // inputs and config -> service
+        effect(() => {
+            this.service.refreshConfiguration({
+                ...this.config(),
+                placement: this.placement(),
+                cdkPositions: this.cdkPositions(),
+                fixedPosition: this.fixedPosition(),
+                triggers: this.triggers(),
+                disabled: this.disabled(),
+                noArrow: this.noArrow(),
+                closeOnOutsideClick: this.closeOnOutsideClick(),
+                closeOnEscapeKey: this.closeOnEscapeKey(),
+                closeOnNavigation: this.closeOnNavigation(),
+                focusTrapped: this.focusTrapped(),
+                focusAutoCapture: this.focusAutoCapture(),
+                restoreFocusOnClose: this.restoreFocusOnClose(),
+                fillControlMode: this.fillControlMode(),
+                maxWidth: this.maxWidth(),
+                disableScrollbar: this.disableScrollbar(),
+                resizable: this.resizable(),
+                applyOverlay: this.applyOverlay(),
+                scrollStrategy: this.scrollStrategy(),
+                appendTo: this.appendTo(),
+                additionalBodyClass: this.additionalBodyClass(),
+                bodyRole: this.bodyRole(),
+                bodyAriaLabel: this.bodyAriaLabel(),
+                bodyAriaLabelledBy: this.bodyAriaLabelledBy(),
+                bodyId: `${this.id()}-body`
+            });
+        });
+        // content without <fd-popover-body> renders inside a default body
+        effect(() => {
+            this.service.text.set(this.text());
+            this.service.template.set(this.projectedBody() ? null : this.bodyTemplate());
+        });
+        // trigger element
+        effect(() => {
+            const t = this.trigger();
+            const el = t ? (t instanceof ElementRef ? t.nativeElement : t) : this.origin()?.nativeElement;
+            if (el) this.service.initialise(el, { template: this.bodyTemplate(), vcr: this.vcr });
+        });
+        // isOpen model <-> service
+        let previous = false;
+        effect(() => {
+            const open = this.isOpen();
+            untracked(() => {
+                if (open && !previous) this.beforeOpen.emit();
+                previous = open;
+                if (open && !this.service.isOpen()) this.service.open();
+                if (!open && this.service.isOpen()) this.service.close();
+            });
+        });
+        effect(() => {
+            const open = this.service.isOpen();
+            untracked(() => {
+                if (open !== this.isOpen()) {
+                    if (open) this.beforeOpen.emit();
+                    previous = open;
+                    this.isOpen.set(open);
+                }
+            });
+        });
+        afterNextRender(() => {
+            const triggers = this.service.config().triggers;
+            if (triggers.some((t) => (typeof t === 'string' ? t : t.trigger) === 'click'))
+                this.control()?.makeTabbable();
+        });
+    }
+
+    open(): void {
+        this.service.open();
+    }
+
+    close(restoreFocus = true): void {
+        this.service.close(restoreFocus);
+    }
+
+    toggle(): void {
+        this.service.toggle();
+    }
+
+    setIgnoreTriggers(ignore: boolean): void {
+        this.service.setIgnoreTriggers(ignore);
+    }
+
+    refreshPosition(): void {
+        this.service.refreshPosition();
+    }
+
+    applyNewPosition(positions: ConnectedPosition[]): void {
+        this.service.applyNewPosition(positions);
+    }
+
+    /** Alt+ArrowDown opens the popover from the trigger. */
+    onTriggerKeydown(event: KeyboardEvent): void {
+        if (event.key === 'ArrowDown' && event.altKey && !this.service.config().disabled) {
+            event.preventDefault();
+            event.stopPropagation();
+            this.open();
+        }
+    }
+
+    protected onEscape(event: Event): void {
+        if (this.service.config().closeOnEscapeKey && this.service.isOpen()) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            this.close();
+        }
+    }
+
+    protected onControlKey(event: Event): void {
+        if (!this.preventSpaceKeyScroll()) return;
+        const active = document.activeElement as HTMLElement | null;
+        const control = this.control()?.elementRef.nativeElement.children[0];
+        if (control && control === active && !['INPUT', 'TEXTAREA', 'BUTTON', 'A'].includes(active.tagName)) {
+            event.preventDefault();
+            this.toggle();
+        }
+    }
+}
+
+/** Boolean input that stays undefined when not set, so a config object can supply the value. */
+function optionalBoolean(value: unknown): boolean | undefined {
+    return value === undefined ? undefined : booleanAttribute(value);
 }
 
 /**

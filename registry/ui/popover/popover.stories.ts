@@ -217,7 +217,7 @@ export const ExternalTrigger: Story = {
         template: `
             <button fdButton [fdPopoverTrigger]="popover" label="Popover Trigger"></button>
             <fd-popover #popover>
-                <fd-popover-body><div class="p-3">This popover is connected to the trigger element.</div></fd-popover-body>
+                <div class="p-3">This popover is connected to the trigger element.</div>
             </fd-popover>
         `
     })

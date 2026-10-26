@@ -20,6 +20,22 @@
 @import './extensions.css';
 @import '@angular/cdk/overlay-prebuilt.css';
 
+/* Motion used by components (SAP busy indicator dots). */
+@theme {
+    --animate-sap-busy: sap-busy-grow 1.6s infinite cubic-bezier(0.32, 0.06, 0.85, 1.11);
+
+    @keyframes sap-busy-grow {
+        0%,
+        50%,
+        100% {
+            transform: scale(0.5);
+        }
+        25% {
+            transform: scale(1);
+        }
+    }
+}
+
 /* compact: content density. Applies inside [data-density=compact|condensed] unless a nested
  * [data-density=cozy] resets it (condensed is a denser compact, used by tables and lists). */
 @custom-variant compact (&:where([data-density='compact'], [data-density='compact'] *, [data-density='condensed'], [data-density='condensed'] *):not(:where(:is([data-density='compact'], [data-density='condensed']) [data-density='cozy'], :is([data-density='compact'], [data-density='condensed']) [data-density='cozy'] *)));

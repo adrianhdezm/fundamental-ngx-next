@@ -81,7 +81,9 @@ import { Button } from '@/ui/button/button';
 `--sapButton_Hover_Background` → `bg-sap-button-hover-background`, `--sapContent_Shadow1` → `shadow-sap-content-shadow1`,
 `--sapElement_Height` → `h-sap-element-height`. Rule: drop `sap`, split camelCase and `_`, kebab-case, prefix `sap-`.
 Tokens without a Tailwind namespace use the shorthand `opacity-(--sapContent_DisabledOpacity)`. In arbitrary
-`calc()` values write operators as `_-_` so Tailwind keeps the `_` in `--sap*_*` names; `pnpm check:styles` catches it.
+values Tailwind may turn the `_` of `--sap*_*` names into spaces: write calc operators as `_-_`/`_+_`, multiply on the
+right (`calc(var(--sapX_Y)*2)`), and alias tokens into local variables (`[--bw:var(--sapList_BorderWidth)]`) before
+using them in multi-part values like `shadow-[0_var(--bw)_0_var(--c)]`. `pnpm check:styles` catches all of these.
 
 ## License
 

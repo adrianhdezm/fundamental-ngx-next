@@ -193,6 +193,98 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "busy-indicator",
+      "type": "registry:ui",
+      "title": "Busy Indicator",
+      "description": "Three-dot loading indicator in three sizes; wraps and blocks content while loading.",
+      "registryDependencies": [
+        "utils",
+        "theme"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/busy-indicator/busy-indicator.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "title": "Checkbox",
+      "description": "Checkbox with value states, read-only, display-only and tristate modes; a forms control.",
+      "registryDependencies": [
+        "utils",
+        "theme"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/checkbox/checkbox.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "radio",
+      "type": "registry:ui",
+      "title": "Radio Button",
+      "description": "Radio buttons with value states, read-only and wrapping labels; a forms control.",
+      "registryDependencies": [
+        "utils",
+        "theme"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/radio/radio.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "inline-help",
+      "type": "registry:ui",
+      "title": "Inline Help",
+      "description": "Hover and focus help popover for icons, fields and buttons.",
+      "registryDependencies": [
+        "utils",
+        "theme",
+        "popover"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/inline-help/inline-help.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "form",
+      "type": "registry:ui",
+      "title": "Form",
+      "description": "Form header, fieldset, legend, groups, items, labels with inline help, value state messages and input message groups.",
+      "registryDependencies": [
+        "utils",
+        "theme",
+        "icon",
+        "popover",
+        "inline-help"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/form/form.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ui/form/form-message.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ui/form/form-input-message-group.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

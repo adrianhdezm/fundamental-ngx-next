@@ -15,7 +15,8 @@
     "format:check": "prettier --check .",
     "check:styles": "node scripts/check-styles.mjs",
     "registry:check": "node scripts/build-registry.mjs --check",
-    "check": "pnpm typecheck && pnpm check:styles && pnpm registry:check"
+    "check": "pnpm typecheck && pnpm check:styles && pnpm check:cn && pnpm registry:check",
+    "check:cn": "node scripts/check-cn.mjs"
   },
   "dependencies": {
     "@angular/animations": "^22.2.3",
@@ -60,5 +61,6 @@
   },
   "engines": {
     "node": ">=22.22.3"
-  }
+  },
+  "type": "module"
 }
