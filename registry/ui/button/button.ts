@@ -161,7 +161,7 @@ let nextId = 0;
         '[attr.type]': 'isNativeButton ? type() : null',
         '[attr.disabled]': 'isNativeButton && disabledState() ? "" : null',
         '[attr.aria-disabled]': 'ariaDisabledValue()',
-        '[attr.tabindex]': '!isNativeButton && disabledState() ? -1 : null',
+        '[attr.tabindex]': '!isNativeButton && disabledState() ? -1 : (tabIndexValue() ?? null)',
         '[attr.aria-pressed]': 'toggledState() ? "true" : null',
         '[attr.aria-selected]': 'selectedState() ? "true" : null',
         '[attr.aria-label]': 'computedAriaLabel()',
@@ -249,6 +249,11 @@ export class Button implements OnInit {
     /** Ids of elements that describe the button. Replaces the generated descriptions. */
     readonly ariaDescribedBy = input<string | null | undefined>();
 
+    /** Tab index of the button, e.g. -1 to keep it out of the tab order. */
+    readonly tabIndexValue = input<number | null | undefined, unknown>(undefined, {
+        alias: 'tabindex',
+        transform: (v: unknown) => (v === null || v === undefined || v === '' ? undefined : Number(v))
+    });
     readonly userClass = input<ClassValue>('', { alias: 'class' });
 
     /** Internal state, writable by parents such as segmented buttons and toolbars. */

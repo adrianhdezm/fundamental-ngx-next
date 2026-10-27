@@ -64,7 +64,7 @@ export type FocusEscapeDirection = 'up' | 'down';
             [glyph]="glyph()"
             [glyphFont]="glyphFont()"
             [disabled]="isDisabled()"
-            [attr.tabindex]="tabIndex()"
+            [tabindex]="tabIndex()"
             [class]="buttonClass()"
         >
             <ng-content />

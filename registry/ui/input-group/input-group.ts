@@ -30,7 +30,7 @@ import { fieldBase, fieldStates, type FormState } from '@/ui/input/input';
 export type InputGroupPlacement = 'before' | 'after';
 
 /** Text colour and shadow of an addon button while the group has the focus, per value state. */
-const STATE_BUTTON_VARS: Record<FormState, string> = {
+export const STATE_BUTTON_VARS: Record<FormState, string> = {
     default: '',
     success:
         '[--igBtnFocusColor:var(--sapButton_Accept_Selected_TextColor)] [--igBtnShadow:var(--sapContent_Positive_Shadow)]',
@@ -41,8 +41,21 @@ const STATE_BUTTON_VARS: Record<FormState, string> = {
         '[--igBtnFocusColor:var(--sapButton_Selected_TextColor)] [--igBtnShadow:var(--sapContent_Informative_Shadow)]'
 };
 
+/**
+ * Gives transparent `fdButton`s inside an element the look of field buttons: no border, the field
+ * corner radius, a hover shadow and a selected icon colour while pressed.
+ */
+export const INPUT_GROUP_BUTTON_VARS = [
+    '[--sapButton_Lite_Background:transparent] [--sapButton_Lite_Hover_Background:transparent] [--sapButton_Lite_Active_Background:transparent]',
+    '[--sapButton_Lite_BorderColor:transparent] [--sapButton_Lite_Hover_BorderColor:transparent] [--sapButton_Lite_Active_BorderColor:transparent]',
+    '[--sapButton_Lite_TextColor:var(--sapField_TextColor)] [--sapButton_Lite_Hover_TextColor:var(--sapField_TextColor)]',
+    '[--sapButton_Active_TextColor:var(--igBtnFocusColor,var(--sapButton_Selected_TextColor))]',
+    '[--sapButton_BorderCornerRadius:var(--sapField_BorderCornerRadius)]',
+    '[&_button:hover:not(:disabled)]:shadow-(--igBtnShadow,var(--sapField_Hover_Shadow)) [&_button:active]:shadow-(--igBtnShadow,var(--sapField_Hover_Shadow))'
+].join(' ');
+
 /** Colour of the focus frame per value state. */
-const STATE_FOCUS_COLOR: Record<FormState, string> = {
+export const STATE_FOCUS_COLOR: Record<FormState, string> = {
     default: 'after:border-sap-field-active-border-color',
     success: 'after:border-sap-field-success-color',
     error: 'after:border-sap-field-invalid-color',
@@ -97,7 +110,7 @@ let nextId = 0;
                         [ariaLabel]="glyphAriaLabel() || (glyph() ? glyph() : null)"
                         [disabled]="disabledState()"
                         [class]="isExpanded() ? 'text-(--igBtnFocusColor,var(--sapButton_Selected_TextColor))' : ''"
-                        [attr.tabindex]="buttonFocusable() ? null : -1"
+                        [tabindex]="buttonFocusable() ? null : -1"
                         [attr.aria-hidden]="addonButtonAriaHidden() || null"
                         [attr.aria-haspopup]="isControl() || null"
                         [attr.aria-expanded]="isControl() ? isExpanded() : null"
@@ -322,13 +335,7 @@ export class InputGroupAddon {
             'font-sap-font-family text-sap-font-large-size text-sap-content-non-interactive-icon-color',
             this.button() && [
                 'overflow-visible p-0',
-                // field button look: no border, the field corner radius, a hover shadow and a selected icon colour while pressed
-                '[--sapButton_Lite_Background:transparent] [--sapButton_Lite_Hover_Background:transparent] [--sapButton_Lite_Active_Background:transparent]',
-                '[--sapButton_Lite_BorderColor:transparent] [--sapButton_Lite_Hover_BorderColor:transparent] [--sapButton_Lite_Active_BorderColor:transparent]',
-                '[--sapButton_Lite_TextColor:var(--sapField_TextColor)] [--sapButton_Lite_Hover_TextColor:var(--sapField_TextColor)]',
-                '[--sapButton_Active_TextColor:var(--igBtnFocusColor,var(--sapButton_Selected_TextColor))]',
-                '[--sapButton_BorderCornerRadius:var(--sapField_BorderCornerRadius)]',
-                '[&_button:hover:not(:disabled)]:shadow-(--igBtnShadow,var(--sapField_Hover_Shadow)) [&_button:active]:shadow-(--igBtnShadow,var(--sapField_Hover_Shadow))',
+                INPUT_GROUP_BUTTON_VARS,
                 'group-has-[:is(input,textarea):focus]/ig:[--sapButton_Lite_TextColor:var(--igBtnFocusColor,var(--sapField_TextColor))]',
                 'group-has-[:is(input,textarea):focus]/ig:[&_button]:shadow-(--igBtnShadow,none)'
             ],

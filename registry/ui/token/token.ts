@@ -264,7 +264,7 @@ export class TokenizerInput {
                     fdButton
                     variant="transparent"
                     type="button"
-                    [attr.tabindex]="buttonFocusable() ? null : -1"
+                    [tabindex]="buttonFocusable() ? null : -1"
                     [glyph]="glyph()"
                     [glyphFont]="glyphFont()"
                     [ariaLabel]="glyphAriaLabel()"

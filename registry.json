@@ -1187,6 +1187,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "step-input",
+      "type": "registry:ui",
+      "title": "Step Input",
+      "description": "A number field with repeating step buttons, locale and currency formatting, units, limits, keyboard and wheel stepping and value states.",
+      "dependencies": ["@angular/cdk", "@angular/forms"],
+      "registryDependencies": ["utils", "theme", "button", "input", "input-group"],
+      "files": [
+        {
+          "path": "registry/ui/step-input/step-input.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

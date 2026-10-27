@@ -216,7 +216,7 @@ let nextId = 0;
                             glyph="decline"
                             [ariaLabel]="clearButtonTitle()"
                             [attr.title]="clearButtonTitle()"
-                            [attr.tabindex]="clearButtonFocusable() ? null : -1"
+                            [tabindex]="clearButtonFocusable() ? null : -1"
                             [disabled]="disabledState()"
                             (click)="clear(field)"
                         ></button>
@@ -231,7 +231,7 @@ let nextId = 0;
                             [glyphFont]="isSearch() ? 'SAP-icons' : glyphFont()"
                             [ariaLabel]="glyphAriaLabel()"
                             [attr.title]="title() || glyphAriaLabel()"
-                            [attr.tabindex]="buttonFocusable() ? null : -1"
+                            [tabindex]="buttonFocusable() ? null : -1"
                             [attr.aria-haspopup]="mobile() ? 'dialog' : 'listbox'"
                             [attr.aria-expanded]="isOpen()"
                             [disabled]="disabledState()"
