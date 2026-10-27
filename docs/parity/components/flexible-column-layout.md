@@ -1,15 +1,15 @@
 ## flexible-column-layout
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/flexible-column-layout) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/flexible-column-layout)
-Registry: `registry/ui/flexible-column-layout/` — 3 stories, 9 tests.
+Registry: `registry/ui/flexible-column-layout/` — 4 stories, 9 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                                 | Registry story            | Status     | Notes                                                                                                                                                                                          |
-| ------------------------------------------------ | ------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Flexible Column Layout                           | `Default`, `ThreeColumns` | ✅ covered | Layout switcher over all 10 layouts, resizable box shows the responsive collapse; transparent background in `ThreeColumns`.                                                                    |
-| Flexible Column Layout With Dynamic Page         | —                         | ❌ missing | Upstream puts a `fd-dynamic-page` (collapsible/pinnable subheader, fullscreen/close actions) in the mid column inside a full-screen overlay. Registry has `dynamic-page`, so this is portable. |
-| Flexible Column Layout with custom layout config | `CustomConfig`            | ✅ covered | Uses `provideFlexibleColumnLayoutConfig` (50/50 for TwoColumnsMidExpanded).                                                                                                                    |
+| Upstream example                                 | Registry story            | Status     | Notes                                                                                                                                                                                                       |
+| ------------------------------------------------ | ------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Flexible Column Layout                           | `Default`, `ThreeColumns` | ✅ covered | Layout switcher over all 10 layouts, resizable box shows the responsive collapse; transparent background in `ThreeColumns`.                                                                                 |
+| Flexible Column Layout With Dynamic Page         | `WithDynamicPage`         | ✅ covered | Mid column hosts an `fd-dynamic-page` with a collapsible, pinnable subheader and full screen (OneColumnMidFullScreen) / close layout actions; rendered in the story frame instead of a full-screen overlay. |
+| Flexible Column Layout with custom layout config | `CustomConfig`            | ✅ covered | Uses `provideFlexibleColumnLayoutConfig` (50/50 for TwoColumnsMidExpanded).                                                                                                                                 |
 
 ### Tests vs. upstream specs
 
@@ -29,6 +29,5 @@ Registry-only coverage: keyboard (Enter/Space) on separator buttons, RTL arrow m
 
 ### Gaps to fill
 
-- **Stories:** `WithDynamicPage` — mid column hosts a `fd-dynamic-page` with collapsible/pinnable subheader and fullscreen (OneColumnMidFullScreen) / close actions in the header.
 - **Tests:** "the start separator switches ThreeColumnsMidExpanded to ThreeColumnsEndMinimized"; "expandTitleStartBtn and collapseTitleStartBtn label the start separator button".
 - **Effort:** S, two small spec additions and one composed story from existing components.
