@@ -31,6 +31,7 @@ import { cn, type ClassValue } from '@/lib/utils';
 import { Breadcrumb } from '@/ui/breadcrumb/breadcrumb';
 import { Button } from '@/ui/button/button';
 import { FD_TABS, TabList } from '@/ui/tabs/tabs';
+import { FD_TOOLBAR_FORCE_OVERFLOW } from '@/ui/toolbar/toolbar';
 
 export type DynamicPageBackgroundType = 'solid' | 'list' | 'transparent';
 export type DynamicPageResponsiveSize = 'small' | 'medium' | 'large' | 'extra-large';
@@ -87,11 +88,20 @@ export class DynamicPageBreadcrumb {
     readonly breadcrumb = contentChild(Breadcrumb, { descendants: true });
 }
 
-/** Global (business) actions next to the title. */
+/** Global (business) actions next to the title; an `fd-toolbar` inside moves all its items into the overflow on small pages. */
 @Component({
     selector: 'fd-dynamic-page-global-actions',
     template: '<ng-content />',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [
+        {
+            provide: FD_TOOLBAR_FORCE_OVERFLOW,
+            useFactory: () => {
+                const page = inject(forwardPage(), { optional: true });
+                return computed(() => page?.size() === 'small');
+            }
+        }
+    ],
     host: { role: 'toolbar', '[attr.aria-label]': 'ariaLabel()', '[class]': 'computedClass()' }
 })
 export class DynamicPageGlobalActions {

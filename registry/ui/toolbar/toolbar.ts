@@ -12,6 +12,7 @@ import {
     Directive,
     ElementRef,
     InjectionToken,
+    type Signal,
     afterNextRender,
     booleanAttribute,
     computed,
@@ -102,6 +103,9 @@ function sortByPriorityAndGroup<T extends ToolbarOverflowItem>(items: readonly T
 }
 
 export const FD_TOOLBAR_ITEM = new InjectionToken<ToolbarItem>('FdToolbarItem');
+
+/** Provided by a container (e.g. dynamic page global actions) to move all items of its toolbars into the overflow. */
+export const FD_TOOLBAR_FORCE_OVERFLOW = new InjectionToken<Signal<boolean>>('FdToolbarForceOverflow');
 
 /** A toolbar child that moves into the overflow popover when it does not fit. */
 @Directive({
@@ -287,6 +291,7 @@ export class Toolbar {
     private readonly panel = viewChild.required<ElementRef<HTMLElement>>('panel');
     private readonly slot = viewChild<ElementRef<HTMLElement>>('slot');
     private readonly checker = inject(InteractivityChecker);
+    private readonly containerForce = inject(FD_TOOLBAR_FORCE_OVERFLOW, { optional: true });
 
     /** Equal when the same items overflow in the same order, so a re-measure moves nothing. */
     readonly overflown = signal<ToolbarItem[]>([], {
@@ -317,8 +322,9 @@ export class Toolbar {
         effect(() => {
             this.measure();
             const items = this.items();
-            const should = this.shouldOverflow();
-            const force = this.forceOverflow();
+            const container = this.containerForce?.() ?? false;
+            const should = this.shouldOverflow() || container;
+            const force = this.forceOverflow() || container;
             untracked(() =>
                 this.overflown.set(
                     should ? toolbarOverflow(items, this.availableWidth(), this.titleWidth(), force) : []

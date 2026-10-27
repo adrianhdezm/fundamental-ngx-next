@@ -3,12 +3,15 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { Breadcrumb, BreadcrumbItem } from '@/ui/breadcrumb/breadcrumb';
+import { Button } from '@/ui/button/button';
 import { TabList, TabPanel } from '@/ui/tabs/tabs';
+import { Toolbar, ToolbarItem } from '@/ui/toolbar/toolbar';
 import {
     DynamicPage,
     DynamicPageBreadcrumb,
     DynamicPageContent,
     DynamicPageFooter,
+    DynamicPageGlobalActions,
     DynamicPageHeader,
     DynamicPageSubheader
 } from './dynamic-page';
@@ -69,6 +72,50 @@ class Host {
     readonly noSnap = signal(false);
 }
 
+@Component({
+    imports: [
+        DynamicPage,
+        DynamicPageHeader,
+        DynamicPageGlobalActions,
+        DynamicPageContent,
+        Toolbar,
+        ToolbarItem,
+        Button
+    ],
+    template: `
+        <div style="height: 20rem" [style.width.px]="width()">
+            <fd-dynamic-page ariaLabel="Page" [expandContent]="false">
+                <fd-dynamic-page-header title="Product">
+                    <fd-dynamic-page-global-actions>
+                        <fd-toolbar fdType="transparent" clearBorder>
+                            <button
+                                fdToolbarItem
+                                fdButton
+                                variant="positive"
+                                label="Accept"
+                                data-label="Accept"
+                            ></button>
+                            <button
+                                fdToolbarItem
+                                fdButton
+                                variant="negative"
+                                label="Reject"
+                                data-label="Reject"
+                            ></button>
+                        </fd-toolbar>
+                    </fd-dynamic-page-global-actions>
+                </fd-dynamic-page-header>
+                <fd-dynamic-page-content>Content</fd-dynamic-page-content>
+            </fd-dynamic-page>
+        </div>
+    `
+})
+class OverflowHost {
+    readonly width = signal(1000);
+}
+
+const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+
 async function setup(config: { tabs?: boolean; stacked?: boolean; breadcrumb?: boolean; noSnap?: boolean } = {}) {
     const fixture = TestBed.createComponent(Host);
     const host = fixture.componentInstance;
@@ -92,6 +139,34 @@ async function scroll(fixture: { whenStable(): Promise<unknown> }, element: HTML
 }
 
 describe('DynamicPage', () => {
+    it('moves the global actions of a toolbar into its overflow when the page is small', async () => {
+        const fixture = TestBed.createComponent(OverflowHost);
+        document.body.appendChild(fixture.nativeElement);
+        const stable = async () => {
+            await fixture.whenStable();
+            await frame();
+            await frame();
+            await fixture.whenStable();
+        };
+        await stable();
+        const root = fixture.nativeElement as HTMLElement;
+        const toolbar = root.querySelector<HTMLElement>('fd-toolbar')!;
+        const more = () => toolbar.querySelector('button[aria-label="More"]');
+        const inline = () => [...toolbar.querySelectorAll(':scope > button')].map((b) => b.getAttribute('data-label'));
+        expect(inline()).toEqual(['Accept', 'Reject']);
+        expect(more()).toBeNull();
+
+        fixture.componentInstance.width.set(500);
+        await stable();
+        expect(inline()).toEqual([]);
+        expect(more()).not.toBeNull();
+
+        fixture.componentInstance.width.set(1000);
+        await stable();
+        expect(inline()).toEqual(['Accept', 'Reject']);
+        expect(more()).toBeNull();
+    });
+
     it('toggles the header by clicking the title area but not its links', async () => {
         const { fixture, root, toggle, subheader } = await setup({ breadcrumb: false });
         expect(toggle.getAttribute('aria-expanded')).toBe('true');
