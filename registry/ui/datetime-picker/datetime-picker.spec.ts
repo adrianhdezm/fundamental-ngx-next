@@ -1,9 +1,9 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import { FdDate } from '@/lib/datetime';
+import { DatetimeAdapter, FdDate } from '@/lib/datetime';
 import { DatetimePicker } from './datetime-picker';
 
 @Component({
@@ -353,5 +353,156 @@ describe('DatetimePicker dateChange', () => {
         expect(changes()).toEqual([new FdDate(2024, 3, 20, 14, 30, 0).toString()]);
         expect(host.control.value!.day).toBe(20);
         expect(document.querySelector('#dt-calendar')).not.toBeNull();
+    });
+});
+
+const SECONDS_FORMAT = {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+};
+
+@Component({
+    imports: [DatetimePicker],
+    template: `
+        <fd-datetime-picker id="dis" disabled [date]="date" />
+        <fd-datetime-picker id="sec" [date]="date" [customDateTimeFormat]="secondsFormat" />
+        <fd-datetime-picker id="cus" [(date)]="custom" [customDateTimeFormat]="secondsFormat" />
+        <fd-datetime-picker id="leg" [date]="date" [specialDaysRules]="rules" showCalendarLegend legendCol />
+        <fd-datetime-picker id="msg" [date]="date" message="Times are local" messageType="information" />
+    `
+})
+class ModesHost {
+    readonly date = new FdDate(2024, 3, 9, 14, 30, 15);
+    readonly custom = signal<FdDate | null | undefined>(new FdDate(2024, 3, 9, 14, 30, 0));
+    readonly secondsFormat = SECONDS_FORMAT;
+    readonly rules = [
+        { specialDayNumber: 5, legendText: 'Team meeting', rule: (d: FdDate) => d.day === 13 },
+        { specialDayNumber: 6, legendText: 'Release', appointment: true, rule: (d: FdDate) => d.day === 15 }
+    ];
+}
+
+describe('DatetimePicker modes', () => {
+    async function setupModes() {
+        const fixture = TestBed.createComponent(ModesHost);
+        document.body.appendChild(fixture.nativeElement);
+        const stable = async () => {
+            await fixture.whenStable();
+            await new Promise((resolve) => requestAnimationFrame(resolve));
+            await fixture.whenStable();
+        };
+        await stable();
+        const root = fixture.nativeElement as HTMLElement;
+        const picker = (id: string) => root.querySelector<HTMLElement>(`fd-datetime-picker#${id}`)!;
+        const button = (id: string) => picker(id).querySelector<HTMLButtonElement>('button[aria-label="Open picker"]')!;
+        const open = async (id: string) => {
+            await userEvent.click(button(id));
+            await stable();
+        };
+        return {
+            fixture,
+            host: fixture.componentInstance,
+            stable,
+            open,
+            button,
+            input: (id: string) => picker(id).querySelector<HTMLInputElement>('input')!
+        };
+    }
+
+    it('does not open when disabled', async () => {
+        const { input, button, stable } = await setupModes();
+        expect(button('dis').disabled).toBe(true);
+        button('dis').click();
+        input('dis').dispatchEvent(new KeyboardEvent('keydown', { key: 'F4', bubbles: true }));
+        await stable();
+        expect(document.querySelector('#dis-calendar')).toBeNull();
+        expect(button('dis').getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('shows 24-hour columns with seconds for a matching format', async () => {
+        const { input, open } = await setupModes();
+        expect(input('sec').value).toBe('3/9/2024, 14:30:15');
+        await open('sec');
+        expect(document.querySelector('#sec-time-hours')!.getAttribute('aria-valuetext')).toBe('14');
+        expect(document.querySelector('#sec-time-seconds')!.getAttribute('aria-valuetext')).toBe('15');
+        expect(document.querySelector('#sec-time-period')).toBeNull();
+    });
+
+    it('parses typed text with customDateTimeFormat', async () => {
+        const { host, input, stable } = await setupModes();
+        const adapter = TestBed.inject(DatetimeAdapter);
+        const parse = vi.spyOn(adapter, 'parse');
+        expect(input('cus').value).toBe('3/9/2024, 14:30:00');
+        await userEvent.clear(input('cus'));
+        await userEvent.type(input('cus'), '3/12/2024, 16:45:30');
+        await userEvent.tab();
+        await stable();
+        // the format of the picker, not the provided one, reads the text
+        expect(parse).toHaveBeenLastCalledWith('3/12/2024, 16:45:30', SECONDS_FORMAT);
+        expect(host.custom()!.toString()).toBe(new FdDate(2024, 3, 12, 16, 45, 30).toString());
+        expect(input('cus').value).toBe('3/12/2024, 16:45:30');
+        parse.mockRestore();
+    });
+
+    it('renders the legend inside the calendar', async () => {
+        const { open } = await setupModes();
+        await open('leg');
+        const legend = document.querySelector<HTMLElement>('#leg-calendar fd-calendar-legend')!;
+        expect(legend).not.toBeNull();
+        expect(getComputedStyle(legend).columnWidth).toBe('auto');
+        const items = [...legend.querySelectorAll('fd-calendar-legend-item')].map((i) => i.textContent!.trim());
+        expect(items.slice(-2)).toEqual(['Team meeting', 'Release']);
+        expect(document.querySelectorAll('fd-calendar-legend')).toHaveLength(1);
+    });
+
+    it('hides the message while open and shows it again on close', async () => {
+        const { input, open, stable } = await setupModes();
+        /** The message shown next to the field, not the one inside the picker. */
+        const fieldMessage = () =>
+            [...document.querySelectorAll('[aria-label="Field validation messages"] fd-form-message')].find((m) =>
+                m.textContent!.includes('Times are local')
+            );
+        input('msg').focus();
+        await stable();
+        expect(fieldMessage()).toBeDefined();
+        await open('msg');
+        expect(fieldMessage()).toBeUndefined();
+        // the picker shows it inside instead
+        expect(document.querySelector('#msg-calendar')!.closest('[role="dialog"]')!.textContent).toContain(
+            'Times are local'
+        );
+        await userEvent.keyboard('{Escape}');
+        await stable();
+        expect(document.activeElement).toBe(input('msg'));
+        expect(fieldMessage()).toBeDefined();
+    });
+});
+
+describe('DatetimePicker reopening', () => {
+    it('reopens on the month of the submitted date', async () => {
+        const { host, button, stable } = await setup();
+        await userEvent.click(button);
+        await stable();
+        const header = () =>
+            [...document.querySelectorAll<HTMLButtonElement>('#dt-calendar > div:first-child button')]
+                .map((b) => b.textContent!.trim())
+                .filter(Boolean);
+        expect(header()).toEqual(['March', '2024']);
+        await userEvent.click(document.querySelector<HTMLButtonElement>('#dt-calendar button[aria-label^="Next"]')!);
+        await userEvent.click(document.querySelector<HTMLButtonElement>('#dt-calendar button[aria-label^="Next"]')!);
+        await stable();
+        expect(header()).toEqual(['May', '2024']);
+        await userEvent.click(day(15));
+        await userEvent.click(buttonNamed('OK'));
+        await stable();
+        expect(host.date()!.toDateString()).toBe('2024-05-15');
+        await userEvent.click(button);
+        await stable();
+        expect(header()).toEqual(['May', '2024']);
+        expect((document.activeElement as HTMLElement).getAttribute('data-fd-calendar-date-day')).toBe('15');
     });
 });
