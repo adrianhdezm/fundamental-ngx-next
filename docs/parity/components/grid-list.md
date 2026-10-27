@@ -1,23 +1,23 @@
 ## grid-list
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/grid-list) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/grid-list)
-Registry: `registry/ui/grid-list/` — 5 stories, 6 tests.
+Registry: `registry/ui/grid-list/` — 8 stories, 6 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example               | Registry story   | Status     | Notes                                                                                                                                                                         |
-| ------------------------------ | ---------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Modes                          | `SelectionModes` | ✅ covered | Mode switcher (none, delete, single left/right, multi) and all item types.                                                                                                    |
-| Group                          | `States`         | 🟡 partial | Group headers only appear as state separators in `States`; no grouped list with a "Grouped by" filter bar as upstream.                                                        |
-| States                         | `States`         | ✅ covered | unread/error/locked/draft, custom footer bar and toolbar text.                                                                                                                |
-| Status                         | `Statuses`       | ✅ covered |                                                                                                                                                                               |
-| More button                    | `More`           | ✅ covered |                                                                                                                                                                               |
-| Footer                         | `More`           | ✅ covered | Combined with filter bar and more button.                                                                                                                                     |
-| Drag and Drop                  | —                | ❌ missing | Upstream uses `fd-dnd-list`/`fd-dnd-item` from core utils; the registry has no DnD helper, so this would need CDK drag-drop composed in the story (or a decision to drop it). |
-| Layout                         | `Layout`         | ✅ covered | layoutPattern, layoutItemPattern, fixed width.                                                                                                                                |
-| Focusing Item Programmatically | —                | ❌ missing | `GridListItem.focus()` exists but no story uses it ("Focus first/last" buttons).                                                                                              |
-| Heading Level                  | —                | ❌ missing | `headingLevel` on title bar and group header exists, never shown.                                                                                                             |
-| Auto Height                    | `Layout`         | ✅ covered | `autoHeight` item next to a row-height item.                                                                                                                                  |
+| Upstream example               | Registry story          | Status     | Notes                                                                                                                                                                                                                             |
+| ------------------------------ | ----------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Modes                          | `SelectionModes`        | ✅ covered | Mode switcher (none, delete, single left/right, multi) and all item types.                                                                                                                                                        |
+| Group                          | `Group`                 | ✅ covered | Two company groups with group headers and a "Grouped by" filter bar that removes the grouping.                                                                                                                                    |
+| States                         | `States`                | ✅ covered | unread/error/locked/draft, custom footer bar and toolbar text.                                                                                                                                                                    |
+| Status                         | `Statuses`              | ✅ covered |                                                                                                                                                                                                                                   |
+| More button                    | `More`                  | ✅ covered |                                                                                                                                                                                                                                   |
+| Footer                         | `More`                  | ✅ covered | Combined with filter bar and more button.                                                                                                                                                                                         |
+| Drag and Drop                  | —                       | ❌ missing | Blocked on drag and drop (README "Not yet ported"). Upstream uses `fd-dnd-list`/`fd-dnd-item` from core utils; the registry has no DnD helper, so this would need CDK drag-drop composed in the story (or a decision to drop it). |
+| Layout                         | `Layout`                | ✅ covered | layoutPattern, layoutItemPattern, fixed width.                                                                                                                                                                                    |
+| Focusing Item Programmatically | `FocusProgrammatically` | ✅ covered | "Focus first"/"Focus last" title bar buttons call `item.focus()`.                                                                                                                                                                 |
+| Heading Level                  | `HeadingLevel`          | ✅ covered | Title bar `headingLevel=3`, group header 4, item titles 5.                                                                                                                                                                        |
+| Auto Height                    | `Layout`                | ✅ covered | `autoHeight` item next to a row-height item.                                                                                                                                                                                      |
 
 ### Tests vs. upstream specs
 
@@ -39,6 +39,6 @@ Registry-only coverage: grid vs. list roles and aria-selected, roving tabindex, 
 
 ### Gaps to fill
 
-- **Stories:** `Group` — two company groups with group headers and a "Grouped by" filter bar; `FocusProgrammatically` — title bar buttons "Focus first"/"Focus last" calling `item.focus()`; `HeadingLevel` — title bar with `headingLevel=3`; `DragAndDrop` — only if CDK drag-drop composition is wanted, otherwise record as dropped.
+- **Stories:** done (`Group`, `FocusProgrammatically`, `HeadingLevel`). `DragAndDrop` stays blocked on drag and drop.
 - **Tests:** "the title bar is a heading with aria-level from headingLevel (default 2) and contains the projected content"; "group header uses its headingLevel"; "state items show their toolbar and statuses expose a status label"; "detail, draft and locked buttons emit their outputs"; "navigation items show the counter and indicator and emit navigate on click"; "delete mode shows a delete button per item that emits delete"; "single select shows a radio per item and selects on click"; "Shift+Arrow and Shift+End extend the selection in multi select".
 - **Effort:** M, eight focused tests on an existing host plus three simple stories.
