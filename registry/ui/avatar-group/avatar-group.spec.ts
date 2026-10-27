@@ -429,4 +429,12 @@ describe('AvatarGroup', () => {
         expect(announce).toHaveBeenLastCalledWith('5 of 5');
         announce.mockRestore();
     });
+
+    it('a maxVisibleItems larger than what fits still leaves room for the overflow button', async () => {
+        const { group, visible, overflow } = await setup((h) => h.max.set(10));
+        const shown = visible().length;
+        expect(shown).toBeLessThan(10);
+        expect(overflow()!.textContent!.trim()).toBe(`+${NAMES.length - shown}`);
+        expect(overflow()!.getBoundingClientRect().right).toBeLessThanOrEqual(group.getBoundingClientRect().right);
+    });
 });

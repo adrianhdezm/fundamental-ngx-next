@@ -359,17 +359,16 @@ export class AvatarGroup {
             visible.push(item);
         }
         let hidden = regular.slice(visible.length);
-        // make room for the overflow button
+        // make room for the overflow button: in the slots of maxVisibleItems and in the width
         if (hidden.length && visible.length) {
             const overflow = this.widths.get('overflow') ?? this.averageWidth();
             while (
                 visible.length &&
-                (max != null ? visible.length + forced.length >= max : used + overflow > available)
+                ((max != null && visible.length + forced.length >= max) || used + overflow > available)
             ) {
                 const moved = visible.pop()!;
                 used -= width(moved);
                 hidden = [moved, ...hidden];
-                if (max != null) break;
             }
         }
         return { visible: [...forced, ...visible], hidden };
