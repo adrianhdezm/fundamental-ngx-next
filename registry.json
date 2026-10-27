@@ -987,6 +987,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "feed-input",
+      "type": "registry:ui",
+      "title": "Feed Input",
+      "description": "Growing text area with the user's avatar and a send button enabled once there is text.",
+      "registryDependencies": ["utils", "theme", "button", "icon", "input"],
+      "files": [
+        {
+          "path": "registry/ui/feed-input/feed-input.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
