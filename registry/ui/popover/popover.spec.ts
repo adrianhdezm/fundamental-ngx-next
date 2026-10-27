@@ -1,12 +1,17 @@
-import { Component, signal } from '@angular/core';
+import type { ConnectedPosition } from '@angular/cdk/overlay';
+import { Component, ElementRef, TemplateRef, inject, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
+import { Dialog, DialogBody, DialogService } from '@/ui/dialog/dialog';
 import {
     Popover,
     PopoverBody,
+    PopoverBodyFooter,
+    PopoverBodyHeader,
     PopoverControl,
     PopoverTrigger,
+    type PopoverConfig,
     arrowFor,
     getCdkPlacement,
     normalizeTriggers,
@@ -80,6 +85,97 @@ class Host {
 })
 class TriggerHost {}
 
+/** Body options, configuration and lifecycle. */
+@Component({
+    imports: [Popover, PopoverBody, PopoverControl, PopoverBodyHeader, PopoverBodyFooter, PopoverTrigger],
+    template: `
+        <button data-testid="outside">Outside</button>
+        <div data-testid="plain" style="height: 40px">Plain text</div>
+        <div [style.padding-top]="offsetTop()" style="padding-inline-start: 300px">
+            @if (show()) {
+                <fd-popover
+                    #pop="fdPopover"
+                    id="opt"
+                    [(isOpen)]="open"
+                    [config]="config()"
+                    [placement]="placement()"
+                    [cdkPositions]="cdkPositions()"
+                    [triggers]="triggers()"
+                    [closeOnOutsideClick]="outsideClick()"
+                    [closeOnEscapeKey]="escapeKey()"
+                    [applyOverlay]="applyOverlay()"
+                    [resizable]="resizable()"
+                    [disableScrollbar]="disableScrollbar()"
+                    [additionalBodyClass]="bodyClass()"
+                    [bodyRole]="bodyRole()"
+                    [bodyAriaLabelledBy]="labelledBy()"
+                    [focusAutoCapture]="autoCapture()"
+                    [trigger]="externalTrigger()"
+                >
+                    <fd-popover-control>
+                        <div data-testid="control" style="width: 80px; height: 36px">Control</div>
+                    </fd-popover-control>
+                    <fd-popover-body [minWidth]="minWidth()" [minHeight]="minHeight()" [maxHeight]="maxHeight()">
+                        <div fdPopoverBodyHeader data-testid="header" style="height: 40px">Header</div>
+                        <div data-testid="content" style="padding: 8px" [style.height]="contentHeight()">
+                            <span id="opt-title">Details</span>
+                            <button data-testid="inside">Inside</button>
+                        </div>
+                        <div fdPopoverBodyFooter data-testid="footer" style="height: 40px">Footer</div>
+                    </fd-popover-body>
+                </fd-popover>
+            }
+        </div>
+        <button data-testid="other-trigger">Other trigger</button>
+    `
+})
+class OptionsHost {
+    readonly pop = viewChild<Popover>('pop');
+    readonly show = signal(true);
+    readonly open = signal(false);
+    readonly config = signal<PopoverConfig>({});
+    readonly placement = signal<Placement | undefined>(undefined);
+    readonly cdkPositions = signal<ConnectedPosition[] | undefined>(undefined);
+    readonly triggers = signal<string[] | undefined>(undefined);
+    readonly outsideClick = signal<boolean | undefined>(undefined);
+    readonly escapeKey = signal<boolean | undefined>(undefined);
+    readonly applyOverlay = signal<boolean | undefined>(undefined);
+    readonly resizable = signal<boolean | undefined>(undefined);
+    readonly disableScrollbar = signal<boolean | undefined>(undefined);
+    readonly bodyClass = signal<string | undefined>(undefined);
+    readonly bodyRole = signal<string | null | undefined>(undefined);
+    readonly labelledBy = signal<string | undefined>(undefined);
+    readonly autoCapture = signal<boolean | undefined>(undefined);
+    readonly externalTrigger = signal<HTMLElement | null>(null);
+    readonly minWidth = signal<string | undefined>(undefined);
+    readonly minHeight = signal<string | undefined>(undefined);
+    readonly maxHeight = signal<string | undefined>(undefined);
+    readonly contentHeight = signal('auto');
+    readonly offsetTop = signal('100px');
+}
+
+/** A popover inside a dialog. */
+@Component({
+    imports: [Popover, PopoverBody, PopoverControl, Dialog, DialogBody],
+    providers: [DialogService],
+    template: `
+        <ng-template #tpl>
+            <fd-dialog>
+                <fd-dialog-body>
+                    <fd-popover bodyAriaLabel="Details">
+                        <fd-popover-control><button data-testid="dialog-trigger">Open</button></fd-popover-control>
+                        <fd-popover-body><button data-testid="dialog-inside">Inside</button></fd-popover-body>
+                    </fd-popover>
+                </fd-dialog-body>
+            </fd-dialog>
+        </ng-template>
+    `
+})
+class DialogHost {
+    readonly dialogs = inject(DialogService);
+    readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
+}
+
 type Config = Partial<{
     [K in keyof Host as Host[K] extends { set: (v: never) => void } ? K : never]: Host[K] extends {
         set: (v: infer V) => void;
@@ -117,6 +213,32 @@ async function setup(config: Config = {}) {
         body: () => document.querySelector<HTMLElement>('.cdk-overlay-pane fd-popover-body'),
         surface: () =>
             document.querySelector<HTMLElement>('.cdk-overlay-pane fd-popover-body > div:not(.cdk-focus-trap-anchor)')!
+    };
+}
+
+async function setupOptions(config: Partial<Record<keyof OptionsHost, unknown>> = {}) {
+    const fixture = TestBed.createComponent(OptionsHost);
+    const host = fixture.componentInstance;
+    for (const [key, value] of Object.entries(config)) {
+        (host[key as keyof OptionsHost] as unknown as { set: (v: unknown) => void }).set(value);
+    }
+    document.body.appendChild(fixture.nativeElement);
+    const stable = async () => {
+        await fixture.whenStable();
+        await frame();
+        await fixture.whenStable();
+        await frame();
+    };
+    await stable();
+    const el = (id: string) => document.querySelector<HTMLElement>(`[data-testid="${id}"]`)!;
+    return {
+        fixture,
+        host,
+        stable,
+        el,
+        control: () => el('control'),
+        body: () => document.querySelector<HTMLElement>('.cdk-overlay-pane fd-popover-body'),
+        surface: () => document.querySelector<HTMLElement>('#opt-body')!
     };
 }
 
@@ -507,6 +629,34 @@ describe('Popover', () => {
             await fixture.whenStable();
             expect(trigger.getAttribute('aria-expanded')).toBe('false');
             expect(document.querySelector('.cdk-overlay-pane fd-popover-body')).toBeNull();
+        });
+    });
+
+    describe('configuration and lifecycle', () => {
+        it('config input sets defaults that inputs override', async () => {
+            const { fixture, host, stable, el, control, body, surface } = await setupOptions({
+                config: { closeOnOutsideClick: false, bodyRole: 'region', additionalBodyClass: 'from-config' }
+            });
+            await userEvent.click(control());
+            await stable();
+            expect(surface().getAttribute('role')).toBe('region');
+            expect(surface().classList).toContain('from-config');
+            await userEvent.click(el('outside'));
+            await stable();
+            expect(body()).not.toBeNull();
+            await userEvent.keyboard('{Escape}');
+            await stable();
+
+            // an input wins over the config object
+            host.outsideClick.set(true);
+            host.bodyRole.set('menu');
+            await fixture.whenStable();
+            await userEvent.click(control());
+            await stable();
+            expect(surface().getAttribute('role')).toBe('menu');
+            await userEvent.click(el('outside'));
+            await stable();
+            expect(body()).toBeNull();
         });
     });
 });

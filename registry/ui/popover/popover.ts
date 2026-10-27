@@ -890,10 +890,9 @@ export class Popover {
     );
 
     constructor() {
-        // inputs and config -> service
+        // inputs and config -> service; an input left unset keeps the value of the config object
         effect(() => {
-            this.service.refreshConfiguration({
-                ...this.config(),
+            const inputs: PopoverConfig = {
                 placement: this.placement(),
                 cdkPositions: this.cdkPositions(),
                 fixedPosition: this.fixedPosition(),
@@ -918,7 +917,9 @@ export class Popover {
                 bodyAriaLabel: this.bodyAriaLabel(),
                 bodyAriaLabelledBy: this.bodyAriaLabelledBy(),
                 bodyId: `${this.id()}-body`
-            });
+            };
+            const set = Object.fromEntries(Object.entries(inputs).filter(([, v]) => v !== undefined));
+            this.service.refreshConfiguration({ ...this.config(), ...set });
         });
         // content without <fd-popover-body> renders inside a default body
         effect(() => {
