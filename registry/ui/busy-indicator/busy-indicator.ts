@@ -45,7 +45,7 @@ const DOT =
     host: {
         '[class]': 'computedClass()',
         '[attr.role]': "loading() ? 'progressbar' : 'presentation'",
-        '[attr.tabindex]': 'loading() ? 0 : -1',
+        '[attr.tabindex]': 'loading() ? (tabIndexValue() === undefined ? 0 : tabIndexValue()) : -1',
         '[attr.aria-busy]': 'loading() || null',
         '[attr.aria-live]': 'loading() ? ariaLive() : null',
         '[attr.aria-label]': 'loading() ? ariaLabel() : null',
@@ -92,6 +92,12 @@ export class BusyIndicator {
     readonly ariaLive = input<'assertive' | 'polite' | 'off' | null>(null);
     /** Blocks mouse wheel scrolling over the indicator while loading. */
     readonly preventWheelEvents = input(false, { transform: booleanAttribute });
+    /** Tab index while loading; null leaves the indicator unfocusable, e.g. inside an option. */
+    readonly tabIndexValue = input<number | null | undefined, unknown>(undefined, {
+        alias: 'tabindex',
+        transform: (value: unknown) =>
+            value === null ? null : value === undefined || value === '' ? undefined : Number(value)
+    });
     readonly userClass = input<ClassValue>('', { alias: 'class' });
 
     private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);

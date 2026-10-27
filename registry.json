@@ -179,6 +179,19 @@
       ]
     },
     {
+      "name": "carousel",
+      "type": "registry:ui",
+      "title": "Carousel",
+      "description": "Slides shown one or several at a time with navigation buttons, page indicators, swiping and looping; a directive slides any element.",
+      "registryDependencies": ["utils", "theme", "button", "busy-indicator"],
+      "files": [
+        {
+          "path": "registry/ui/carousel/carousel.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "checkbox",
       "type": "registry:ui",
       "title": "Checkbox",
