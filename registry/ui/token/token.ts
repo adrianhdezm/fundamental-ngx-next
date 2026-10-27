@@ -264,11 +264,17 @@ export class TokenizerInput {
                     fdButton
                     variant="transparent"
                     type="button"
-                    tabindex="-1"
-                    class="shrink-0"
+                    [attr.tabindex]="buttonFocusable() ? null : -1"
                     [glyph]="glyph()"
                     [glyphFont]="glyphFont()"
                     [ariaLabel]="glyphAriaLabel()"
+                    [attr.title]="glyphTitle() || glyphAriaLabel()"
+                    [attr.aria-haspopup]="glyphHasPopup()"
+                    [attr.aria-expanded]="glyphHasPopup() ? glyphExpanded() : null"
+                    [disabled]="disabled()"
+                    [class]="glyphExpanded() ? 'shrink-0 text-sap-button-selected-text-color' : 'shrink-0'"
+                    (mousedown)="!buttonFocusable() && $event.preventDefault()"
+                    (click)="addOnButtonClicked.emit($event)"
                 ></button>
             }
         </div>
@@ -285,6 +291,13 @@ export class Tokenizer {
     readonly glyph = input<string | null | undefined>();
     readonly glyphFont = input<IconFont>('SAP-icons');
     readonly glyphAriaLabel = input<string | null>(null);
+    readonly glyphTitle = input<string | null | undefined>();
+    /** The addon button opens a popup, e.g. `listbox` or `dialog`. */
+    readonly glyphHasPopup = input<string | null | undefined>();
+    readonly glyphExpanded = input(false, { transform: booleanAttribute });
+    /** The addon button is in the tab order; otherwise clicking it keeps the focus in the input. */
+    readonly buttonFocusable = input(false, { transform: booleanAttribute });
+    readonly disabled = input(false, { transform: booleanAttribute });
     /** Text of the overflow link; `{count}` is the number of hidden tokens. */
     readonly moreTerm = input('{count} more');
     /** Lists the hidden tokens in a popover; otherwise only `moreClickedEvent` emits. */
@@ -301,6 +314,7 @@ export class Tokenizer {
     readonly userClass = input<ClassValue>('', { alias: 'class' });
 
     readonly moreClickedEvent = output<void>();
+    readonly addOnButtonClicked = output<Event>();
 
     readonly tokens = contentChildren(Token);
     private readonly inputDir = contentChild(TokenizerInput);
@@ -330,6 +344,8 @@ export class Tokenizer {
             fieldStates[this.state() ?? 'default'],
             this.readonly() &&
                 'border-dashed border-sap-field-read-only-border-color bg-sap-field-read-only-background shadow-none',
+            this.disabled() &&
+                'pointer-events-none opacity-(--sapContent_DisabledOpacity) [&_:disabled]:opacity-100! [&_[aria-disabled=true]]:opacity-100!',
             this.userClass()
         )
     );
