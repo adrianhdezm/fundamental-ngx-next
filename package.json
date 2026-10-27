@@ -60,14 +60,6 @@
     "vite": "^8.3.5",
     "vitest": "5.0.5"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "@parcel/watcher",
-      "lmdb",
-      "msgpackr-extract"
-    ]
-  },
   "engines": {
     "node": ">=22.22.3"
   },
