@@ -113,6 +113,12 @@ export const ZoomIcon: Story = {
             @for (s of sizes; track s; let i = $index) {
                 <fd-avatar circle [size]="s" zoomGlyph="edit" [colorAccent]="i + 1" glyph="customer" ariaLabel="Edit customer" />
             }
+        </div>
+        <div class="flex flex-wrap items-center gap-6 p-2">
+            @for (s of sizes; track s; let i = $index) {
+                <!-- the name contains the visible initials, as the avatar is a button -->
+                <fd-avatar [size]="s" zoomGlyph="camera" [colorAccent]="i + 6" label="Jane Doe" ariaLabel="JD, change the photo of Jane Doe" />
+            }
         </div>`
     })
 };
