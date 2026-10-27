@@ -727,6 +727,20 @@
         }
       ],
       "dependencies": ["@angular/cdk"]
+    },
+    {
+      "name": "resizable-card-layout",
+      "type": "registry:ui",
+      "title": "Resizable Card Layout",
+      "description": "Cards in 20rem columns that users resize by dragging; other cards move to make room.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/resizable-card-layout/resizable-card-layout.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk"]
     }
   ]
 }
