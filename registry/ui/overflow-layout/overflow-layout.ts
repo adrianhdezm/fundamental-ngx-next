@@ -47,8 +47,14 @@ export class OverflowItemRef<T = unknown> {
     readonly templateRef = inject<TemplateRef<OverflowItemContext<T>>>(TemplateRef);
     /** Optional data passed to the item context. */
     readonly fdOverflowItemRef = input<T>();
+    /**
+     * Keeps the item visible: `*fdOverflowItemRef="item; forceVisibility: isSelected(item)"`. Unlike
+     * fdOverflowLayoutItem it also works while the item is hidden.
+     */
+    readonly fdOverflowItemRefForceVisibility = input(false, { transform: booleanAttribute });
     /** Set by fdOverflowLayoutItem inside the template. */
     readonly forceVisibility = signal(false);
+    readonly forced = computed(() => this.forceVisibility() || this.fdOverflowItemRefForceVisibility());
     readonly hidden = signal(false);
 
     static ngTemplateContextGuard<T>(_dir: OverflowItemRef<T>, ctx: unknown): ctx is OverflowItemContext<T> {
@@ -106,7 +112,12 @@ export class OverflowExpand {
         @if (showMorePosition() === 'left') {
             <ng-container [ngTemplateOutlet]="more" />
         }
-        <div #row class="m-0 inline-flex min-w-0 items-center p-0" [attr.role]="ariaRole()">
+        <div
+            #row
+            class="m-0 inline-flex min-w-0 items-center p-0"
+            [attr.role]="ariaRole()"
+            [attr.aria-label]="ariaLabel() || null"
+        >
             @for (item of visibleItems(); track item; let i = $index) {
                 <div
                     data-overflow-item
@@ -175,6 +186,8 @@ export class OverflowLayout {
     /** Arrow keys move focus between the focusable elements of the visible items. */
     readonly enableKeyboardNavigation = input(true, { transform: booleanAttribute });
     readonly ariaRole = input<string | null | undefined>();
+    /** Accessible name of the row of items, e.g. of a tab list. */
+    readonly ariaLabel = input<string | null | undefined>();
     readonly moreItemsButtonText = input<(count: number) => string>((count) => `${count} more`);
     readonly userClass = input<ClassValue>('', { alias: 'class' });
 
@@ -203,14 +216,14 @@ export class OverflowLayout {
         if (total <= available && items.length <= max) return { visible: [...items], hidden: [] as OverflowItemRef[] };
 
         const more = this.widths.get('more') ?? 0;
-        const forced = items.filter((item) => item.forceVisibility());
+        const forced = items.filter((item) => item.forced());
         let budget = available - more - forced.reduce((sum, item) => sum + width(item), 0);
         let slots = max - forced.length;
         const ordered = fromEnd ? [...items].reverse() : items;
         const kept = new Set<OverflowItemRef>(forced);
         let full = false;
         for (const item of ordered) {
-            if (item.forceVisibility()) continue;
+            if (item.forced()) continue;
             if (!full && slots > 0 && width(item) <= budget) {
                 kept.add(item);
                 budget -= width(item);

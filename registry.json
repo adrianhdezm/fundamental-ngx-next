@@ -1242,6 +1242,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "tabs",
+      "type": "registry:ui",
+      "title": "Tabs",
+      "description": "Tab lists with panels, counts, value states, icon-only, process and filter modes, an overflow menu, stacked content with scroll spy, and tab bars of links.",
+      "registryDependencies": ["utils", "theme", "icon", "menu", "overflow-layout", "scroll-spy"],
+      "files": [
+        {
+          "path": "registry/ui/tabs/tabs.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
