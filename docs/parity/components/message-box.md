@@ -1,7 +1,7 @@
 ## message-box
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/message-box) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/message-box)
-Registry: `registry/ui/message-box/` — 15 stories, 3 tests.
+Registry: `registry/ui/message-box/` — 15 stories, 15 tests.
 
 ### Stories vs. upstream examples
 
@@ -17,28 +17,27 @@ Registry: `registry/ui/message-box/` — 15 stories, 3 tests.
 
 ### Tests vs. upstream specs
 
-| Upstream behaviour                                                          | Registry test                                               | Status     | Notes                                                                                 |
-| --------------------------------------------------------------------------- | ----------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------- |
-| should create (all parts, w/o Router)                                       | —                                                           | ➖ n/a     |                                                                                       |
-| Body CSS classes                                                            | —                                                           | ➖ n/a     | Class-only                                                                            |
-| Container embeds component / template / content object                      | opens an alert dialog named by its title…                   | 🟡 partial | Object only; template and component never opened in a test                            |
-| Container animation lifecycle (`_endClose$`)                                | —                                                           | ➖ n/a     | Internal animation states of upstream container                                       |
-| Default box calls approve/cancel callbacks                                  | opens an alert dialog named by its title…                   | ✅ covered | Approve → `close('deleted')`; cancel callback untested                                |
-| focusTrapped true/false (focus approve button, trap created)                | opens an alert dialog named by its title…                   | 🟡 partial | Initial focus on approve covered; `focusTrapped: false` not                           |
-| Footer: default buttons, custom template, mobile                            | —                                                           | ❌ missing |                                                                                       |
-| Header: default/custom template, semantic icon by type, projected icon wins | shows no semantic icon unless asked; opens an alert dialog… | 🟡 partial | Icon present/absent covered; type-specific glyph and projected custom icon not        |
-| Close on Escape                                                             | dismisses on Escape                                         | ✅ covered |                                                                                       |
-| Close on backdrop click                                                     | —                                                           | ❌ missing | Covered for DialogService in `dialog.spec.ts`, not through MessageBoxService defaults |
-| Custom position and size                                                    | —                                                           | ❌ missing |                                                                                       |
-| Custom classes and attributes (ariaLabel, dialogPanelClass)                 | —                                                           | ❌ missing |                                                                                       |
-| Mobile mode, with and without stretch                                       | —                                                           | ❌ missing |                                                                                       |
-| Closes on router navigation                                                 | —                                                           | ❌ missing | `closeOnNavigation` exists in our DialogConfig                                        |
-| Service: open template/component, dismissAll                                | —                                                           | 🟡 partial | `dismissAll` only used in `afterEach`                                                 |
-| Ref lifecycle: overlay removed, status on close/dismiss, result             | opens an alert dialog…; dismisses on Escape                 | 🟡 partial | `afterClosed` results covered; overlay removal not asserted                           |
+| Upstream behaviour                                                          | Registry test                                                                                                              | Status     | Notes                                                                          |
+| --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------ |
+| should create (all parts, w/o Router)                                       | —                                                                                                                          | ➖ n/a     |                                                                                |
+| Body CSS classes                                                            | —                                                                                                                          | ➖ n/a     | Class-only                                                                     |
+| Container embeds component / template / content object                      | opens an alert dialog named by its title…; opens from a template and a component with their data and ref                   | ✅ covered |                                                                                |
+| Container animation lifecycle (`_endClose$`)                                | —                                                                                                                          | ➖ n/a     | Internal animation states of upstream container                                |
+| Default box calls approve/cancel callbacks                                  | opens an alert dialog named by its title…; the cancel callback dismisses with its reason                                   | ✅ covered |                                                                                |
+| focusTrapped true/false (focus approve button, trap created)                | opens an alert dialog named by its title…; focusTrapped false neither focuses the approve button nor traps the focus       | ✅ covered | Without the trap the window itself takes the focus and Tab leaves for the page |
+| Footer: default buttons, custom template, mobile                            | opens an alert dialog…; the footer renders custom content in its bar areas                                                 | ✅ covered |                                                                                |
+| Header: default/custom template, semantic icon by type, projected icon wins | shows no semantic icon unless asked; each type shows its semantic glyph…; a projected semantic icon replaces the type icon | ✅ covered |                                                                                |
+| Close on Escape                                                             | dismisses on Escape                                                                                                        | ✅ covered |                                                                                |
+| Close on backdrop click                                                     | dismisses on a backdrop click only when backdropClickCloseable                                                             | ✅ covered |                                                                                |
+| Custom position and size                                                    | applies position, width and height                                                                                         | ✅ covered |                                                                                |
+| Custom classes and attributes (ariaLabel, dialogPanelClass)                 | applies dialogPanelClass and ariaLabel                                                                                     | ✅ covered |                                                                                |
+| Mobile mode, with and without stretch                                       | mobile mode fills the viewport, mobileOuterSpacing keeps a margin                                                          | ✅ covered | The margin needed the dialog fix for `mobileOuterSpacing`                      |
+| Closes on router navigation                                                 | dismisses on navigation unless closeOnNavigation is false                                                                  | ✅ covered | Through `Location.onUrlChange` (with `provideLocationMocks`)                   |
+| Service: open template/component, dismissAll                                | opens from a template and a component…; dismissAll closes every open box and removes the overlay                           | ✅ covered |                                                                                |
+| Ref lifecycle: overlay removed, status on close/dismiss, result             | opens an alert dialog…; dismisses on Escape; dismissAll closes every open box and removes the overlay                      | ✅ covered |                                                                                |
 
 Registry-only coverage: `role=alertdialog` with `aria-modal`, `aria-labelledby`/`aria-describedby` wiring.
 
 ### Gaps to fill
 
-- **Tests:** "opens from a template and a component with data and ref"; "cancel callback dismisses with its reason"; "focusTrapped false leaves the focus on the page"; "a projected semantic icon replaces the type icon"; "each type shows its semantic glyph"; "footer renders custom content"; "dismisses on backdrop click"; "applies position, width and height"; "applies dialogPanelClass and ariaLabel"; "mobile mode fills the viewport"; "dismisses on navigation when closeOnNavigation"; "dismissAll closes every open box and removes the overlay".
-- **Effort:** M — ~12 service-driven tests on an existing harness, two Open: stories.
+None: all gaps are filled.
