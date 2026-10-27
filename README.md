@@ -2,7 +2,7 @@
 
 SAP Fiori Horizon components for Angular, as copy-paste source files.
 
-- **Unofficial port of [`@fundamental-ngx/core`](https://sap.github.io/fundamental-ngx/#/core/home)** (Apache-2.0, see [License and attribution](#license-and-attribution)): same behaviour, ARIA and keyboard handling.
+- **Unofficial port of [`@fundamental-ngx/core`](https://sap.github.io/fundamental-ngx/#/core/home)** (Apache-2.0, see [License and attribution](#license-and-attribution)): same behaviour, ARIA and keyboard handling. Not ported: the legacy avatar group and the table.
 - **Styled with Tailwind CSS v4** on the SAP theme tokens from [`@sap-theming/theming-base-content`](https://github.com/SAP/theming-base-content). No fundamental-styles CSS at runtime.
 - **Behaviour from the Angular CDK** (a11y, overlay, bidi, ...).
 - **Modern Angular**: standalone, signals, `input()`/`model()`/`output()`, OnPush, zoneless.

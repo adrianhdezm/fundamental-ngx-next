@@ -837,6 +837,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "illustrated-message",
+      "type": "registry:ui",
+      "title": "Illustrated Message",
+      "description": "SAP illustration with a title, a text and actions for empty states and errors, in scene, dialog, spot, dot and text-only sizes or responsive to its width.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/illustrated-message/illustrated-message.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

@@ -24,6 +24,11 @@ licensed under the Apache License, Version 2.0:
   registry/styles/fonts (the "72" typeface and the SAP icon fonts) and
   registry/ui/icon/icon-glyphs.ts are generated from or copied out of this package.
 
+- UI5 Web Components for Fiori (@ui5/webcomponents-fiori), https://github.com/UI5/webcomponents
+  Copyright (c) SAP SE or an SAP affiliate company.
+  The SAP illustrations in docs/assets/illustrations are copied unmodified from this package;
+  they are used by the Storybook stories only.
+
 SAP, SAP Fiori and other SAP products and services mentioned herein are trademarks or
 registered trademarks of SAP SE in Germany and other countries. This project is not
 affiliated with, endorsed by or sponsored by SAP SE.

@@ -18,7 +18,9 @@ export default defineConfig({
             '@angular/cdk/keycodes',
             '@angular/cdk/overlay',
             '@angular/cdk/portal',
-            '@angular/cdk/scrolling'
+            '@angular/cdk/scrolling',
+            '@angular/forms',
+            '@angular/platform-browser'
         ]
     },
     resolve: {
