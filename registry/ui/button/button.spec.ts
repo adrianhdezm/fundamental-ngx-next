@@ -301,6 +301,37 @@ describe('Button', () => {
         expect(fixture.componentInstance.submits()).toBe(1);
     });
 
+    it('generates a unique id with the fd-button prefix and accepts a custom id', async () => {
+        @Component({
+            imports: [Button],
+            template: `
+                <button fdButton variant="positive" label="First"></button>
+                <button fdButton variant="positive" label="Second"></button>
+                <button fdButton variant="positive" [id]="customId()" label="Custom"></button>
+            `
+        })
+        class IdHost {
+            readonly customId = signal('my-button');
+        }
+        const fixture = TestBed.createComponent(IdHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        const [first, second, custom] = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')];
+
+        expect(first.id).toMatch(/^fd-button-\d+$/);
+        expect(second.id).toMatch(/^fd-button-\d+$/);
+        expect(first.id).not.toBe(second.id);
+        expect(custom.id).toBe('my-button');
+        // The hidden type description follows the custom id.
+        expect(custom.getAttribute('aria-describedby')).toBe('my-button-type-description');
+        expect(document.getElementById('my-button-type-description')).not.toBeNull();
+
+        fixture.componentInstance.customId.set('renamed');
+        await fixture.whenStable();
+        expect(custom.id).toBe('renamed');
+        expect(custom.getAttribute('aria-describedby')).toBe('renamed-type-description');
+    });
+
     it('semantic variants announce their meaning through the hidden description', async () => {
         const { button, description, update } = await setup();
         expect(button.hasAttribute('aria-describedby')).toBe(false);
