@@ -1,15 +1,15 @@
 ## radio
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/radio) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/radio)
-Registry: `registry/ui/radio/` — 3 stories, 10 tests.
+Registry: `registry/ui/radio/` — 4 stories, 10 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example             | Registry story                                 | Status     | Notes                                                                                                                                                                                                                                |
-| ---------------------------- | ---------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Radio Button States          | `Examples`, `States`                           | 🟡 partial | Basic, disabled, inline, all states and compact states are there (plus one read-only option). Upstream's "States disabled mode" (every state disabled) and "States in read only mode" (every state read-only) fieldsets are missing. |
-| Radio Button Reactive Forms  | —                                              | ❌ missing | No story with `formControlName`, the value/touched/dirty/valid read-out, or a disabled form control.                                                                                                                                 |
-| Radio Button Text Truncation | `Truncation` ("Label wrapping and truncation") | ✅ covered | Truncated, `wrapLabel`, and `wrapLabel` + `valignLabel="top"`.                                                                                                                                                                       |
+| Upstream example             | Registry story                                 | Status     | Notes                                                                                                                         |
+| ---------------------------- | ---------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Radio Button States          | `Examples`, `States`                           | ✅ covered | Basic, disabled, inline, all states, compact states, and the "States disabled mode" and "States in read only mode" fieldsets. |
+| Radio Button Reactive Forms  | `ReactiveForms` ("Reactive form")              | ✅ covered | `formControlName` group with the value/touched/dirty/valid read-out and a group bound to a disabled control.                  |
+| Radio Button Text Truncation | `Truncation` ("Label wrapping and truncation") | ✅ covered | Truncated, `wrapLabel`, and `wrapLabel` + `valignLabel="top"`.                                                                |
 
 ### Tests vs. upstream specs
 
@@ -27,6 +27,6 @@ Registry-only coverage: `selectedValue` without a form, arrow-key roving selecti
 
 ### Gaps to fill
 
-- **Stories:** `Reactive form` — `formControlName` radios with value/touched/dirty/valid read-out and a second group whose control is disabled; extend `States` with "States disabled" and "States read-only" fieldsets.
+- **Stories:** none.
 - **Tests:** "a radio that is not read-only has no aria-description".
 - **Effort:** S — one story and one assertion.

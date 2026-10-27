@@ -1,4 +1,4 @@
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup as NgFormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { ContentDensityDirective } from '@/ui/content-density/content-density';
 import { Fieldset, FormGroup, FormHeader, FormItem, FormLegend } from '@/ui/form/form';
@@ -12,6 +12,7 @@ const meta: Meta<RadioButton> = {
             imports: [
                 RadioButton,
                 FormsModule,
+                ReactiveFormsModule,
                 Fieldset,
                 FormGroup,
                 FormHeader,
@@ -56,14 +57,14 @@ export const Examples: Story = {
     })
 };
 
-const statesTemplate = (name: string) => `
+const statesTemplate = (name: string, extra = '', readOnlyOption = true) => `
     <fd-form-group>
-        <div fdFormItem><fd-radio-button name="${name}" value="val0" state="default" [(ngModel)]="value">Default Option</fd-radio-button></div>
-        <div fdFormItem><fd-radio-button name="${name}" value="val1" state="success" [(ngModel)]="value">Valid(Success) Option</fd-radio-button></div>
-        <div fdFormItem><fd-radio-button name="${name}" value="val2" state="warning" [(ngModel)]="value">Warning Option</fd-radio-button></div>
-        <div fdFormItem><fd-radio-button name="${name}" value="val3" state="error" [(ngModel)]="value">Invalid(Error) Option</fd-radio-button></div>
-        <div fdFormItem><fd-radio-button name="${name}" value="val4" state="information" [(ngModel)]="value">Information Option</fd-radio-button></div>
-        <div fdFormItem><fd-radio-button name="${name}" value="val5" readOnly [(ngModel)]="value">Read-only Option</fd-radio-button></div>
+        <div fdFormItem><fd-radio-button name="${name}" value="val0" state="default" [(ngModel)]="value" ${extra}>Default Option</fd-radio-button></div>
+        <div fdFormItem><fd-radio-button name="${name}" value="val1" state="success" [(ngModel)]="value" ${extra}>Valid(Success) Option</fd-radio-button></div>
+        <div fdFormItem><fd-radio-button name="${name}" value="val2" state="warning" [(ngModel)]="value" ${extra}>Warning Option</fd-radio-button></div>
+        <div fdFormItem><fd-radio-button name="${name}" value="val3" state="error" [(ngModel)]="value" ${extra}>Invalid(Error) Option</fd-radio-button></div>
+        <div fdFormItem><fd-radio-button name="${name}" value="val4" state="information" [(ngModel)]="value" ${extra}>Information Option</fd-radio-button></div>
+        ${readOnlyOption ? `<div fdFormItem><fd-radio-button name="${name}" value="val5" readOnly [(ngModel)]="value">Read-only Option</fd-radio-button></div>` : ''}
     </fd-form-group>`;
 
 export const States: Story = {
@@ -73,8 +74,44 @@ export const States: Story = {
             <div class="flex flex-wrap gap-12">
                 <fieldset fdFieldset><legend fdFormLegend>Radio button States</legend>${statesTemplate('radio-4')}</fieldset>
                 <fieldset fdFieldset fdCompact><legend fdFormLegend>Radio button States compact mode</legend>${statesTemplate('radio-5')}</fieldset>
+                <fieldset fdFieldset><legend fdFormLegend>Radio button States disabled mode</legend>${statesTemplate('radio-6', 'disabled', false)}</fieldset>
+                <fieldset fdFieldset><legend fdFormLegend>Radio button States in read only mode</legend>${statesTemplate('radio-7', 'readOnly', false)}</fieldset>
             </div>`
     })
+};
+
+export const ReactiveForms: Story = {
+    name: 'Reactive form',
+    render: () => {
+        const form = new NgFormGroup({
+            radioInput: new FormControl(1),
+            disabledRadio: new FormControl({ value: 2, disabled: true })
+        });
+        const options = [1, 2, 3];
+        return {
+            props: { form, options },
+            template: `
+                <form [formGroup]="form" class="flex flex-wrap gap-12">
+                    <fieldset fdFieldset>
+                        <legend fdFormLegend>Reactive form control</legend>
+                        @for (option of options; track option) {
+                            <div fdFormItem><fd-radio-button name="radio-form" [value]="option" formControlName="radioInput">Option {{ option }}</fd-radio-button></div>
+                        }
+                        <p class="text-sap-font-small-size text-sap-content-label-color">
+                            Value: {{ form.controls.radioInput.value }} · Touched: {{ form.controls.radioInput.touched }} ·
+                            Dirty: {{ form.controls.radioInput.dirty }} · Valid: {{ form.controls.radioInput.valid }}
+                        </p>
+                    </fieldset>
+                    <fieldset fdFieldset>
+                        <legend fdFormLegend>Disabled form control</legend>
+                        @for (option of options; track option) {
+                            <div fdFormItem><fd-radio-button name="radio-form-disabled" [value]="option" formControlName="disabledRadio">Option {{ option }}</fd-radio-button></div>
+                        }
+                        <p class="text-sap-font-small-size text-sap-content-label-color">Value: {{ form.controls.disabledRadio.value }}</p>
+                    </fieldset>
+                </form>`
+        };
+    }
 };
 
 export const Truncation: Story = {
