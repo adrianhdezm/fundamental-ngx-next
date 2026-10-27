@@ -1,12 +1,9 @@
-/**
- * Checks that cn() (tailwind-merge) resolves conflicts between SAP token utilities correctly:
- * font sizes vs text colours, shadows vs shadow colours, and the custom utilities of fundamental.css.
- *
- * Run with `pnpm check:cn` (Node >= 22.18, which strips TypeScript types).
- */
-import { cn } from '../registry/lib/utils.ts';
+import { describe, expect, it } from 'vitest';
+import { cn } from './utils';
 
-const cases = [
+// cn() (tailwind-merge) must resolve conflicts between SAP token utilities correctly: font sizes vs text colours,
+// shadows vs shadow colours, and the custom utilities of fundamental.css.
+const cases: [input: string, expected: string][] = [
     [
         'focus:outline-sap focus:outline-sap-field-active-border-color',
         'focus:outline-sap focus:outline-sap-field-active-border-color'
@@ -33,13 +30,8 @@ const cases = [
     ['sr-only-sap text-sap-text-color', 'sr-only-sap text-sap-text-color']
 ];
 
-let failures = 0;
-for (const [input, expected] of cases) {
-    const actual = cn(input);
-    if (actual !== expected) {
-        failures++;
-        console.error(`cn(${JSON.stringify(input)}) = ${JSON.stringify(actual)}, expected ${JSON.stringify(expected)}`);
-    }
-}
-if (failures) process.exit(1);
-console.log(`check-cn: ${cases.length} cases OK`);
+describe('cn', () => {
+    it.each(cases)('cn(%j) is %j', (input, expected) => {
+        expect(cn(input)).toBe(expected);
+    });
+});

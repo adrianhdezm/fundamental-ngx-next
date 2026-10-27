@@ -16,8 +16,7 @@
     "format:check": "prettier --check .",
     "check:styles": "node scripts/check-styles.mjs",
     "registry:check": "node scripts/build-registry.mjs --check",
-    "check": "pnpm typecheck && pnpm typecheck:tests && pnpm check:styles && pnpm check:cn && pnpm registry:check && pnpm test && pnpm test:a11y",
-    "check:cn": "node scripts/check-cn.mjs",
+    "check": "pnpm typecheck && pnpm typecheck:tests && pnpm check:styles && pnpm registry:check && pnpm test && pnpm test:a11y",
     "test": "vitest run --project unit",
     "test:watch": "vitest --project unit",
     "test:a11y": "node --max-old-space-size=6144 node_modules/vitest/vitest.mjs run --project a11y:sap_horizon && node --max-old-space-size=6144 node_modules/vitest/vitest.mjs run --project a11y:sap_horizon_hcb"
