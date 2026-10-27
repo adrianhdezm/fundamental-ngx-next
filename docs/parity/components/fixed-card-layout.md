@@ -1,7 +1,7 @@
 ## fixed-card-layout
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/fixed-card-layout) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/fixed-card-layout)
-Registry: `registry/ui/fixed-card-layout/` — 6 stories, 13 tests.
+Registry: `registry/ui/fixed-card-layout/` — 6 stories, 14 tests.
 
 ### Stories vs. upstream examples
 
@@ -24,9 +24,9 @@ Registry: `registry/ui/fixed-card-layout/` — 6 stories, 13 tests.
 | One column when `maxColumns` is set | number of columns follows the width…, capped by maxColumns…                  | ✅ covered |                                 |
 | Drag and drop reorders and emits    | dragging a card onto another swaps their ranks and emits cardDraggedDropped… | ✅ covered | Plus two further drag scenarios |
 
-Registry-only coverage: keyboard reordering (Alt+Arrows, RTL), arrow-key focus movement with wrap, Tab order, cards as labelled groups, container height re-measure, `columnsWidthConfig` distribution, `disableDragDrop` for pointer and keyboard, `layoutChange` output.
+Registry-only coverage: keyboard reordering (Alt+Arrows, RTL), arrow-key focus movement with wrap, Tab order, cards as labelled groups, container height re-measure, `columnsWidthConfig` distribution, `disableDragDrop` for pointer and keyboard, `layoutChange` output, `cardMinimumWidth` (fewer columns, never below 20rem).
 
 ### Gaps to fill
 
-- **Tests:** "a larger cardMinimumWidth reduces the number of columns (never below 20rem)".
+- **Tests:** none.
 - **Effort:** S, two stories and one test.

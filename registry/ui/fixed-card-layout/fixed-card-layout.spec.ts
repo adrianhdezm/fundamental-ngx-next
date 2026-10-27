@@ -25,6 +25,7 @@ const cards = (heights: number[]): TestCard[] => heights.map((height, i) => ({ t
         <div [style.width.px]="width()">
             <fd-fixed-card-layout
                 [maxColumns]="maxColumns()"
+                [cardMinimumWidth]="cardMinimumWidth()"
                 [columnsWidthConfig]="widthConfig()"
                 [disableDragDrop]="disabled()"
                 [dragStartDelay]="0"
@@ -51,6 +52,7 @@ class Host {
     readonly width = signal(1000);
     readonly cards = signal(cards([100, 200, 150, 120, 80]));
     readonly maxColumns = signal(10);
+    readonly cardMinimumWidth = signal(320);
     readonly widthConfig = signal<ColumnsWidthConfig | null>(null);
     readonly disabled = signal(false);
     readonly changes: FixedCardLayoutChange[] = [];
@@ -139,6 +141,23 @@ afterEach(() => {
 });
 
 describe('FixedCardLayout', () => {
+    it('a larger cardMinimumWidth reduces the number of columns (never below 20rem)', async () => {
+        const { host, stable, columns, columnLefts, items } = await setup();
+        expect(columns()).toBe(3);
+
+        host.cardMinimumWidth.set(400);
+        await stable();
+        expect(columns()).toBe(2);
+        expect(columnLefts()).toHaveLength(2);
+        expect(items().every((i) => i.getBoundingClientRect().width >= 400)).toBe(true);
+
+        // below 20rem the minimum stays 20rem
+        host.cardMinimumWidth.set(100);
+        await stable();
+        expect(columns()).toBe(3);
+        expect(items().every((i) => i.getBoundingClientRect().width >= 320)).toBe(true);
+    });
+
     it('number of columns follows the width (cards at least 20rem, 1rem gaps), capped by maxColumns and the card count', async () => {
         const { host, stable, columnLefts, columns, items } = await setup();
         // 1000px + the 1rem start gap: three 20rem columns with gaps fit
