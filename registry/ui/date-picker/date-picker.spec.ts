@@ -186,6 +186,29 @@ describe('DatePicker', () => {
         expect(document.querySelector('#dp-calendar')).toBeNull();
     });
 
+    it('references the state and the message from aria-describedby', async () => {
+        const { host, input, stable } = await setup();
+        expect(input().hasAttribute('aria-describedby')).toBe(false);
+        host.message.set('Dates are local');
+        await stable();
+        const description = () => document.getElementById(input().getAttribute('aria-describedby')!)!;
+        expect(description().textContent).toContain('Dates are local');
+        await userEvent.clear(input());
+        await userEvent.type(input(), 'someday');
+        await stable();
+        expect(description().textContent).toContain('Value state Error');
+        expect(description().textContent).toContain('Dates are local');
+    });
+
+    it('keeps aria-haspopup "dialog" on the button, as the calendar opens in a dialog', async () => {
+        // upstream says "grid" on the input; the popup here is the popover body with role="dialog"
+        const { button, stable } = await setup();
+        expect(button().getAttribute('aria-haspopup')).toBe('dialog');
+        await userEvent.click(button());
+        await stable();
+        expect(document.querySelector('#dp-calendar')!.closest('[role="dialog"]')).not.toBeNull();
+    });
+
     it('shows the message in the popover', async () => {
         const { button, stable } = await setup((h) => h.message.set('Dates are local'));
         await userEvent.click(button());

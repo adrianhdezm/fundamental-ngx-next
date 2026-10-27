@@ -81,6 +81,11 @@ export interface DatePickerLabels {
     toggleLabel: string;
     calendarLabel: string;
     closeLabel: string;
+    /** Read with the message, by the state of the field. */
+    successStateLabel: string;
+    informationStateLabel: string;
+    warningStateLabel: string;
+    errorStateLabel: string;
 }
 
 export const DATE_PICKER_LABELS: DatePickerLabels = {
@@ -88,7 +93,11 @@ export const DATE_PICKER_LABELS: DatePickerLabels = {
     rangeInputLabel: 'Date range input',
     toggleLabel: 'Open picker',
     calendarLabel: 'Choose date',
-    closeLabel: 'Close'
+    closeLabel: 'Close',
+    successStateLabel: 'Value state Success',
+    informationStateLabel: 'Value state Information',
+    warningStateLabel: 'Value state Warning',
+    errorStateLabel: 'Value state Error'
 };
 
 let nextId = 0;
@@ -195,6 +204,7 @@ let nextId = 0;
                         [attr.aria-labelledby]="ariaLabelledBy() || null"
                         [attr.aria-required]="required() || null"
                         [attr.aria-invalid]="computedState() === 'error' || null"
+                        [attr.aria-describedby]="description() ? id() + '-description' : null"
                         (input)="!processInputOnBlur() && read(field.value, true)"
                         (keydown.enter)="read(field.value, false)"
                         (keydown.f4)="$event.preventDefault(); setOpen(!isOpen())"
@@ -203,6 +213,8 @@ let nextId = 0;
                         (blur)="read(field.value, false)"
                     />
                     <span fdInputGroupAddon button>
+                        <!-- the calendar opens in a dialog (the popover body or the mobile dialog), so
+                             aria-haspopup is "dialog" where upstream says "grid" -->
                         <button
                             fdButton
                             variant="transparent"
@@ -222,6 +234,12 @@ let nextId = 0;
                     <fd-form-message [type]="messageType()">{{ message() }}</fd-form-message>
                 }
             </fd-form-input-message-group>
+            <!-- the state and the message, read as the description of the field, also while the calendar is open -->
+            @if (description()) {
+                <div class="hidden" aria-hidden="true">
+                    <div [id]="id() + '-description'">{{ description() }}</div>
+                </div>
+            }
         </ng-template>
 
         <ng-template #calendarTpl>
@@ -409,6 +427,22 @@ export class DatePicker<D> implements ControlValueAccessor, Validator {
         const state = this.state();
         if (state == null && this.useValidation() && this.invalid()) return 'error';
         return state ?? 'default';
+    });
+
+    /** The state and the message, the accessible description of the field. */
+    protected readonly description = computed(() => {
+        const state = this.computedState();
+        const labels = this.labels();
+        const stateLabel =
+            state === 'default'
+                ? ''
+                : {
+                      success: labels.successStateLabel,
+                      information: labels.informationStateLabel,
+                      warning: labels.warningStateLabel,
+                      error: labels.errorStateLabel
+                  }[state];
+        return [stateLabel, this.message()].filter(Boolean).join(' ');
     });
 
     private onChange: (value: DatePickerValue<D>) => void = () => {};
