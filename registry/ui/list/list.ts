@@ -89,20 +89,21 @@ let nextGroupHeaderId = 0;
  * </ul>
  * ```
  */
-@Component({
+@Directive({
     selector: '[fd-list], [fdList]',
     exportAs: 'fdList',
-    changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[attr.role]': 'role() ?? "list"',
         '[class]': 'computedClass()',
         '(keydown)': 'onKeydown($event)'
-    },
-    template: `<ng-content />`
+    }
 })
 export class List {
     /** Items with a title and byline (larger, two-line items). */
     readonly byline = input(false, { transform: booleanAttribute });
+    /** Byline items without the input, for components built on the list (e.g. an upload collection). */
+    readonly bylineDefault = signal(false);
+    readonly hasByline = computed(() => this.byline() || this.bylineDefault());
     /** Items with a title and a subline. */
     readonly subline = input(false, { transform: booleanAttribute });
     /** Items with a checkbox or radio button for selection. */
@@ -163,6 +164,9 @@ export class List {
 
     protected onKeydown(event: KeyboardEvent): void {
         if (!this.keyboardSupport()) return;
+        // keys typed in a field inside an item stay with the field
+        const target = event.target as HTMLElement;
+        if (target.matches?.('input, textarea, select, [contenteditable]:not([contenteditable=false])')) return;
         const manager = this.manager();
         const items = this.focusables();
         const current = items.findIndex((item) => item.element.contains(document.activeElement));
@@ -245,7 +249,7 @@ export class List {
                 isSelected() ? list.selectedLabel() : list.notSelectedLabel()
             }}</span>
         }
-        @if (unread() && (!list || list.byline())) {
+        @if (unread() && (!list || list.hasByline())) {
             <fd-icon
                 glyph="circle-task-2"
                 class="absolute start-4 top-1/2 -translate-y-1/2 text-[0.375rem] text-sap-accent-color6"
@@ -313,7 +317,7 @@ export class ListItem<T = unknown> implements ListFocusable {
         if (radio) return radio.checked();
         return this.selectedState();
     });
-    readonly isByline = computed(() => this.byline() || !!this.list?.byline());
+    readonly isByline = computed(() => this.byline() || !!this.list?.hasByline());
     readonly isWrapped = computed(() => this.wrap() || !!this.list?.wrap());
     protected readonly hasCounter = computed(() => this.counter() != null);
     protected readonly computedRole = computed(

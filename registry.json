@@ -1027,6 +1027,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "upload-collection",
+      "type": "registry:ui",
+      "title": "Upload Collection",
+      "description": "List of uploaded files with names shortened in the middle, descriptions, statuses and in-place rename and delete.",
+      "dependencies": ["@angular/forms"],
+      "registryDependencies": ["utils", "theme", "button", "input", "list"],
+      "files": [
+        {
+          "path": "registry/ui/upload-collection/upload-collection.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
