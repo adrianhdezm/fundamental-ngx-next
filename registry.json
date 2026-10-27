@@ -428,6 +428,20 @@
         }
       ],
       "dependencies": ["@angular/cdk", "rxjs"]
+    },
+    {
+      "name": "scrollbar",
+      "type": "registry:ui",
+      "title": "Scrollbar",
+      "description": "Scroll container with SAP-themed scrollbars, registered as a CDK scrollable.",
+      "registryDependencies": ["theme"],
+      "files": [
+        {
+          "path": "registry/ui/scrollbar/scrollbar.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk"]
     }
   ]
 }
