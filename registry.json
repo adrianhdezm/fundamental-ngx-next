@@ -1000,6 +1000,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "feed-list",
+      "type": "registry:ui",
+      "title": "Feed List",
+      "description": "Posts and comments with an author link, a collapsible or rich text, an avatar, actions and bylines; a mobile layout puts the header above the text.",
+      "registryDependencies": ["utils", "theme", "formatted-text", "link"],
+      "files": [
+        {
+          "path": "registry/ui/feed-list/feed-list.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
