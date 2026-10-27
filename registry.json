@@ -796,6 +796,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "message-box",
+      "type": "registry:ui",
+      "title": "Message Box",
+      "description": "Modal alert dialog for errors, warnings, successes, information and confirmations, opened by a service from a template, a component or a content object.",
+      "registryDependencies": ["utils", "theme", "dialog", "bar", "button", "icon", "title"],
+      "files": [
+        {
+          "path": "registry/ui/message-box/message-box.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

@@ -468,7 +468,7 @@ export class DialogContainer {
             tabindex="-1"
             [attr.aria-label]="config().ariaLabel || null"
             [attr.aria-labelledby]="labelledBy()"
-            [attr.aria-describedby]="config().ariaDescribedBy || null"
+            [attr.aria-describedby]="describedBy()"
             [attr.aria-description]="ariaDescription() || (resizable() ? 'Resizable' : null)"
             [cdkTrapFocus]="trapped()"
             [cdkTrapFocusAutoCapture]="config().focusTrapped !== false"
@@ -539,6 +539,9 @@ export class Dialog {
     /** Id of the title, registered by `fd-dialog-title` when the config names none. */
     readonly titleId = signal<string | null>(null);
     protected readonly labelledBy = computed(() => this.config().ariaLabelledBy || this.titleId());
+    /** Id of the element that describes the dialog, when the config names none. */
+    readonly descriptionId = signal<string | null>(null);
+    protected readonly describedBy = computed(() => this.config().ariaDescribedBy || this.descriptionId());
 
     protected readonly dragging = signal(false);
     private readonly resized = signal<{ width: string; height: string } | null>(null);
