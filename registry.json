@@ -1013,6 +1013,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "file-uploader",
+      "type": "registry:ui",
+      "title": "File Uploader",
+      "description": "Field and Browse button for choosing files, with drag and drop, size and extension validation and Angular forms support.",
+      "dependencies": ["@angular/forms"],
+      "registryDependencies": ["utils", "theme", "button", "input"],
+      "files": [
+        {
+          "path": "registry/ui/file-uploader/file-uploader.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
