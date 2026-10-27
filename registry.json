@@ -1055,6 +1055,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "input-group",
+      "type": "registry:ui",
+      "title": "Input Group",
+      "description": "A field with text, icon or button addons before or after its input; a form control when it renders its own input.",
+      "dependencies": ["@angular/forms"],
+      "registryDependencies": ["utils", "theme", "button", "icon", "input"],
+      "files": [
+        {
+          "path": "registry/ui/input-group/input-group.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

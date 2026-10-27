@@ -322,7 +322,10 @@ export class Button implements OnInit {
         }
     }
 
-    /** Safari does not focus buttons on click; focus them so the focus indicator shows consistently. */
+    /**
+     * Safari does not focus buttons on click; focus them so the focus indicator shows consistently.
+     * Buttons out of the tab order (e.g. input group buttons that keep the focus in their input) stay unfocused.
+     */
     protected onClick(event: Event): void {
         if (!this.isNativeButton && this.disabledState()) {
             event.preventDefault();
@@ -330,7 +333,7 @@ export class Button implements OnInit {
             return;
         }
         const target = event.currentTarget as HTMLElement | null;
-        if (target && document.activeElement !== target) target.focus();
+        if (target && target.tabIndex >= 0 && document.activeElement !== target) target.focus();
     }
 
     setDisabled(value: boolean): void {
