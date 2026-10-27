@@ -1,4 +1,5 @@
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Avatar } from '@/ui/avatar/avatar';
 import { Link } from '@/ui/link/link';
 import { AvatarGroup, AvatarGroupItem, AvatarGroupOverflowBody, AvatarGroupOverflowButton } from './avatar-group';
@@ -91,4 +92,39 @@ export const MaxVisibleAndVertical: Story = {
                 <fd-avatar-group size="xs" orientation="vertical" [maxVisibleItems]="4" overflowPopoverTitle="Team members">${avatars('xs')}</fd-avatar-group>
             </div>`
     })
+};
+
+/** Clicks a trigger and waits for its popover body. */
+async function openPopover(trigger: HTMLElement): Promise<void> {
+    await userEvent.click(trigger);
+    await waitFor(() => expect(document.querySelector('.cdk-overlay-pane fd-popover-body')).not.toBeNull());
+}
+
+const OPEN_INDIVIDUAL = `
+    <fd-avatar-group size="s" [maxVisibleItems]="5" overflowPopoverTitle="Team members" ariaLabel="Team members">${avatars('s')}</fd-avatar-group>`;
+
+export const OpenDetails: Story = {
+    name: 'Open: avatar details',
+    tags: ['!autodocs'],
+    render: () => ({ props: { people: PEOPLE }, template: OPEN_INDIVIDUAL }),
+    play: ({ canvasElement }) =>
+        openPopover(canvasElement.querySelector<HTMLElement>('[data-avatar-group-item] [role=button]')!)
+};
+
+export const OpenGroup: Story = {
+    name: 'Open: group popover',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { people: PEOPLE },
+        template: `<fd-avatar-group type="group" size="s" [maxVisibleItems]="4" overflowPopoverTitle="Team members">${avatars('s')}</fd-avatar-group>`
+    }),
+    play: ({ canvasElement }) => openPopover(canvasElement.querySelector<HTMLElement>('fd-avatar-group [role=button]')!)
+};
+
+export const OpenOverflow: Story = {
+    name: 'Open: overflow list',
+    tags: ['!autodocs'],
+    render: () => ({ props: { people: PEOPLE }, template: OPEN_INDIVIDUAL }),
+    play: ({ canvasElement }) =>
+        openPopover(canvasElement.querySelector<HTMLElement>('[data-avatar-group-overflow] [role=button]')!)
 };
