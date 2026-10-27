@@ -73,12 +73,13 @@ describe('Combobox', () => {
     it('completes the text inline and takes it over with Enter', async () => {
         const { fixture, host, input } = await setup();
         input.focus();
-        await userEvent.keyboard('ba');
+        await userEvent.keyboard('b');
         await fixture.whenStable();
         await wait();
         expect(input.value).toBe('Banana');
-        expect(input.selectionStart).toBe(2);
-        expect(host.control.value).toBe('ba');
+        expect(input.selectionStart).toBe(1);
+        expect(input.selectionEnd).toBe(6);
+        expect(host.control.value).toBe('b');
         await userEvent.keyboard('{Enter}');
         await fixture.whenStable();
         expect(host.control.value).toBe('Banana');
