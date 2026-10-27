@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
 import { ProgressIndicator } from './progress-indicator';
 
@@ -78,19 +79,36 @@ export const States: Story = {
     })
 };
 
-export const Truncation: Story = {
-    render: () => ({
-        template: `
-            <div class="w-56">
-                <fd-progress-indicator
-                    ariaLabel="Import"
-                    state="informative"
-                    [valueNow]="35"
-                    valueText="Importing 35 of 100 records from the customer master data, please wait"
-                />
-            </div>
-        `
-    })
+const TRUNCATION = `
+    <div class="w-56">
+        <fd-progress-indicator
+            ariaLabel="Import"
+            state="informative"
+            [valueNow]="35"
+            valueText="Importing 35 of 100 records from the customer master data, please wait"
+        />
+    </div>
+`;
+
+export const Truncation: Story = { render: () => ({ template: TRUNCATION }) };
+
+export const OpenTruncation: Story = {
+    name: 'Open: Truncation popover',
+    tags: ['!autodocs'],
+    render: () => ({ template: TRUNCATION }),
+    play: async ({ canvasElement }) => {
+        let label: HTMLElement | null = null;
+        await waitFor(() => {
+            label = canvasElement.querySelector<HTMLElement>('fd-progress-indicator fd-popover-control button');
+            expect(label).not.toBeNull();
+        });
+        await userEvent.click(label!);
+        await waitFor(() =>
+            expect(document.querySelector('.cdk-overlay-container fd-popover-body')?.textContent).toContain(
+                'please wait'
+            )
+        );
+    }
 };
 
 export const Animation: Story = { render: () => ({ template: `<story-progress-animation />` }) };
