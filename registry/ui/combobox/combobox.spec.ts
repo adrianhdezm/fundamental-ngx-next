@@ -45,6 +45,64 @@ class Host {
     readonly objectControl = new FormControl<unknown>(2);
 }
 
+interface Fruit {
+    name: string;
+    code: string;
+}
+
+const KIWI: Fruit = { name: 'Kiwi', code: 'K1' };
+const BANANA: Fruit = { name: 'Banana', code: 'B1' };
+const APPLE: Fruit = { name: 'Apple', code: 'A1' };
+const APPLE_2: Fruit = { name: 'Apple', code: 'A2' };
+
+@Component({
+    imports: [Combobox, ReactiveFormsModule],
+    template: `
+        <fd-combobox
+            ariaLabel="Fruit"
+            [communicateByObject]="byObject()"
+            [autoComplete]="autoComplete()"
+            [tabOutStrategy]="tabOutStrategy()"
+            [displayFn]="display"
+            [dropdownValues]="values()"
+            [formControl]="control"
+            (itemClicked)="clicks.set(clicks() + 1)"
+        />
+        <button type="button">Outside</button>
+    `
+})
+class LeaveHost {
+    readonly byObject = signal(true);
+    readonly autoComplete = signal(true);
+    readonly tabOutStrategy = signal<'close' | 'closeAndSelect'>('closeAndSelect');
+    readonly values = signal<unknown[]>([KIWI, BANANA, APPLE, APPLE_2]);
+    readonly display = (item: unknown) =>
+        item == null ? '' : typeof item === 'string' ? item : ((item as Fruit).name ?? '');
+    readonly clicks = signal(0);
+    readonly control = new FormControl<unknown>(null);
+}
+
+async function setupLeave(configure: (host: LeaveHost) => void = () => {}) {
+    const fixture = TestBed.createComponent(LeaveHost);
+    configure(fixture.componentInstance);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    const input = root.querySelector<HTMLInputElement>('fd-combobox input')!;
+    const outside = [...root.querySelectorAll<HTMLButtonElement>('button')].find((b) => b.textContent === 'Outside')!;
+    const emitted: unknown[] = [];
+    fixture.componentInstance.control.valueChanges.subscribe((v) => emitted.push(v));
+    /** Opens the list with Alt+Down and clicks the option with the text. */
+    const pick = async (text: string) => {
+        input.focus();
+        await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}');
+        await fixture.whenStable();
+        await userEvent.click(options().find((o) => o.textContent?.trim() === text)!);
+        await fixture.whenStable();
+    };
+    return { fixture, host: fixture.componentInstance, input, outside, emitted, pick };
+}
+
 const wait = (ms = 50) => new Promise((r) => setTimeout(r, ms));
 const options = () => [...document.querySelectorAll<HTMLElement>('[role=option]')];
 
@@ -148,5 +206,121 @@ describe('Combobox', () => {
         expect(host.objectControl.value).toBe(1);
         await userEvent.type(input, 'x');
         expect(host.objectControl.value).toBeNull();
+    });
+
+    describe('leaving the field', () => {
+        it('Tab reverts invalid text to the last selection in object mode', async () => {
+            const { fixture, host, input, pick } = await setupLeave();
+            await pick('Kiwi');
+            expect(host.control.value).toBe(KIWI);
+            await userEvent.type(input, '123');
+            await fixture.whenStable();
+            expect(host.control.value).toBeNull();
+            await userEvent.keyboard('{Tab}');
+            await fixture.whenStable();
+            expect(input.value).toBe('Kiwi');
+            expect(host.control.value).toBe(KIWI);
+            expect(input.getAttribute('aria-expanded')).toBe('false');
+        });
+
+        it('tabOutStrategy close restores the selection without emitting itemClicked', async () => {
+            const { fixture, host, input, pick } = await setupLeave((h) => h.tabOutStrategy.set('close'));
+            await pick('Kiwi');
+            expect(host.clicks()).toBe(1);
+            await userEvent.clear(input);
+            await userEvent.type(input, 'Custom');
+            await fixture.whenStable();
+            await userEvent.keyboard('{Tab}');
+            await fixture.whenStable();
+            expect(input.value).toBe('Kiwi');
+            expect(host.control.value).toBe(KIWI);
+            expect(host.clicks()).toBe(1);
+        });
+
+        it('Tab commits the completed autocomplete candidate once', async () => {
+            const { fixture, host, input, emitted } = await setupLeave((h) => {
+                h.byObject.set(false);
+                h.values.set(['Kiwi', 'Banana']);
+            });
+            input.focus();
+            await userEvent.keyboard('k');
+            await fixture.whenStable();
+            await wait();
+            expect(input.value).toBe('Kiwi');
+            expect(host.control.value).toBe('k');
+            emitted.length = 0;
+            await userEvent.keyboard('{Tab}');
+            await fixture.whenStable();
+            expect(input.value).toBe('Kiwi');
+            expect(emitted).toEqual(['Kiwi']);
+        });
+
+        it('a duplicate completed label does not choose an arbitrary object on Tab', async () => {
+            const { fixture, host, input, pick } = await setupLeave();
+            await pick('Kiwi');
+            await userEvent.clear(input);
+            await userEvent.keyboard('a');
+            await fixture.whenStable();
+            await wait();
+            expect(input.value).toBe('Apple');
+            await userEvent.keyboard('{Tab}');
+            await fixture.whenStable();
+            expect(input.value).toBe('Kiwi');
+            expect(host.control.value).toBe(KIWI);
+            expect(host.clicks()).toBe(1);
+        });
+
+        it('an outside click reverts invalid text, but not when the text matches the selection', async () => {
+            const { fixture, host, input, outside, emitted, pick } = await setupLeave();
+            await pick('Kiwi');
+            emitted.length = 0;
+            await userEvent.click(outside);
+            await fixture.whenStable();
+            expect(input.value).toBe('Kiwi');
+            expect(emitted).toEqual([]);
+
+            await userEvent.type(input, '123');
+            await fixture.whenStable();
+            expect(host.control.value).toBeNull();
+            await userEvent.click(outside);
+            await fixture.whenStable();
+            expect(input.value).toBe('Kiwi');
+            expect(host.control.value).toBe(KIWI);
+            expect(input.getAttribute('aria-expanded')).toBe('false');
+        });
+
+        it('an outside click keeps free text in text mode', async () => {
+            const { fixture, host, input, outside, pick } = await setupLeave((h) => {
+                h.byObject.set(false);
+                h.values.set(['Kiwi', 'Banana']);
+            });
+            await pick('Kiwi');
+            await userEvent.type(input, '123');
+            await fixture.whenStable();
+            await userEvent.click(outside);
+            await fixture.whenStable();
+            expect(input.value).toBe('Kiwi123');
+            expect(host.control.value).toBe('Kiwi123');
+        });
+
+        it('keeps free text on Tab and on a later close when autoComplete is false', async () => {
+            const { fixture, host, input, pick } = await setupLeave((h) => h.autoComplete.set(false));
+            await pick('Apple');
+            expect(host.control.value).toBe(APPLE);
+            await userEvent.clear(input);
+            await userEvent.type(input, 'free text');
+            await fixture.whenStable();
+            await userEvent.keyboard('{Tab}');
+            await fixture.whenStable();
+            expect(input.value).toBe('free text');
+            expect(host.control.value).toBeNull();
+
+            input.focus();
+            await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}');
+            await fixture.whenStable();
+            await userEvent.keyboard('{Tab}');
+            await fixture.whenStable();
+            expect(input.value).toBe('free text');
+        });
     });
 });
