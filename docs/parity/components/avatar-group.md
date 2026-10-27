@@ -1,19 +1,19 @@
 ## avatar-group
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/avatar-group) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/avatar-group)
-Registry: `registry/ui/avatar-group/` — 6 stories, 12 tests.
+Registry: `registry/ui/avatar-group/` — 8 stories, 12 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example            | Registry story                                                       | Status     | Notes                                                                                                       |
-| --------------------------- | -------------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
-| Avatar Group Standard Usage | Individual ("Individual (resize to overflow)")                       | ✅ covered | Sizes xs–l, details popover per avatar                                                                      |
-| Group Type Standard Usage   | Group ("Group type")                                                 | ✅ covered |                                                                                                             |
-| Group Popover Placement     | —                                                                    | ❌ missing | Upstream: two group-type groups with `popoverPlacement` `bottom` and `bottom-end`; ours exposes `placement` |
-| Circular Overflow Button    | MaxVisibleAndVertical                                                | 🟡 partial | Only `square` is shown; no side-by-side square vs circle. The default is square, as upstream                |
-| Maximum Visible Avatars     | MaxVisibleAndVertical, Individual                                    | ✅ covered | Width-based (Individual) and `maxVisibleItems=5` both shown; upstream's adjustable container width is not   |
-| Vertical Avatar Group Usage | MaxVisibleAndVertical                                                | 🟡 partial | Only an individual vertical group; upstream also shows a group-type vertical group                          |
-| (all overlay examples)      | "Open: avatar details", "Open: group popover", "Open: overflow list" | ✅ covered | Their `play` opens each popover for the a11y run; the details dialog is now named by the avatar's title     |
+| Upstream example            | Registry story                                                       | Status     | Notes                                                                                                     |
+| --------------------------- | -------------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------- |
+| Avatar Group Standard Usage | Individual ("Individual (resize to overflow)")                       | ✅ covered | Sizes xs–l, details popover per avatar                                                                    |
+| Group Type Standard Usage   | Group ("Group type")                                                 | ✅ covered |                                                                                                           |
+| Group Popover Placement     | PopoverPlacement ("Popover placement")                               | ✅ covered | Two group-type groups with `placement` `bottom` and `bottom-end` (upstream's `popoverPlacement`)          |
+| Circular Overflow Button    | OverflowButtonShape ("Overflow button shape")                        | ✅ covered | Square (default) and circle side by side in 200px containers                                              |
+| Maximum Visible Avatars     | MaxVisibleAndVertical, Individual                                    | ✅ covered | Width-based (Individual) and `maxVisibleItems=5` both shown; upstream's adjustable container width is not |
+| Vertical Avatar Group Usage | MaxVisibleAndVertical                                                | ✅ covered | Individual and group-type vertical groups                                                                 |
+| (all overlay examples)      | "Open: avatar details", "Open: group popover", "Open: overflow list" | ✅ covered | Their `play` opens each popover for the a11y run; the details dialog is now named by the avatar's title   |
 
 ### Tests vs. upstream specs
 
@@ -35,6 +35,6 @@ Registry-only coverage: overflow "+N" wrapped in `<bdi dir="ltr">` for RTL, list
 
 ### Gaps to fill
 
-- **Stories:** "Popover placement" (two group-type groups, `placement="bottom"` and `"bottom-end"`); "Overflow button shape" (square vs circle side by side, `max-w-[200px]`); add a group-type vertical group to the vertical story.
+- **Stories:** done.
 - **Tests:** "maxVisibleItems 0 hides every avatar"; "maxVisibleItems equal to the count shows no overflow button"; "changing maxVisibleItems updates the visible count"; "group type respects maxVisibleItems"; "vertical orientation caps by maxVisibleItems and ignores the container width"; "Escape closes the overflow popover even when its content stops propagation".
 - **Effort:** M, about 8 tests and 5 stories.
