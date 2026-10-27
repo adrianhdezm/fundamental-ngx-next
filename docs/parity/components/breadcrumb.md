@@ -1,7 +1,7 @@
 ## breadcrumb
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/breadcrumb) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/breadcrumb)
-Registry: `registry/ui/breadcrumb/` — 4 stories, 3 tests.
+Registry: `registry/ui/breadcrumb/` — 4 stories, 8 tests.
 
 ### Stories vs. upstream examples
 
@@ -14,20 +14,20 @@ Registry: `registry/ui/breadcrumb/` — 4 stories, 3 tests.
 
 ### Tests vs. upstream specs
 
-| Upstream behaviour                                                  | Registry test                                   | Status     | Notes                                                              |
-| ------------------------------------------------------------------- | ----------------------------------------------- | ---------- | ------------------------------------------------------------------ |
-| Separator styles (default, five custom ones, input change)          | is a labelled navigation list with separators … | 🟡 partial | Only the default `/` is asserted                                   |
-| Resize: shrinking collapses items, enlarging restores them          | collapses items that do not fit into a menu …   | 🟡 partial | Collapse at a fixed narrow width covered; growing back is untested |
-| ArrowRight / ArrowLeft move between links                           | has one tab stop and moves between the links …  | ✅ covered | Roving tabindex too                                                |
-| `aria-current` span in the focus sequence; last link ↔ current page | has one tab stop …                              | 🟡 partial | Its `tabindex=-1` is asserted, but no test arrows onto or off it   |
-| No move before the first link on ArrowLeft                          | —                                               | ❌ missing |                                                                    |
-| ArrowDown / ArrowUp move next / previous                            | —                                               | ❌ missing | Handled in our source                                              |
-| `should create`                                                     | —                                               | ➖ n/a     |                                                                    |
+| Upstream behaviour                                                  | Registry test                                                                       | Status     | Notes               |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ---------- | ------------------- |
+| Separator styles (default, five custom ones, input change)          | renders the separator of each separatorStyle and updates when it changes            | ✅ covered |                     |
+| Resize: shrinking collapses items, enlarging restores them          | collapses items that do not fit…; restores collapsed items when the container grows | ✅ covered |                     |
+| ArrowRight / ArrowLeft move between links                           | has one tab stop and moves between the links …                                      | ✅ covered | Roving tabindex too |
+| `aria-current` span in the focus sequence; last link ↔ current page | moves from the last link to the current page and back, and stops at the first link  | ✅ covered |                     |
+| No move before the first link on ArrowLeft                          | moves from the last link to the current page and back, and stops at the first link  | ✅ covered |                     |
+| ArrowDown / ArrowUp move next / previous                            | moves next with ArrowDown and back with ArrowUp                                     | ✅ covered |                     |
+| `should create`                                                     | —                                                                                   | ➖ n/a     |                     |
 
-Registry-only coverage: `role=navigation` with label and list semantics, no separator after the current page, collapsed-items menu (`aria-haspopup=menu`) whose items follow their links, `hiddenItemsCount` output.
+Registry-only coverage: arrow keys mirrored in RTL, `role=navigation` with label and list semantics, no separator after the current page, collapsed-items menu (`aria-haspopup=menu`) whose items follow their links, `hiddenItemsCount` output.
 
 ### Gaps to fill
 
 - **Stories:** "Router links" (trail with `routerLink` items, `provideRouter([])` in the decorator) — blocked: router in stories (README "Not yet ported").
-- **Tests:** "renders the separator of each separatorStyle and updates when it changes"; "restores collapsed items when the container grows"; "ArrowRight from the last link focuses the current page and ArrowLeft returns"; "ArrowLeft on the first link keeps the focus"; "ArrowDown and ArrowUp move like ArrowRight and ArrowLeft"; "arrow keys are mirrored in RTL" (registry-only behaviour, untested).
+- **Tests:** none.
 - **Effort:** S, short keyboard and layout tests and two stories.
