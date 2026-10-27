@@ -67,7 +67,7 @@ class GroupHost {
 }
 
 @Component({
-    imports: PARTS,
+    imports: [Notification, NotificationBody, NotificationContent, NotificationHeader, NotificationTitle],
     template: `
         <fd-notification>
             <fd-notification-body>

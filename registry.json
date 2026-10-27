@@ -959,6 +959,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "vertical-navigation",
+      "type": "registry:ui",
+      "title": "Vertical Navigation",
+      "description": "SAP Fiori side navigation with icons, second-level items, a current-page indicator and a condensed icon-only mode with panels.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/vertical-navigation/vertical-navigation.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
