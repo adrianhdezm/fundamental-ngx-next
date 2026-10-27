@@ -1,7 +1,7 @@
 /*
  * Port of @fundamental-ngx/core (time) with the visual design of fundamental-styles,
  * Copyright (c) SAP SE or an SAP affiliate company and Fundamental Library contributors.
- * Modified for fundamental-ngx-next: rewritten with Angular signals and Tailwind CSS; the
+ * Modified for fundamental-ngx-registry: rewritten with Angular signals and Tailwind CSS; the
  * columns show a window around the value instead of a carousel.
  * SPDX-License-Identifier: Apache-2.0
  */

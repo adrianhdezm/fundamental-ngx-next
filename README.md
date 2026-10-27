@@ -1,4 +1,4 @@
-# fundamental-ngx-next
+# fundamental-ngx-registry
 
 SAP Fiori Horizon components for Angular, as copy-paste source files.
 

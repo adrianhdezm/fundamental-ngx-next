@@ -1,5 +1,5 @@
 /*
- * Copyright (c) fundamental-ngx-next contributors.
+ * Copyright (c) fundamental-ngx-registry contributors.
  * SPDX-License-Identifier: Apache-2.0
  */
 import { type ClassValue, clsx } from 'clsx';

@@ -1,5 +1,5 @@
 {
-  "name": "fundamental-ngx-next",
+  "name": "fundamental-ngx-registry",
   "version": "0.0.0",
   "private": true,
   "description": "SAP Fiori Horizon components for Angular, styled with Tailwind CSS and built on Angular CDK. Copy the source into your app, shadcn-style.",

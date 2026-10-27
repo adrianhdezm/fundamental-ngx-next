@@ -2,7 +2,7 @@
  * Port of @fundamental-ngx/core (vertical-navigation, list-navigation-item) with the visual design of
  * fundamental-styles,
  * Copyright (c) SAP SE or an SAP affiliate company and Fundamental Library contributors.
- * Modified for fundamental-ngx-next: rewritten with Angular signals, the Angular CDK and Tailwind CSS.
+ * Modified for fundamental-ngx-registry: rewritten with Angular signals, the Angular CDK and Tailwind CSS.
  * SPDX-License-Identifier: Apache-2.0
  */
 import { FocusKeyManager, type FocusableOption } from '@angular/cdk/a11y';

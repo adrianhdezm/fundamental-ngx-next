@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const checkOnly = process.argv.includes('--check');
-const registryUrl = (process.env.REGISTRY_URL ?? 'https://adrianhdezm.github.io/fundamental-ngx-next/r').replace(
+const registryUrl = (process.env.REGISTRY_URL ?? 'https://adrianhdezm.github.io/fundamental-ngx-registry/r').replace(
     /\/$/,
     ''
 );

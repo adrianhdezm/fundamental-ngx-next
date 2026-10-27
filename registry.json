@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "name": "fundamental-ngx-next",
-  "homepage": "https://github.com/adrianhdezm/fundamental-ngx-next",
+  "name": "fundamental-ngx-registry",
+  "homepage": "https://github.com/adrianhdezm/fundamental-ngx-registry",
   "items": [
     {
       "name": "utils",

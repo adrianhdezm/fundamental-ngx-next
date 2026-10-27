@@ -11,7 +11,7 @@
  * Density: set data-density="compact" on <html> (or any element). Cozy is the default.
  * RTL:     set dir="rtl"; components use logical utilities (ps-, me-, start-, ...) and CDK Directionality.
  *
- * Copyright (c) fundamental-ngx-next contributors.
+ * Copyright (c) fundamental-ngx-registry contributors.
  * SPDX-License-Identifier: Apache-2.0
  */
 @import './fonts.css';

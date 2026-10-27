@@ -1,6 +1,6 @@
 /*
  * Port of @fundamental-ngx/core (datetime) by SAP SE or an SAP affiliate company and Fundamental Library contributors.
- * Modified for fundamental-ngx-next: signals, root defaults and no i18n package.
+ * Modified for fundamental-ngx-registry: signals, root defaults and no i18n package.
  * SPDX-License-Identifier: Apache-2.0
  */
 import {
