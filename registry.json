@@ -769,6 +769,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "split-button",
+      "type": "registry:ui",
+      "title": "Split Button",
+      "description": "A main action with an arrow that opens a menu of alternatives; the chosen alternative becomes the main action.",
+      "registryDependencies": ["utils", "theme", "button", "icon", "menu"],
+      "files": [
+        {
+          "path": "registry/ui/split-button/split-button.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

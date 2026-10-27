@@ -637,6 +637,8 @@ export class MenuItem {
     private readonly icons = signal(0);
     /** Separator drawn by a single-choice group. */
     readonly groupSeparator = signal(false);
+    /** Shows the item as the current choice, e.g. the main action of a split button. */
+    readonly selected = signal(false);
     /** Set by `fdMenuSegmentedButtonHeader` on this item. */
     readonly segmentHeader = signal<MenuSegmentedButtonHeader<unknown> | null>(null);
 
@@ -799,8 +801,7 @@ export class MenuInteractive {
             'focus:after:border-(length:--sapContent_FocusWidth) focus:after:[border-style:var(--sapContent_FocusStyle)] focus:after:border-sap-content-focus-color',
             // selected: an open submenu
             submenu && 'pe-0',
-            submenu &&
-                this.item?.expanded() &&
+            ((submenu && this.item?.expanded()) || this.item?.selected()) &&
                 'not-active:[--mi-bg:var(--sapList_SelectionBackgroundColor)] not-active:[--mi-bb:var(--sapList_SelectionBorderColor)] not-active:enabled-hover:[--mi-bg:var(--sapList_Hover_SelectionBackground)]',
             // pressed
             'enabled-active:[--mi-bg:var(--sapList_Active_Background)] enabled-active:[--mi-ic:var(--sapList_Active_TextColor)] enabled-active:after:hidden',
