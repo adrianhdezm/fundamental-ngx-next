@@ -1,16 +1,16 @@
 ## notification
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/notification) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/notification)
-Registry: `registry/ui/notification/` — 5 stories, 6 tests.
+Registry: `registry/ui/notification/` — 6 stories, 6 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example     | Registry story                                        | Status     | Notes                                                                                                                                                                                                                  |
-| -------------------- | ----------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Notification         | Notifications                                         | 🟡 partial | Unread, selected, long-text, status, actions shown; upstream also has an overflow button opening an action sheet (actions announced by a message toast) and a `fd-notification-message-strip-container` above the body |
-| Template as Content  | Service ("Open from template")                        | ✅ covered | Escape-closeable, reports close/dismiss reason                                                                                                                                                                         |
-| Component as Content | Service ("Open from component"); Open: service banner | ✅ covered | Data via `NotificationRef`, approve/close buttons; the Open story opens a banner in `play()`                                                                                                                           |
-| Notification Group   | Groups in a popover; Open: groups                     | ✅ covered | Popover, toolbar, message strip, two groups, growing item, `actionKeyHandler`. "Open: groups" opens the popover in `play()`                                                                                            |
+| Upstream example     | Registry story                                        | Status     | Notes                                                                                                                                                                                                                                                            |
+| -------------------- | ----------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Notification         | Notifications; Open: overflow actions                 | ✅ covered | Unread, selected, long-text, status, actions; an overflow button opening an action sheet (Approve, Reject, Forward; the picked action is announced in a live region instead of a message toast) and a message strip in `fd-notification-message-strip-container` |
+| Template as Content  | Service ("Open from template")                        | ✅ covered | Escape-closeable, reports close/dismiss reason                                                                                                                                                                                                                   |
+| Component as Content | Service ("Open from component"); Open: service banner | ✅ covered | Data via `NotificationRef`, approve/close buttons; the Open story opens a banner in `play()`                                                                                                                                                                     |
+| Notification Group   | Groups in a popover; Open: groups                     | ✅ covered | Popover, toolbar, message strip, two groups, growing item, `actionKeyHandler`. "Open: groups" opens the popover in `play()`                                                                                                                                      |
 
 ### Tests vs. upstream specs
 
@@ -39,6 +39,5 @@ Registry-only coverage: real line-clamp height growth on More, focus moved into 
 
 ### Gaps to fill
 
-- **Stories:** extend "Notifications" with an overflow button opening an action sheet/menu (Accept, Reject, Snooze) and a message strip in `fd-notification-message-strip-container`.
 - **Tests:** "group header toggles with Space and ignores other keys"; "group header arrow points right when collapsed and down when expanded (mirrored in RTL)"; "group is a level-1 listitem labelled by its header title with an aria-description that follows expanded"; "group header title is a level-3 heading"; "notification list is a list labelled Notifications"; "growing item is a focusable button"; "ArrowUp and Home move to previous/first notification"; "arrow keys keep the focused action button column across notifications"; "actionKeyHandler runs on Enter, Delete and Backspace but not on other keys or from nested buttons"; "service opens a template and destroyAll closes every banner"; "title falls back to the paragraph for aria-labelledby".
 - **Effort:** M, many small ARIA/keyboard assertions plus one story extension and a possible aria-describedby port.
