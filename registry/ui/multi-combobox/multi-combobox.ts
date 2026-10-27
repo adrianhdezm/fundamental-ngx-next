@@ -271,24 +271,28 @@ let nextId = 0;
                     }
                     @for (row of rows(); track row.key) {
                         @if (row.header !== null) {
-                            <li
-                                role="group"
-                                class="m-0 list-none p-0"
-                                [attr.aria-labelledby]="id + '-group-' + row.key"
-                            >
-                                @if (templates().groupItemTemplate; as tpl) {
-                                    <div [id]="id + '-group-' + row.key">
-                                        <ng-container
-                                            [ngTemplateOutlet]="tpl"
-                                            [ngTemplateOutletContext]="{ $implicit: { label: row.header } }"
-                                        />
-                                    </div>
-                                } @else {
-                                    <div [id]="id + '-group-' + row.key" [class]="groupHeaderClass">
-                                        {{ row.header }}
-                                    </div>
-                                }
-                                <ul role="none" class="m-0 list-none p-0">
+                            <li role="none" class="m-0 list-none p-0">
+                                <ul
+                                    role="group"
+                                    class="m-0 list-none p-0"
+                                    [attr.aria-labelledby]="id + '-group-' + row.key"
+                                >
+                                    @if (templates().groupItemTemplate; as tpl) {
+                                        <li role="presentation" [id]="id + '-group-' + row.key">
+                                            <ng-container
+                                                [ngTemplateOutlet]="tpl"
+                                                [ngTemplateOutletContext]="{ $implicit: { label: row.header } }"
+                                            />
+                                        </li>
+                                    } @else {
+                                        <li
+                                            role="presentation"
+                                            [id]="id + '-group-' + row.key"
+                                            [class]="groupHeaderClass"
+                                        >
+                                            {{ row.header }}
+                                        </li>
+                                    }
                                     @for (entry of row.items; track entry.index) {
                                         <ng-container
                                             [ngTemplateOutlet]="optionTpl"

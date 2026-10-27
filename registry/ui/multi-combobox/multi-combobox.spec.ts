@@ -139,6 +139,10 @@ describe('MultiCombobox', () => {
         await fixture.whenStable();
         const groups = [...document.querySelectorAll<HTMLElement>('ul[role=listbox] [role=group]')];
         expect(groups).toHaveLength(2);
+        // a list may take the group role (an li may not), inside a presentational li
+        expect(groups.map((g) => g.tagName)).toEqual(['UL', 'UL']);
+        expect(groups[0].parentElement!.getAttribute('role')).toBe('none');
+        expect(groups.map((g) => g.querySelectorAll('[role=option]').length)).toEqual([2, 2]);
         expect(document.getElementById(groups[1].getAttribute('aria-labelledby')!)?.textContent?.trim()).toBe(
             'Vegetable'
         );
