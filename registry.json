@@ -341,6 +341,32 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "object-identifier",
+      "type": "registry:ui",
+      "title": "Object Identifier",
+      "description": "Object title, optionally a link, with a description below.",
+      "registryDependencies": ["utils", "theme", "link"],
+      "files": [
+        {
+          "path": "registry/ui/object-identifier/object-identifier.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "object-attribute",
+      "type": "registry:ui",
+      "title": "Object Attribute",
+      "description": "Single-line object property, optionally with an action link.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/object-attribute/object-attribute.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
