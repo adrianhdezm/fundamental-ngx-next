@@ -387,6 +387,7 @@ export class ResizableCardItem implements FocusableOption {
         const span = Math.floor(height / verticalResizeStep);
         const rows = height % verticalResizeStep > verticalResizeOffset ? span + 1 : span;
         this.cardHeightRowSpan.set(rows);
+        this.cardHeight.set(rows * verticalResizeStep);
     }
 
     protected readonly itemClass = computed(() =>

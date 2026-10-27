@@ -169,7 +169,7 @@ export class Avatar {
     readonly colorAccent = input<ColorAccent | null | undefined>(null);
     /** Indication colour; used when no accent colour is set. */
     readonly colorIndication = input<IndicationColor | null | undefined>(null);
-    /** Picks a random accent colour. */
+    /** Picks an accent colour from the label (the same label always gets the same colour), else a random one. */
     readonly random = input(false, { transform: booleanAttribute });
     /** Makes the avatar a button (role, tabindex, Enter/Space). */
     readonly clickable = input(false, { transform: booleanAttribute });
@@ -213,8 +213,13 @@ export class Avatar {
         () => this.ariaLabel() || this.label() || this.fallbackName() || this.hostAlt || null
     );
 
-    protected readonly tabindex = computed(() => this.hostTabindex ?? (this.clickable() ? 0 : null));
-    protected readonly role = computed(() => (this.zoomGlyph() || this.clickable() ? 'button' : 'img'));
+    protected readonly tabindex = computed(
+        () => this.hostTabindex ?? (this.clickable() || this.zoomGlyph() ? 0 : null)
+    );
+    protected readonly role = computed(() => {
+        if (this.zoomGlyph() || this.clickable()) return 'button';
+        return this.accessibleName() || this.ariaLabelledby() ? 'img' : 'presentation';
+    });
 
     protected readonly badgeGlyph = computed(() => {
         const state = this.valueState();
@@ -233,7 +238,8 @@ export class Avatar {
     });
 
     protected readonly computedClass = computed(() => {
-        const accent = this.random() ? this.randomAccent() : this.colorAccent();
+        const name = this.label() || this.ariaLabel();
+        const accent = this.random() ? (name ? labelColorAccent(name) : this.randomAccent()) : this.colorAccent();
         const indication = !accent ? this.colorIndication() : null;
         const interactive = this.interactive() || this.clickable() || !!this.zoomGlyph() || this.hostTabindex === '0';
         return cn(
@@ -286,16 +292,16 @@ export class Avatar {
     }
 
     protected onClick(event: Event): void {
-        if (!this.clickable()) return;
+        if (!this.clickable() && !this.zoomGlyph()) return;
         event.preventDefault();
-        this.avatarClicked.emit(event);
+        if (this.clickable()) this.avatarClicked.emit(event);
         if (this.zoomGlyph()) this.zoomGlyphClicked.emit();
     }
 
+    /** Keeps the focus on the avatar; the click on it emits zoomGlyphClicked. */
     protected zoomClicked(event: Event): void {
         event.preventDefault();
         this.elementRef.nativeElement.focus();
-        this.zoomGlyphClicked.emit();
     }
 
     private load(url: string, onError: () => void): void {
@@ -336,4 +342,11 @@ export class Avatar {
 
 export function randomColorAccent(): ColorAccent {
     return (Math.floor(Math.random() * 10) + 1) as ColorAccent;
+}
+
+/** Accent colour derived from a name, so the same person always gets the same colour. */
+export function labelColorAccent(label: string): ColorAccent {
+    let hash = 0;
+    for (const char of label) hash = (hash * 31 + char.codePointAt(0)!) >>> 0;
+    return ((hash % 10) + 1) as ColorAccent;
 }

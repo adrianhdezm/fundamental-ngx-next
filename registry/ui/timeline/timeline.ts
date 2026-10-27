@@ -48,9 +48,13 @@ export interface TimelineNodeContext<T> {
     index: number;
 }
 
-/** Template of a node: `<fd-timeline-node *fdTimelineNodeDef="let node">`. */
+/**
+ * Template of a node: `<fd-timeline-node *fdTimelineNodeDef="let node">`. Pass the data source as
+ * `of` to type the node: `*fdTimelineNodeDef="let node; of: posts"`.
+ */
 @Directive({ selector: '[fdTimelineNodeDef], [fd-timeline-node-def]' })
 export class TimelineNodeDef<T = unknown> {
+    readonly fdTimelineNodeDefOf = input<readonly T[] | null | undefined>();
     readonly template = inject<TemplateRef<TimelineNodeContext<T>>>(TemplateRef);
 
     static ngTemplateContextGuard<T>(_dir: TimelineNodeDef<T>, ctx: unknown): ctx is TimelineNodeContext<T> {

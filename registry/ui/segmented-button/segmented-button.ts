@@ -146,15 +146,21 @@ export class SegmentedButton implements ControlValueAccessor {
         const rtl = this.dir?.value === 'rtl';
         const forward = this.vertical() ? 'ArrowDown' : rtl ? 'ArrowLeft' : 'ArrowRight';
         const backward = this.vertical() ? 'ArrowUp' : rtl ? 'ArrowRight' : 'ArrowLeft';
-        let next: number;
-        if (event.key === forward) next = Math.min(current + 1, buttons.length - 1);
-        else if (event.key === backward) next = Math.max(current - 1, 0);
-        else if (event.key === 'Home') next = 0;
-        else if (event.key === 'End') next = buttons.length - 1;
+        let start: number;
+        let step: number;
+        if (event.key === forward) [start, step] = [current + 1, 1];
+        else if (event.key === backward) [start, step] = [current - 1, -1];
+        else if (event.key === 'Home') [start, step] = [0, 1];
+        else if (event.key === 'End') [start, step] = [buttons.length - 1, -1];
         else return;
         event.preventDefault();
-        this.focusIndex.set(next);
-        buttons[next].elementRef.nativeElement.focus();
+        // disabled buttons cannot take focus, so skip them
+        for (let next = start; next >= 0 && next < buttons.length; next += step) {
+            if (buttons[next].disabledState()) continue;
+            this.focusIndex.set(next);
+            buttons[next].elementRef.nativeElement.focus();
+            return;
+        }
     }
 
     writeValue(value: SegmentedButtonValue): void {

@@ -4,7 +4,15 @@
  * Modified for fundamental-ngx-next: rewritten with Angular signals, the Angular CDK and Tailwind CSS.
  * SPDX-License-Identifier: Apache-2.0
  */
-import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    ElementRef,
+    booleanAttribute,
+    computed,
+    inject,
+    input
+} from '@angular/core';
 import { cn, type ClassValue } from '@/lib/utils';
 import { Icon, type IconFont } from '@/ui/icon/icon';
 
@@ -29,7 +37,8 @@ let nextId = 0;
         '[attr.id]': 'id()',
         '[attr.tabindex]': 'clickable() ? 0 : -1',
         '[attr.role]': 'role()',
-        '[attr.aria-labelledby]': 'computedAriaLabelledBy()'
+        '[attr.aria-labelledby]': 'computedAriaLabelledBy()',
+        '(keydown.enter)': 'activate($event)'
     },
     template: `
         <span class="sr-only-sap" [id]="id() + '-sr-only'" aria-hidden="true">{{ computedStatusText() }}</span>
@@ -65,6 +74,18 @@ export class ObjectMarker {
     /** Tooltip and accessible name of icon-only markers (defaults to the glyph name). */
     readonly title = input<string | null | undefined>();
     readonly userClass = input<ClassValue>('', { alias: 'class' });
+
+    private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
+    /** role="link" hosts without a native link activate with Enter like links. */
+    protected activate(event: Event): void {
+        const host = this.elementRef.nativeElement;
+        const native =
+            (host instanceof HTMLAnchorElement && host.hasAttribute('href')) || host instanceof HTMLButtonElement;
+        if (!this.clickable() || event.target !== host || native) return;
+        event.preventDefault();
+        host.click();
+    }
 
     protected readonly role = computed(() =>
         this.clickable() ? 'link' : this.glyph() && !this.label() ? 'img' : null

@@ -102,7 +102,7 @@ const DEFAULT_STRIP: MessageStripAlertStripConfig = {
     selector: 'fd-message-strip-alert',
     imports: [MessageStrip, AutoDismissMessageStrip, NgTemplateOutlet, NgComponentOutlet],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    host: { class: 'block w-fit max-w-full' },
+    host: { role: 'alert', class: 'block w-fit max-w-full' },
     template: `
         @let s = entry().strip;
         <fd-message-strip
@@ -173,7 +173,7 @@ export class MessageStripAlertContainer {
     protected readonly hostClass = computed(() => {
         const [vertical, horizontal] = this.position().split('-');
         return cn(
-            'scrollbar-sap flex max-w-full flex-col gap-3 overflow-auto p-2',
+            'scrollbar-sap flex w-full max-w-full flex-col gap-3 overflow-auto p-2',
             this.shared() ? 'max-h-[calc(50vh_-_1rem)]' : 'max-h-[calc(100vh_-_1rem)]',
             vertical === 'bottom' && 'flex-col-reverse',
             horizontal === 'middle' ? 'items-center' : horizontal === 'end' ? 'items-end' : 'items-start'

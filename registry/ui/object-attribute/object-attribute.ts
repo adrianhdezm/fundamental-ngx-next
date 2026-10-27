@@ -27,11 +27,11 @@ import { cn, type ClassValue } from '@/lib/utils';
         {{ label() }}<ng-content />
         @if (linkText() != null) {
             <span
-                role="link"
+                [attr.role]="isLink() ? 'link' : null"
                 [class]="linkClass()"
-                [attr.tabindex]="disabled() ? -1 : 0"
+                [attr.tabindex]="isLink() ? (disabled() ? -1 : 0) : null"
                 [attr.title]="linkText()"
-                [attr.aria-disabled]="disabled() || null"
+                [attr.aria-disabled]="(isLink() && disabled()) || null"
                 (click)="activate($event)"
                 (keydown.enter)="activate($event)"
                 >{{ linkText() }}</span

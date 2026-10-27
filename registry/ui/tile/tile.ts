@@ -68,7 +68,7 @@ export class TileContainer {
         '[class]': 'computedClass()',
         '(click)': 'onClick()',
         '(keydown.enter)': 'onKey($event)',
-        '(keydown.space)': '$event.target === $event.currentTarget && $event.preventDefault()',
+        '(keydown.space)': 'onSpaceDown($event)',
         '(keyup.space)': 'onKey($event)'
     },
     template: `
@@ -116,6 +116,10 @@ export class Tile {
 
     protected onClick(): void {
         if ((this.isLink || this.clickable()) && !this.disabled()) this.tileClick.emit();
+    }
+
+    protected onSpaceDown(event: Event): void {
+        if (event.target === event.currentTarget) event.preventDefault();
     }
 
     protected onKey(event: Event): void {
@@ -526,7 +530,7 @@ export class TileToggle {
     protected readonly glyphChar = computed(() => iconGlyphChar(this.playing() ? 'media-pause' : 'media-play'));
     protected readonly computedClass = computed(() =>
         cn(
-            'absolute -end-px -top-px z-5 m-0 box-border hidden size-12 cursor-pointer border-0 bg-transparent p-2 outline-none group-hover/tile:flex focus-visible:flex pointer-coarse:flex',
+            'absolute -end-px -top-px z-5 m-0 box-border flex size-12 cursor-pointer border-0 bg-transparent p-2 opacity-0 outline-none group-hover/tile:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100',
             'before:flex before:size-8 before:items-center before:justify-center before:rounded-full before:bg-sap-block-layer-background before:font-sap-content-icon-font-family before:text-[1rem] before:text-sap-button-emphasized-text-color before:opacity-60 before:text-shadow-sap-button-emphasized-text-shadow before:content-[attr(data-glyph)]',
             'hover:before:opacity-80 active:before:opacity-100 focus-visible:before:outline-sap',
             this.userClass()

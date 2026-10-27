@@ -63,10 +63,12 @@ export function sanitizeFormattedText(html: string, linkTarget: LinkTarget = '_b
                     const href = el.getAttribute('href');
                     if (!href || href.startsWith('#')) el.removeAttribute('target');
                     else if (linkTarget) el.setAttribute('target', linkTarget);
+                    if (el.getAttribute('target') === '_blank' && !/\bnoopener\b/.test(el.getAttribute('rel') ?? ''))
+                        el.setAttribute('rel', `${el.getAttribute('rel') ?? ''} noopener`.trim());
                 }
                 copy(child, el);
                 into.appendChild(el);
-            } else if (child instanceof Element && !DROPPED.has(child.tagName)) {
+            } else if (child instanceof Element && !DROPPED.has(child.tagName.toUpperCase())) {
                 // other tags are dropped but their text is kept
                 copy(child, into);
             }

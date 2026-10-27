@@ -294,6 +294,10 @@ export class FixedCardLayout {
 
     protected onDragStarted(event: CdkDragStart<CardDefinition>): void {
         this.dragged.set(event.source.data);
+        // room for the placeholder in any column, so entering a list does not wrap the columns
+        this.height.set(this.columnHeight() + event.source.element.nativeElement.offsetHeight + REM);
+        // hide the slot now: the drop lists measure their positions right after this event
+        event.source.dropContainer.element.nativeElement.style.display = 'none';
     }
 
     protected onEntered(event: CdkDragEnter<number, unknown>): void {
@@ -302,11 +306,12 @@ export class FixedCardLayout {
         const column = this.columns().findIndex((cards) => cards.includes(target as CardDefinition));
         const extra =
             event.item.element.nativeElement.offsetHeight + (event.container.getSortedItems().length ? REM : 0);
-        this.height.set(this.columnHeight(column, extra));
+        this.height.set(Math.max(this.height() ?? 0, this.columnHeight(column, extra)));
     }
 
     protected onDropped(event: CdkDragDrop<number, number, CardDefinition>): void {
         this.dragged.set(null);
+        event.previousContainer.element.nativeElement.style.display = '';
         this.placeholderMargin.set(false);
         if (event.container.data === event.previousContainer.data) {
             this.measure.update((n) => n + 1);
@@ -315,13 +320,10 @@ export class FixedCardLayout {
         const moved = event.previousContainer.getSortedItems()[0]?.data as CardDefinition;
         const replaced = event.container.getSortedItems()[0]?.data as CardDefinition;
         const column = this.columns().find((cards) => cards.includes(moved));
-        // within a column of two, dropping on the other card in the direction it already is keeps the order
-        if (column?.includes(replaced) && column.length === 2) {
-            const down = event.previousContainer.data < event.container.data;
-            if (moved.rank() < replaced.rank() === down) {
-                this.measure.update((n) => n + 1);
-                return;
-            }
+        // within a column of two, dropping the upper card on the lower one keeps the order (the placeholder is above it)
+        if (column?.includes(replaced) && column.length === 2 && moved.rank() < replaced.rank()) {
+            this.measure.update((n) => n + 1);
+            return;
         }
         this.swap(moved, replaced);
     }

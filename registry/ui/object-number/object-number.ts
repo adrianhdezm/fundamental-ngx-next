@@ -73,7 +73,9 @@ const STATUS_TEXT: Record<ObjectNumberStatus, string> = {
             ><bdi dir="ltr">{{ formattedNumber() }}</bdi
             >&nbsp;</span
         >
-        <span [class]="partClass()" class="font-sap-font-light-family">{{ unit() }}</span>
+        <span [class]="partClass()" class="font-sap-font-light-family"
+            ><bdi>{{ unit() }}</bdi></span
+        >
         @if (emphasized()) {
             <span class="sr-only-sap">{{ emphasizedText() }}</span>
         }

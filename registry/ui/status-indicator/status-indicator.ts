@@ -11,6 +11,7 @@ import {
     afterRenderEffect,
     booleanAttribute,
     computed,
+    inject,
     input,
     signal,
     viewChildren
@@ -122,7 +123,9 @@ let nextId = 0;
         '[attr.aria-valuemin]': 'isRange() ? 0 : null',
         '[attr.aria-valuemax]': 'isRange() ? 100 : null',
         '[attr.title]': 'title()',
-        '[attr.tabindex]': 'focusable() ? 0 : null'
+        '[attr.tabindex]': 'focusable() ? 0 : null',
+        '(keydown.enter)': 'activate($event)',
+        '(keydown.space)': 'activate($event)'
     },
     template: `
         @if (labelPosition() === 'left' || labelPosition() === 'top') {
@@ -212,6 +215,7 @@ export class StatusIndicator {
     readonly title = input<string | null | undefined>();
     readonly userClass = input<ClassValue>('', { alias: 'class' });
 
+    private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     private readonly shapes = viewChildren<ElementRef<SVGPathElement>>('shape');
 
     protected readonly percentage = computed(() => Math.max(0, Math.min(100, this.fillPercentage() ?? 0)));
@@ -243,6 +247,13 @@ export class StatusIndicator {
                 if (polygons.join('|') !== this.radialPolygons().join('|')) this.radialPolygons.set(polygons);
             }
         });
+    }
+
+    /** Enter and Space click a clickable, focusable indicator. */
+    protected activate(event: Event): void {
+        if (!this.clickable() || event.target !== this.host) return;
+        event.preventDefault();
+        this.host.click();
     }
 
     protected readonly computedClass = computed(() => {

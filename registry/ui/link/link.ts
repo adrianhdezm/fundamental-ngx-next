@@ -4,7 +4,15 @@
  * Modified for fundamental-ngx-next: rewritten with Angular signals, the Angular CDK and Tailwind CSS.
  * SPDX-License-Identifier: Apache-2.0
  */
-import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    HostAttributeToken,
+    booleanAttribute,
+    computed,
+    inject,
+    input
+} from '@angular/core';
 import { cn, type ClassValue } from '@/lib/utils';
 
 /**
@@ -23,7 +31,7 @@ import { cn, type ClassValue } from '@/lib/utils';
     host: {
         '[class]': 'computedClass()',
         '[attr.aria-disabled]': 'disabled() ? "true" : "false"',
-        '[attr.tabindex]': 'disabled() ? -1 : null'
+        '[attr.tabindex]': 'disabled() ? -1 : hostTabindex'
     },
     template: `
         <span [class]="contentClass()"><ng-content /></span>
@@ -54,6 +62,8 @@ export class Link {
     readonly subtleLabel = input('Subtle');
 
     readonly userClass = input<ClassValue>('', { alias: 'class' });
+
+    protected readonly hostTabindex = inject(new HostAttributeToken('tabindex'), { optional: true });
 
     protected readonly computedClass = computed(() =>
         cn(

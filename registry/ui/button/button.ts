@@ -315,6 +315,20 @@ export class Button implements OnInit {
         )
     );
 
+    constructor() {
+        // capture phase: runs before the (click) listeners of the element
+        this.elementRef.nativeElement.addEventListener(
+            'click',
+            (event) => {
+                if ((!this.isNativeButton && this.disabledState()) || this.ariaDisabled()) {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                }
+            },
+            { capture: true }
+        );
+    }
+
     ngOnInit(): void {
         const el = this.elementRef.nativeElement;
         this.nativeAriaLabel.set(el.getAttribute('aria-label'));
@@ -332,11 +346,6 @@ export class Button implements OnInit {
      * Buttons out of the tab order (e.g. input group buttons that keep the focus in their input) stay unfocused.
      */
     protected onClick(event: Event): void {
-        if (!this.isNativeButton && this.disabledState()) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            return;
-        }
         const target = event.currentTarget as HTMLElement | null;
         if (target && target.tabIndex >= 0 && document.activeElement !== target) target.focus();
     }

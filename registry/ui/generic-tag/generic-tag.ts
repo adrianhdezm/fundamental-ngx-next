@@ -48,9 +48,9 @@ const TYPE: Record<GenericTagType | 'neutral', string> = {
         @if (type()) {
             <fd-icon [glyph]="'message-' + type()" class="flex items-center justify-center text-base text-(--gt-ic)" />
         }
-        <span [class]="textClass" class="text-(--gt-nc)">{{ name() }}</span>
+        <span [class]="textClass" class="text-(--gt-nc)" [attr.title]="name()">{{ name() }}</span>
         @if (value()) {
-            <span [class]="textClass" class="ms-3 text-(--gt-vc)">{{ value() }}</span>
+            <span [class]="textClass" class="ms-3 text-(--gt-vc)" [attr.title]="value()">{{ value() }}</span>
         }
     `
 })
@@ -75,7 +75,7 @@ export class GenericTag {
 
     protected readonly computedClass = computed(() =>
         cn(
-            'mx-0 my-[0.5625rem] compact:my-[0.1875rem] box-border flex h-[1.625rem] w-fit cursor-pointer items-center gap-[0.375rem] ps-3 pe-[0.375rem]',
+            'mx-0 my-[0.5625rem] compact:my-[0.1875rem] box-border flex h-[1.625rem] w-fit max-w-full cursor-pointer items-center gap-[0.375rem] ps-3 pe-[0.375rem]',
             'font-sap-font-family text-sap-font-size rounded-sap-button-border-corner-radius shadow-sap-content-shadow0',
             '[--gt-nc:var(--sapList_TextColor)] [--gt-ts:var(--sapContent_TextShadow)] [--gt-pos:0] rtl:[--gt-pos:100%]',
             // status decorator strip on the start edge over the background colour

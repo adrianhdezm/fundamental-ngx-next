@@ -200,8 +200,6 @@ export class AvatarGroupOverflowList {
                                         tabindex="0"
                                         aria-haspopup="dialog"
                                         [class]="focusRing + ' flex cursor-pointer'"
-                                        (keydown.enter)="clickSelf($event)"
-                                        (keydown.space)="clickSelf($event)"
                                     >
                                         <ng-container [ngTemplateOutlet]="item.templateRef" />
                                     </div>
@@ -227,8 +225,6 @@ export class AvatarGroupOverflowList {
                                     aria-haspopup="dialog"
                                     [attr.aria-label]="'+' + hiddenItems().length + ' more'"
                                     [class]="focusRing + ' flex cursor-pointer'"
-                                    (keydown.enter)="clickSelf($event)"
-                                    (keydown.space)="clickSelf($event)"
                                 >
                                     <ng-container [ngTemplateOutlet]="overflowButtonTemplate" />
                                 </div>
@@ -245,15 +241,7 @@ export class AvatarGroupOverflowList {
         } @else {
             <fd-popover [noArrow]="false" [placement]="placement()" [bodyAriaLabel]="overflowPopoverTitle()">
                 <fd-popover-control>
-                    <div
-                        #row
-                        role="button"
-                        tabindex="0"
-                        aria-haspopup="dialog"
-                        [class]="rowClass()"
-                        (keydown.enter)="clickSelf($event)"
-                        (keydown.space)="clickSelf($event)"
-                    >
+                    <div #row role="button" tabindex="0" aria-haspopup="dialog" [class]="rowClass()">
                         <span class="sr-only-sap">{{
                             ariaLabel() || 'Avatar group, ' + items().length + ' avatars'
                         }}</span>
@@ -378,11 +366,6 @@ export class AvatarGroup {
             observer.observe(this.host);
             destroyRef.onDestroy(() => observer.disconnect());
         });
-    }
-
-    protected clickSelf(event: Event): void {
-        event.preventDefault();
-        (event.currentTarget as HTMLElement).click();
     }
 
     private averageWidth(): number {

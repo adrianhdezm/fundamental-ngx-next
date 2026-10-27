@@ -45,6 +45,7 @@ const COLOR: Record<InfoLabelColor, string> = {
             <fd-icon
                 [glyph]="glyph()"
                 [font]="font()"
+                [ariaLabel]="label() ? null : ariaLabel()"
                 class="h-(--il-h) text-(length:--il-icon) leading-(--il-h) text-inherit"
             />
         }

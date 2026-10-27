@@ -9,9 +9,9 @@ import {
     Component,
     ElementRef,
     Renderer2,
+    afterRenderEffect,
     booleanAttribute,
     contentChild,
-    effect,
     inject,
     input,
     model,
@@ -85,7 +85,7 @@ export class FormInputMessageGroup {
     private managedId: string | null = null;
 
     constructor() {
-        effect(() => {
+        afterRenderEffect(() => {
             const message = this.message();
             const id = message?.id();
             const type = message?.type();

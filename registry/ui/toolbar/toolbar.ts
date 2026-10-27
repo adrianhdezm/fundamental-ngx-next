@@ -208,7 +208,9 @@ let nextId = 0;
         '[attr.aria-labelledby]': 'ariaLabelledBy() || (title() ? titleId() : null)',
         '[attr.aria-describedby]': 'ariaDescribedBy()',
         '[attr.aria-orientation]': 'ariaOrientation()',
-        '[attr.tabindex]': 'active() ? 0 : null'
+        '[attr.tabindex]': 'active() ? 0 : null',
+        '(keydown.enter)': 'activate($event)',
+        '(keydown.space)': 'activate($event)'
     },
     template: `
         @if (title()) {
@@ -351,6 +353,13 @@ export class Toolbar {
     /** Recomputes the overflow, e.g. after items changed their width. */
     updateCollapsibleItems(): void {
         this.measure.update((n) => n + 1);
+    }
+
+    /** Enter and Space click an active info toolbar. */
+    protected activate(event: Event): void {
+        if (!this.active() || event.target !== this.elementRef.nativeElement) return;
+        event.preventDefault();
+        this.elementRef.nativeElement.click();
     }
 
     private restore(item: ToolbarItem): void {

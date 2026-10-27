@@ -32,7 +32,13 @@ const compiler = await compile(
     }
 );
 
-const scanner = new Scanner({ sources: [{ base: resolve(root, 'registry'), pattern: '**/*.ts', negated: false }] });
+// spec files are not shipped, and their test code names attributes such as data-sap-theme
+const scanner = new Scanner({
+    sources: [
+        { base: resolve(root, 'registry'), pattern: '**/*.ts', negated: false },
+        { base: resolve(root, 'registry'), pattern: '**/*.spec.ts', negated: true }
+    ]
+});
 const candidates = scanner.scan().filter((c) => /sap|--sap/.test(c));
 
 /** CSS.escape for selectors, as Tailwind prints them. */

@@ -56,6 +56,8 @@ export class OverflowItemRef<T = unknown> {
     readonly forceVisibility = signal(false);
     readonly forced = computed(() => this.forceVisibility() || this.fdOverflowItemRefForceVisibility());
     readonly hidden = signal(false);
+    /** Hidden state last emitted by hiddenChange; kept here as the item renders anew when it moves. */
+    announcedHidden: boolean | undefined;
 
     static ngTemplateContextGuard<T>(_dir: OverflowItemRef<T>, ctx: unknown): ctx is OverflowItemContext<T> {
         return true;
@@ -72,11 +74,12 @@ export class OverflowLayoutItem {
 
     constructor() {
         effect(() => this.ref?.forceVisibility.set(this.forceVisibility()));
-        let previous: boolean | undefined;
         effect(() => {
-            const hidden = this.ref?.hidden() ?? false;
-            if (previous !== undefined && hidden !== previous) this.hiddenChange.emit(hidden);
-            previous = hidden;
+            const ref = this.ref;
+            if (!ref) return;
+            const hidden = ref.hidden();
+            if (ref.announcedHidden !== undefined && hidden !== ref.announcedHidden) this.hiddenChange.emit(hidden);
+            ref.announcedHidden = hidden;
         });
     }
 }
