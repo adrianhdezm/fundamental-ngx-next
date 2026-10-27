@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { Avatar, avatarInitials, labelColorAccent, type AvatarSize, type ColorAccent } from './avatar';
 
@@ -309,5 +309,90 @@ describe('Avatar', () => {
         const accents = new Set(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'].map(labelColorAccent));
         expect(accents.size).toBeGreaterThan(5);
         for (const accent of accents) expect(accent >= 1 && accent <= 10).toBe(true);
+    });
+});
+
+/** Stands in for `Image`: records each request and lets the test decide when it loads or fails. */
+class FakeImage {
+    static requests: FakeImage[] = [];
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    private url = '';
+    set src(url: string) {
+        this.url = url;
+        FakeImage.requests.push(this);
+    }
+    get src(): string {
+        return this.url;
+    }
+    load(): void {
+        this.onload?.();
+    }
+    fail(): void {
+        this.onerror?.();
+    }
+}
+
+@Component({
+    imports: [Avatar],
+    template: `
+        @for (id of ids(); track id) {
+            <fd-avatar
+                [id]="'avatar-' + id"
+                [image]="image()"
+                [label]="label()"
+                [size]="size()"
+                [alterIcon]="alterIcon()"
+                [backupImage]="backup()"
+                ariaLabel="Photo"
+            />
+        }
+    `
+})
+class ImageHost {
+    readonly ids = signal([1]);
+    readonly image = signal<string | null>(null);
+    readonly label = signal('John Doe');
+    readonly size = signal<AvatarSize>('l');
+    readonly alterIcon = signal<string | null>(null);
+    readonly backup = signal<string | null>(null);
+}
+
+describe('Avatar image loading', () => {
+    beforeEach(() => {
+        FakeImage.requests = [];
+        vi.stubGlobal('Image', FakeImage);
+    });
+    afterEach(() => vi.unstubAllGlobals());
+
+    async function setupImages() {
+        const fixture = TestBed.createComponent(ImageHost);
+        await fixture.whenStable();
+        const root = fixture.nativeElement as HTMLElement;
+        return {
+            fixture,
+            host: fixture.componentInstance,
+            avatar: (id = 1) => root.querySelector<HTMLElement>(`#avatar-${id}`)!,
+            urls: () => FakeImage.requests.map((r) => r.src),
+            update: async (change: (host: ImageHost) => void) => {
+                change(fixture.componentInstance);
+                await fixture.whenStable();
+            }
+        };
+    }
+
+    it('returns to a previously loaded URL without a new request', async () => {
+        const { avatar, urls, update } = await setupImages();
+        await update((h) => h.image.set('/one.png'));
+        FakeImage.requests[0].load();
+        await update((h) => h.image.set('/two.png'));
+        FakeImage.requests[1].load();
+        await update(() => {});
+        expect(avatar().style.backgroundImage).toContain('/two.png');
+
+        await update((h) => h.image.set('/one.png'));
+        expect(urls()).toEqual(['/one.png', '/two.png']);
+        expect(avatar().style.backgroundImage).toContain('/one.png');
+        expect(avatar().textContent!.trim()).toBe('');
     });
 });

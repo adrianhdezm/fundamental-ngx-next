@@ -198,6 +198,8 @@ export class Avatar {
     private readonly forceDefault = signal(false);
     private readonly randomAccent = signal<ColorAccent>(randomColorAccent());
     private loadToken = 0;
+    /** URLs this avatar loaded successfully. */
+    private readonly loadedUrls = new Set<string>();
 
     protected readonly initials = computed(() => {
         if (this.imageLoaded()) return null;
@@ -306,11 +308,19 @@ export class Avatar {
 
     private load(url: string, onError: () => void): void {
         const token = ++this.loadToken;
-        const img = new Image();
-        img.onload = () => {
-            if (token !== this.loadToken) return;
+        const show = () => {
             this.bgImage.set(`url("${url}")`);
             this.imageLoaded.set(true);
+        };
+        // an image this avatar already showed is not requested again
+        if (this.loadedUrls.has(url)) {
+            show();
+            return;
+        }
+        const img = new Image();
+        img.onload = () => {
+            this.loadedUrls.add(url);
+            if (token === this.loadToken) show();
         };
         img.onerror = () => token === this.loadToken && onError();
         img.src = url;
