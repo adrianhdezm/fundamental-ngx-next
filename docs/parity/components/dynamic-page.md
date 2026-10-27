@@ -1,20 +1,20 @@
 ## dynamic-page
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/dynamic-page) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/dynamic-page)
-Registry: `registry/ui/dynamic-page/` — 6 stories, 8 tests.
+Registry: `registry/ui/dynamic-page/` — 10 stories, 8 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                           | Registry story                                 | Status     | Notes                                                                                                  |
-| ------------------------------------------ | ---------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------ |
-| Basic Dynamic Page                         | Default ("Facets, pinnable header and footer") | ✅ covered | Breadcrumb, global/layout actions, title content, footer                                               |
-| Dynamic Page with Tabs                     | Tabs, StackedTabs                              | ✅ covered |                                                                                                        |
-| Dynamic Page inside Flexible Column Layout | —                                              | ❌ missing | `flexible-column-layout` exists in the registry                                                        |
-| Responsive Dynamic Page                    | Small ("Small width")                          | 🟡 partial | One fixed narrow frame; upstream shows the responsive paddings and compact title content across widths |
-| Dynamic Page with Facets                   | Default, Collapsed                             | ✅ covered |                                                                                                        |
-| Dynamic height of parent element           | —                                              | ❌ missing | Page inside a container whose height changes (`refreshSize`/`offset`)                                  |
-| Routing inside Dynamic Page                | —                                              | ❌ missing | Router outlet in the content                                                                           |
-| Dynamic Page with Wizard                   | —                                              | ❌ missing | Wizard inside the content                                                                              |
+| Upstream example                           | Registry story                                             | Status     | Notes                                                                                                           |
+| ------------------------------------------ | ---------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------- |
+| Basic Dynamic Page                         | Default ("Facets, pinnable header and footer")             | ✅ covered | Breadcrumb, global/layout actions, title content, footer                                                        |
+| Dynamic Page with Tabs                     | Tabs, StackedTabs                                          | ✅ covered |                                                                                                                 |
+| Dynamic Page inside Flexible Column Layout | InFlexibleColumnLayout ("Inside a flexible column layout") | ✅ covered | Page in the mid column with full screen / close layout actions                                                  |
+| Responsive Dynamic Page                    | Responsive, Small ("Small width")                          | ✅ covered | Width switcher over the four sizes: paddings, squashed layout actions, global actions toolbar overflow on small |
+| Dynamic Page with Facets                   | Default, Collapsed                                         | ✅ covered |                                                                                                                 |
+| Dynamic height of parent element           | ContainerHeight ("Dynamic height of the parent")           | ✅ covered | Space added above the page, `refreshSize()` and `offset`                                                        |
+| Routing inside Dynamic Page                | —                                                          | ❌ missing | Blocked: router outlet in the content needs a router in stories (see README "Not yet ported")                   |
+| Dynamic Page with Wizard                   | WithWizard ("With wizard")                                 | ✅ covered | `fd-wizard` in the content                                                                                      |
 
 Not an overlay component; upstream opens examples full screen from a button, our stories render the page in a frame, so no "Open: …" story is needed.
 
@@ -43,6 +43,6 @@ Registry-only coverage: Enter/Space on the header toggle, `disableSnapOnScroll`,
 
 ### Gaps to fill
 
-- **Stories:** "Inside flexible column layout" — page in the mid column of an FCL; "Responsive" — the same page in sm/md/lg/xl frames (or a width control) showing paddings and squashed actions; "Container height" — page in a resizable container with `offset`; "Routing" — buttons switching routed content (can be simulated with a signal if no router in Storybook); "Wizard" — `fd-wizard` in the content.
+- **Stories:** "Routing" is blocked on a router in stories.
 - **Tests:** "global and layout actions are labelled toolbars"; "renders title and subtitle, and moves the subtitle into the title area when collapsed"; "wraps the title and subtitle with titleWrap/subtitleWrap"; "uses titleId for the heading and sets aria-level from headingLevel"; "gives the subtitle a heading role only with subtitleHeadingLevel"; "derives the size from the width and honours size when autoResponsive is false"; "moves the layout actions into the breadcrumb row below the squash width"; "passes the collapsed state to custom title and subtitle templates"; "renders a message strip in the header"; "pin button toggles its pressed state and label"; "collapse button switches between Expand and Collapse Header and emits collapsed"; "subtracts offset from the full height".
 - **Effort:** M, about a dozen header tests and four stories, all built from existing registry components.
