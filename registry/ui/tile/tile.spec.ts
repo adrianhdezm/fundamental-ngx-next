@@ -28,6 +28,7 @@ import {
     TileFooter,
     TileFooterText,
     TileHeader,
+    TileRefresh,
     TilePageIndicator,
     TileSection,
     TileSlideContainer,
@@ -37,6 +38,25 @@ import {
     TileToggle,
     type TileSize
 } from './tile';
+
+@Component({
+    imports: [Tile, TileHeader, TileTitle, TileFooter, TileSection, TileRefresh, TileFooterText],
+    template: `
+        <div fd-tile>
+            <div fd-tile-header><h2 fd-tile-title>Sales</h2></div>
+            <div fd-tile-footer>
+                <div fd-tile-section>
+                    <button fd-tile-refresh [ariaLabel]="label()" (click)="refreshes.set(refreshes() + 1)"></button>
+                    <span fd-tile-footer-text>Now</span>
+                </div>
+            </div>
+        </div>
+    `
+})
+class RefreshHost {
+    readonly label = signal<string | null>('Refresh');
+    readonly refreshes = signal(0);
+}
 
 const LONG = 'Title with very very very very very very very very very very very very very long text';
 
@@ -698,5 +718,24 @@ describe('Tile', () => {
         expect(arrow.getAttribute('role')).toBe('img');
         expect(arrow.getAttribute('aria-label')).toBe('Up');
         expect(arrow.hasAttribute('aria-hidden')).toBe(false);
+    });
+
+    it('the refresh button in the footer has an accessible name and emits its click', async () => {
+        const { host, q, stable } = await render(RefreshHost);
+        const refresh = q<HTMLButtonElement>('[fd-tile-refresh]');
+        expect(refresh.tagName).toBe('BUTTON');
+        expect(refresh.getAttribute('aria-label')).toBe('Refresh');
+        // the refresh glyph is drawn from the icon font
+        expect(refresh.getAttribute('data-glyph')).toBeTruthy();
+        expect(rect(refresh).width).toBeGreaterThan(0);
+        await userEvent.click(refresh);
+        expect(host.refreshes()).toBe(1);
+        refresh.focus();
+        expect(document.activeElement).toBe(refresh);
+        await userEvent.keyboard('{Enter}');
+        expect(host.refreshes()).toBe(2);
+        host.label.set('Reload sales');
+        await stable();
+        expect(refresh.getAttribute('aria-label')).toBe('Reload sales');
     });
 });

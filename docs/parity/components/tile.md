@@ -1,7 +1,7 @@
 ## tile
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/tile) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/tile)
-Registry: `registry/ui/tile/` — 10 stories, 14 tests.
+Registry: `registry/ui/tile/` — 10 stories, 15 tests.
 
 ### Stories vs. upstream examples
 
@@ -26,10 +26,10 @@ Registry: `registry/ui/tile/` — 10 stories, 14 tests.
 | As native link: attribute selector, attributes kept, no tabindex/role, emits tileClick | <a fd-tile> keeps link semantics and emits tileClick on click                     | ✅ covered |                                                                                  |
 | Tile and numeric content directive classes                                             | —                                                                                 | ➖ n/a     | Class-only.                                                                      |
 
-Registry-only coverage: custom role/aria-labelledby, Tab order across tiles, line tile variants, slide tile controls and page dots, badge placement, numeric content sizes, state colours and RTL, decorative scale arrow.
+Registry-only coverage: custom role/aria-labelledby, Tab order across tiles, line tile variants, slide tile controls and page dots, badge placement, numeric content sizes, state colours and RTL, decorative scale arrow, footer refresh button name and click.
 
 ### Gaps to fill
 
 - **Stories:** none.
-- **Tests:** "the refresh button in the footer has an accessible name and emits its click" (only `fd-tile-refresh` lacks a test).
+- **Tests:** none.
 - **Effort:** S, one spec.
