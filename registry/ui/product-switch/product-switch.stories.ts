@@ -60,6 +60,46 @@ class StoryProductSwitch {
     protected readonly chosen = signal('');
 }
 
+const NAVIGATION: ProductSwitchItem[] = [
+    { title: 'SAP Start', subtitle: 'Opens in new tab (default)', icon: 'home', url: 'https://www.sap.com' },
+    {
+        title: 'SAP Ariba',
+        subtitle: 'Opens in new tab (explicit)',
+        icon: 'contacts',
+        url: 'https://www.sap.com/products/spend-management/ariba-network.html',
+        target: '_blank'
+    },
+    {
+        title: 'Business Data Cloud',
+        subtitle: 'Opens in same tab',
+        icon: 'business-objects-experience',
+        url: 'https://www.sap.com/products/technology-platform/business-data-cloud.html',
+        target: '_self'
+    },
+    { title: 'Callback Only', subtitle: 'No navigation, fires callback', icon: 'action' }
+];
+
+@Component({
+    selector: 'story-product-switch-navigation',
+    imports: [ProductSwitch, ProductSwitchBody],
+    template: `
+        <div class="flex items-center justify-end gap-2">
+            <span class="font-sap-font-family text-sap-font-size text-sap-text-color" aria-live="polite">{{
+                chosen()
+            }}</span>
+            <fd-product-switch>
+                <fd-product-switch-body [products]="products" />
+            </fd-product-switch>
+        </div>
+    `
+})
+class StoryProductSwitchNavigation {
+    protected readonly chosen = signal('');
+    protected readonly products = NAVIGATION.map((p) =>
+        p.url ? p : { ...p, callback: () => this.chosen.set('Custom callback fired') }
+    );
+}
+
 /** Opens the product switch from its button (named `name`) and waits for the products. */
 function openSwitch(name = 'Product switch'): Story['play'] {
     return async ({ canvasElement }) => {
@@ -71,7 +111,7 @@ function openSwitch(name = 'Product switch'): Story['play'] {
 const meta: Meta<ProductSwitch> = {
     title: 'Components/Product Switch',
     component: ProductSwitch,
-    decorators: [moduleMetadata({ imports: [StoryProductSwitch] })],
+    decorators: [moduleMetadata({ imports: [StoryProductSwitch, StoryProductSwitchNavigation] })],
     parameters: {
         docs: {
             story: { inline: false, iframeHeight: 640 },
@@ -99,6 +139,19 @@ export const List: Story = { name: 'List', render: () => ({ template: `<story-pr
 export const Busy: Story = {
     name: 'Busy and custom button',
     render: () => ({ template: `<story-product-switch [busy]="true" [custom]="true" />` })
+};
+export const Navigation: Story = {
+    name: 'URL navigation',
+    parameters: {
+        docs: {
+            description: {
+                story:
+                    'Products with a `url` open it with `window.open` in their `target` (`_blank` by default), unless they have a `callback`. ' +
+                    'They are rendered as links, and a target other than `_self` is added to the accessible name.'
+            }
+        }
+    },
+    render: () => ({ template: `<story-product-switch-navigation />` })
 };
 export const OpenLarge: Story = {
     name: 'Open: large',
@@ -129,4 +182,10 @@ export const OpenBusy: Story = {
     tags: ['!autodocs'],
     render: () => ({ template: `<story-product-switch [busy]="true" [custom]="true" />` }),
     play: openSwitch('Products')
+};
+export const OpenNavigation: Story = {
+    name: 'Open: URL navigation',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-product-switch-navigation />` }),
+    play: openSwitch()
 };
