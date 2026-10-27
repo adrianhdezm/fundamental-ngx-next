@@ -648,6 +648,19 @@
         }
       ],
       "dependencies": ["@angular/forms"]
+    },
+    {
+      "name": "timeline",
+      "type": "registry:ui",
+      "title": "Timeline",
+      "description": "Posts in chronological order along a vertical or horizontal line, on one or both sides.",
+      "registryDependencies": ["utils", "theme", "icon", "skeleton", "text"],
+      "files": [
+        {
+          "path": "registry/ui/timeline/timeline.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
