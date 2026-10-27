@@ -26,6 +26,56 @@ class Host {
     readonly transparent = signal(false);
 }
 
+const LONG = 'A very long panel title that does not fit into the narrow panel header at all';
+
+@Component({
+    imports: [Panel, PanelTitle, PanelContent],
+    template: `
+        <fd-panel fixed class="w-60 mt-4" id="layout">
+            <h4 fd-panel-title [wrap]="wrap()">{{ title }}</h4>
+            <div
+                fd-panel-content
+                ariaLabel="Layout"
+                class="text-sap-negative-color"
+                [height]="height()"
+                [minHeight]="minHeight()"
+                [maxHeight]="maxHeight()"
+                [noPadding]="noPadding()"
+                [transparent]="transparentContent()"
+            >
+                <div id="filler" [style.height]="fillerHeight()"></div>
+            </div>
+        </fd-panel>
+    `
+})
+class LayoutHost {
+    readonly title = LONG;
+    readonly wrap = signal(true);
+    readonly height = signal<string | null>(null);
+    readonly minHeight = signal<string | null>(null);
+    readonly maxHeight = signal<string | null>(null);
+    readonly noPadding = signal(false);
+    readonly transparentContent = signal(false);
+    readonly fillerHeight = signal('1rem');
+}
+
+async function setupLayout() {
+    const fixture = TestBed.createComponent(LayoutHost);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    return {
+        host: fixture.componentInstance,
+        update: async (change: (host: LayoutHost) => void) => {
+            change(fixture.componentInstance);
+            await fixture.whenStable();
+        },
+        panel: () => root.querySelector<HTMLElement>('fd-panel')!,
+        title: () => root.querySelector<HTMLElement>('[fd-panel-title]')!,
+        content: () => root.querySelector<HTMLElement>('[fd-panel-content]')!
+    };
+}
+
 async function setup(config: { fixed?: boolean; expanded?: boolean } = {}) {
     const fixture = TestBed.createComponent(Host);
     const host = fixture.componentInstance;
@@ -126,5 +176,71 @@ describe('Panel', () => {
         expect(getComputedStyle(header()).minHeight).toBe('40px');
         expect(button.parentElement!.getBoundingClientRect().height).toBe(40);
         expect(button.getBoundingClientRect().height).toBeLessThan(cozyButton);
+    });
+
+    it('content height, minHeight and maxHeight size the content and make it scroll', async () => {
+        const { update, content } = await setupLayout();
+        const height = () => content().getBoundingClientRect().height;
+        const auto = height();
+        await update((h) => h.minHeight.set('10rem'));
+        expect(height()).toBe(160);
+        await update((h) => {
+            h.minHeight.set(null);
+            h.fillerHeight.set('20rem');
+            h.maxHeight.set('6rem');
+        });
+        expect(height()).toBe(96);
+        expect(content().scrollHeight).toBeGreaterThan(content().clientHeight);
+        await update((h) => {
+            h.maxHeight.set(null);
+            h.height.set('5rem');
+        });
+        expect(height()).toBe(80);
+        expect(content().scrollHeight).toBeGreaterThan(content().clientHeight);
+        await update((h) => {
+            h.height.set(null);
+            h.fillerHeight.set('1rem');
+        });
+        expect(height()).toBe(auto);
+    });
+
+    it('title wraps long text by default and truncates when wrap is false', async () => {
+        const { update, title } = await setupLayout();
+        const height = () => title().getBoundingClientRect().height;
+        expect(getComputedStyle(title()).whiteSpace).toBe('normal');
+        const wrapped = height();
+        await update((h) => h.wrap.set(false));
+        expect(getComputedStyle(title()).whiteSpace).toBe('nowrap');
+        expect(getComputedStyle(title()).textOverflow).toBe('ellipsis');
+        // one line instead of several
+        expect(wrapped).toBeGreaterThan(height() * 1.5);
+        expect(title().scrollWidth).toBeGreaterThan(title().clientWidth);
+    });
+
+    it('noPadding and transparent content remove padding and background', async () => {
+        const { update, content } = await setupLayout();
+        const style = () => getComputedStyle(content());
+        expect(style().paddingLeft).toBe('16px');
+        expect(style().paddingTop).toBe('10px');
+        expect(style().backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+        await update((h) => h.noPadding.set(true));
+        expect(style().paddingLeft).toBe('0px');
+        expect(style().paddingTop).toBe('0px');
+        await update((h) => h.transparentContent.set(true));
+        expect(style().backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    });
+
+    it('class input is merged into the panel and content classes', async () => {
+        const { panel, content } = await setupLayout();
+        expect(panel().getBoundingClientRect().width).toBe(240);
+        expect(getComputedStyle(panel()).marginTop).toBe('16px');
+        expect(getComputedStyle(panel()).display).toBe('flex');
+        // the user's text colour wins over the default content colour
+        const probe = document.createElement('span');
+        probe.style.color = 'var(--sapNegativeColor)';
+        document.body.appendChild(probe);
+        expect(getComputedStyle(content()).color).toBe(getComputedStyle(probe).color);
+        probe.remove();
+        expect(getComputedStyle(content()).overflow).toBe('auto');
     });
 });

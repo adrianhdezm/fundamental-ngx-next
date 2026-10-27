@@ -1,7 +1,7 @@
 ## panel
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/panel) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/panel)
-Registry: `registry/ui/panel/` — 3 stories, 5 tests.
+Registry: `registry/ui/panel/` — 3 stories, 9 tests.
 
 ### Stories vs. upstream examples
 
@@ -14,21 +14,21 @@ Registry: `registry/ui/panel/` — 3 stories, 5 tests.
 
 ### Tests vs. upstream specs
 
-| Upstream behaviour                                   | Registry test                                                  | Status     | Notes                                                                   |
-| ---------------------------------------------------- | -------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------- |
-| `should create` (panel, title, content)              | —                                                              | ➖ n/a     |                                                                         |
-| Host classes on panel, title, content                | —                                                              | ➖ n/a     | Class only                                                              |
-| Additional user classes are merged                   | —                                                              | ❌ missing | `class` input on panel/content is not asserted                          |
-| Content `height` sets the container height           | —                                                              | ❌ missing | `height`/`minHeight`/`maxHeight` inputs untested                        |
-| Title wraps by default, no wrap when `wrap` is false | —                                                              | ❌ missing | `wrap` input exists; visual outcome (white-space / truncation) untested |
-| Content hidden while collapsed                       | expand button toggles [(expanded)] and controls the content…   | ✅ covered |                                                                         |
-| Fixed panel always shows content                     | fixed panels have no expand button and always show the content | ✅ covered |                                                                         |
-| Expand button click expands                          | expand button toggles [(expanded)]…                            | ✅ covered | Also checks `aria-controls` / `aria-expanded`                           |
+| Upstream behaviour                                   | Registry test                                                               | Status     | Notes                                            |
+| ---------------------------------------------------- | --------------------------------------------------------------------------- | ---------- | ------------------------------------------------ |
+| `should create` (panel, title, content)              | —                                                                           | ➖ n/a     |                                                  |
+| Host classes on panel, title, content                | —                                                                           | ➖ n/a     | Class only                                       |
+| Additional user classes are merged                   | class input is merged into the panel and content classes                    | ✅ covered | Width, margin and text colour from `class` apply |
+| Content `height` sets the container height           | content height, minHeight and maxHeight size the content and make it scroll | ✅ covered | Also `minHeight`/`maxHeight`                     |
+| Title wraps by default, no wrap when `wrap` is false | title wraps long text by default and truncates when wrap is false           | ✅ covered | Line count and ellipsis                          |
+| Content hidden while collapsed                       | expand button toggles [(expanded)] and controls the content…                | ✅ covered |                                                  |
+| Fixed panel always shows content                     | fixed panels have no expand button and always show the content              | ✅ covered |                                                  |
+| Expand button click expands                          | expand button toggles [(expanded)]…                                         | ✅ covered | Also checks `aria-controls` / `aria-expanded`    |
 
-Registry-only coverage: title labels the expand button and content region, header/content corner radii follow expanded, compact density sizes.
+Registry-only coverage: `noPadding` and `transparent` content, title labels the expand button and content region, header/content corner radii follow expanded, compact density sizes.
 
 ### Gaps to fill
 
 - **Stories:** none.
-- **Tests:** "content height, minHeight and maxHeight size the content and make it scroll"; "title wraps long text by default and truncates when wrap is false"; "noPadding and transparent content remove padding and background"; "class input is merged into the panel classes".
+- **Tests:** none.
 - **Effort:** S, small layout assertions and one story.
