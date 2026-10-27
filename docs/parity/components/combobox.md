@@ -1,30 +1,30 @@
 ## combobox
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/combobox) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/combobox)
-Registry: `registry/ui/combobox/` — 6 stories, 15 tests.
+Registry: `registry/ui/combobox/` — 10 stories, 15 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                     | Registry story                              | Status     | Notes                                                                                         |
-| ------------------------------------ | ------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------- |
-| Standard Combobox                    | Standard                                    | ✅ covered | Width/maxHeight, no highlighting, no autocomplete, compact, read-only                         |
-| Combobox as Search Field             | Search ("Search and clear")                 | ✅ covered | `isSearch`, clear button, full dropdown width                                                 |
-| Custom Filter                        | —                                           | ❌ missing | `filterFn` exists in our API, no story uses it                                                |
-| Custom Search Function               | Search ("Search and clear")                 | ✅ covered | `searchFn` counts searches                                                                    |
-| Combobox Mobile Mode                 | Mobile                                      | ✅ covered | Confirmation and immediate modes; global mobile config dropped (no token). No "Open: …" story |
-| Display Object Property              | Templates, Forms                            | ✅ covered | `displayFn` on product objects                                                                |
-| Open State Control                   | —                                           | ❌ missing | Upstream logs `openChange`; we have `openChange` output and `open()`/`close()` but no story   |
-| Observable Async Example             | —                                           | ❌ missing | `dropdownValues` takes an array; an `async` pipe story is trivial                             |
-| Custom Item Template                 | Templates ("Templates, bylines and groups") | ✅ covered | `*fdComboboxItem` with icons, `itemClicked`                                                   |
-| Combobox with Two Columns            | Templates                                   | ✅ covered | `fdListTitle` + `fdListSecondary`                                                             |
-| Combobox with Groups                 | Templates                                   | ✅ covered | `groupFn`                                                                                     |
-| Custom Height Example                | Standard                                    | ✅ covered | `maxHeight="250px"`                                                                           |
-| Return results including search term | Standard                                    | ✅ covered | `includes` variant                                                                            |
-| Reactive Form                        | Forms                                       | ✅ covered | communicateByObject, required, list message, touched/dirty                                    |
-| Reactive Form with Value Property    | Forms                                       | ✅ covered | `valueProperty="id"`                                                                          |
-| Disabled Combobox                    | Forms                                       | ✅ covered | Disabled form control                                                                         |
-| Combobox with byline list            | Templates                                   | ✅ covered | `byline` + thumbnail template                                                                 |
-| Combobox inside a Dialog             | —                                           | ❌ missing | Overlay inside a focus-trapped dialog                                                         |
+| Upstream example                     | Registry story                              | Status     | Notes                                                                                       |
+| ------------------------------------ | ------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------- |
+| Standard Combobox                    | Standard                                    | ✅ covered | Width/maxHeight, no highlighting, no autocomplete, compact, read-only                       |
+| Combobox as Search Field             | Search ("Search and clear")                 | ✅ covered | `isSearch`, clear button, full dropdown width                                               |
+| Custom Filter                        | —                                           | ❌ missing | `filterFn` exists in our API, no story uses it                                              |
+| Custom Search Function               | Search ("Search and clear")                 | ✅ covered | `searchFn` counts searches                                                                  |
+| Combobox Mobile Mode                 | Mobile, Open: mobile dialog                 | ✅ covered | Confirmation and immediate modes; global mobile config dropped (no token)                   |
+| Display Object Property              | Templates, Forms                            | ✅ covered | `displayFn` on product objects                                                              |
+| Open State Control                   | —                                           | ❌ missing | Upstream logs `openChange`; we have `openChange` output and `open()`/`close()` but no story |
+| Observable Async Example             | —                                           | ❌ missing | `dropdownValues` takes an array; an `async` pipe story is trivial                           |
+| Custom Item Template                 | Templates ("Templates, bylines and groups") | ✅ covered | `*fdComboboxItem` with icons, `itemClicked`                                                 |
+| Combobox with Two Columns            | Templates                                   | ✅ covered | `fdListTitle` + `fdListSecondary`                                                           |
+| Combobox with Groups                 | Templates                                   | ✅ covered | `groupFn`                                                                                   |
+| Custom Height Example                | Standard                                    | ✅ covered | `maxHeight="250px"`                                                                         |
+| Return results including search term | Standard                                    | ✅ covered | `includes` variant                                                                          |
+| Reactive Form                        | Forms                                       | ✅ covered | communicateByObject, required, list message, touched/dirty                                  |
+| Reactive Form with Value Property    | Forms                                       | ✅ covered | `valueProperty="id"`                                                                        |
+| Disabled Combobox                    | Forms                                       | ✅ covered | Disabled form control                                                                       |
+| Combobox with byline list            | Templates                                   | ✅ covered | `byline` + thumbnail template                                                               |
+| Combobox inside a Dialog             | —                                           | ❌ missing | Overlay inside a focus-trapped dialog                                                       |
 
 ### Tests vs. upstream specs
 
@@ -49,10 +49,12 @@ Registry: `registry/ui/combobox/` — 6 stories, 15 tests.
 | Mobile selection transactions (draft until Approve, Cancel restores, immediate mode, closeOnSelect, external writeValue during draft)                   | —                                                                                                      | ❌ missing | 12 upstream its                                                                |
 | Global mobile confirmation config                                                                                                                       | —                                                                                                      | ➖ n/a     | No global mobile-config token in our port                                      |
 
+Open stories: "Open: dropdown", "Open: groups", "Open: list message" and "Open: mobile dialog" open the list (or dialog) in `play`.
+
 Registry-only coverage: inline autocomplete selection range, bolded match, focus stays in the input after a click on an option.
 
 ### Gaps to fill
 
-- **Stories:** "Custom filter" — `filterFn` with startsWith; "Open state control" — logs `openChange` below the field; "Async values" — `[dropdownValues]="values$ | async"`; "Inside a dialog" — button opens a dialog with a combobox; "Open: dropdown" — play() types/clicks the button so axe checks the list; "Open: mobile dialog" — play() opens the mobile dialog.
+- **Stories:** "Custom filter" — `filterFn` with startsWith; "Open state control" — logs `openChange` below the field; "Async values" — `[dropdownValues]="values$ | async"`; "Inside a dialog" — button opens a dialog with a combobox.
 - **Tests:** "calls searchFn on Enter"; "marks the control touched on blur"; "search field shows a search addon and a clear button once there is text"; "keeps the list open on select when closeOnSelect is false"; "mobile: Approve commits the draft once, Cancel restores the form value"; "mobile: immediate mode (no approve text) commits on select and closes when closeOnSelect"; "valueProperty: unmatched writeValue shows no text, null clears"; "communicateByObject: clearing emits null, duplicate labels do not pick an arbitrary object".
 - **Effort:** M, ~13 behaviour tests around Tab/outside-click and mobile transactions plus 6 small stories.

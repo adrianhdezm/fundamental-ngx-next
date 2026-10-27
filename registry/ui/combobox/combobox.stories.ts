@@ -7,6 +7,7 @@ import {
     ReactiveFormsModule
 } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { ContentDensityDirective } from '@/ui/content-density/content-density';
 import { FormItem, FormLabel } from '@/ui/form/form';
 import { FormMessage } from '@/ui/form/form-message';
@@ -462,3 +463,43 @@ export const Templates: Story = {
 };
 export const Forms: Story = { render: () => ({ template: `<story-combobox-forms />` }) };
 export const Mobile: Story = { render: () => ({ template: `<story-combobox-mobile />` }) };
+
+/** Clicks the button of the combobox (or, in mobile mode, its field) and waits for the list. */
+async function openCombobox(canvasElement: HTMLElement, selector: string, popup: string): Promise<void> {
+    const combobox = canvasElement.querySelector<HTMLElement>(selector)!;
+    const target = combobox.hasAttribute('mobile')
+        ? combobox.querySelector<HTMLElement>('input')!
+        : combobox.querySelector<HTMLElement>('button[aria-haspopup]')!;
+    await userEvent.click(target);
+    await waitFor(() => expect(document.querySelector(popup)).not.toBeNull());
+    await waitFor(() =>
+        expect(combobox.querySelector('input[role=combobox]')!.getAttribute('aria-expanded')).toBe('true')
+    );
+}
+
+export const OpenDropdown: Story = {
+    name: 'Open: dropdown',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-combobox-standard />` }),
+    play: ({ canvasElement }) => openCombobox(canvasElement, 'fd-combobox', '[role=listbox] [role=option]')
+};
+export const OpenGroups: Story = {
+    name: 'Open: groups',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-combobox-templates />` }),
+    play: ({ canvasElement }) =>
+        openCombobox(canvasElement, 'fd-combobox:has(#cb-tpl-4)', '[role=listbox] [role=group] [role=option]')
+};
+export const OpenListMessage: Story = {
+    name: 'Open: list message',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-combobox-forms />` }),
+    play: ({ canvasElement }) => openCombobox(canvasElement, 'fd-combobox', '[role=listbox] [fdListMessage]')
+};
+export const OpenMobile: Story = {
+    name: 'Open: mobile dialog',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-combobox-mobile />` }),
+    play: ({ canvasElement }) =>
+        openCombobox(canvasElement, 'fd-combobox', '[role=dialog] [role=listbox] [role=option]')
+};
