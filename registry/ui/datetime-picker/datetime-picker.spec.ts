@@ -248,3 +248,110 @@ describe('DatetimePicker forms', () => {
         expect(input.disabled).toBe(true);
     });
 });
+
+@Component({
+    imports: [DatetimePicker, ReactiveFormsModule],
+    template: `<fd-datetime-picker
+        id="dt"
+        [formControl]="control"
+        [showFooter]="footer()"
+        (dateChange)="changes.push($event)"
+    />`
+})
+class EmitHost {
+    readonly control = new FormControl<FdDate | null>(new FdDate(2024, 3, 9, 14, 30, 0));
+    readonly footer = signal(true);
+    readonly changes: (FdDate | null)[] = [];
+}
+
+describe('DatetimePicker dateChange', () => {
+    async function setupEmit(configure?: (host: EmitHost) => void) {
+        const fixture = TestBed.createComponent(EmitHost);
+        configure?.(fixture.componentInstance);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        const root = fixture.nativeElement as HTMLElement;
+        const input = root.querySelector<HTMLInputElement>('input')!;
+        const stable = async () => {
+            await fixture.whenStable();
+            await new Promise((resolve) => requestAnimationFrame(resolve));
+            await fixture.whenStable();
+        };
+        const open = async () => {
+            await userEvent.click(root.querySelector<HTMLButtonElement>('button[aria-label="Open picker"]')!);
+            await stable();
+        };
+        /** Puts the whole text in the field at once, as a paste does. */
+        const enter = async (text: string) => {
+            input.value = text;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            await stable();
+        };
+        const changes = () => fixture.componentInstance.changes.map((d) => d?.toString() ?? null);
+        return { fixture, host: fixture.componentInstance, input, stable, open, enter, changes };
+    }
+
+    it('emits once per accepted change and not for writeValue, Cancel or a no-op submit', async () => {
+        const { host, input, stable, open, enter, changes } = await setupEmit();
+        host.control.setValue(new FdDate(2024, 3, 10, 9, 0, 0));
+        await stable();
+        expect(input.value).toBe('3/10/2024, 9:00 AM');
+        expect(changes()).toEqual([]);
+        // Cancel drops a picked day
+        await open();
+        await userEvent.click(day(12));
+        await userEvent.click(buttonNamed('Cancel'));
+        await stable();
+        expect(changes()).toEqual([]);
+        // OK without a change
+        await open();
+        await userEvent.click(buttonNamed('OK'));
+        await stable();
+        expect(changes()).toEqual([]);
+        // OK with a change
+        await open();
+        await userEvent.click(day(12));
+        await userEvent.click(buttonNamed('OK'));
+        await stable();
+        expect(changes()).toEqual([new FdDate(2024, 3, 12, 9, 0, 0).toString()]);
+        expect(host.control.value!.toString()).toBe(new FdDate(2024, 3, 12, 9, 0, 0).toString());
+        // typed and accepted once, then Enter and blur add nothing
+        await enter('4/1/2024, 9:15 AM');
+        await enter('4/1/2024, 9:15 AM');
+        input.focus();
+        await userEvent.keyboard('{Enter}');
+        await userEvent.tab();
+        await stable();
+        expect(changes()).toEqual([
+            new FdDate(2024, 3, 12, 9, 0, 0).toString(),
+            new FdDate(2024, 4, 1, 9, 15, 0).toString()
+        ]);
+        // the form writing the emitted value back does not emit again
+        host.control.setValue(host.changes.at(-1)!);
+        await stable();
+        expect(changes()).toHaveLength(2);
+    });
+
+    it('emits null once when an allowed value is cleared', async () => {
+        const { host, enter, changes } = await setupEmit();
+        await enter('');
+        await enter('');
+        expect(changes()).toEqual([null]);
+        expect(host.control.value).toBeNull();
+        expect(host.control.valid).toBe(true);
+    });
+
+    it('emits once without the footer and keeps the popover open after a day pick', async () => {
+        const { host, open, stable, changes } = await setupEmit((h) => h.footer.set(false));
+        await open();
+        await userEvent.click(day(9));
+        await stable();
+        // the same day and time: nothing to apply
+        expect(changes()).toEqual([]);
+        await userEvent.click(day(20));
+        await stable();
+        expect(changes()).toEqual([new FdDate(2024, 3, 20, 14, 30, 0).toString()]);
+        expect(host.control.value!.day).toBe(20);
+        expect(document.querySelector('#dt-calendar')).not.toBeNull();
+    });
+});
