@@ -406,6 +406,28 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "message-strip",
+      "type": "registry:ui",
+      "title": "Message Strip",
+      "description": "Inline contextual messages by type or indication colour; dismissible, auto-dismissing, or shown as alerts at the screen edges.",
+      "registryDependencies": ["utils", "theme", "icon", "button"],
+      "files": [
+        {
+          "path": "registry/ui/message-strip/message-strip.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ui/message-strip/message-strip-alert.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ui/message-strip/index.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk", "rxjs"]
     }
   ]
 }
