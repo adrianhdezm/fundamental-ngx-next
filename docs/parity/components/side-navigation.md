@@ -1,7 +1,7 @@
 ## side-navigation
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/side-navigation) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/side-navigation)
-Registry: `registry/ui/side-navigation/` — 9 stories, 6 tests.
+Registry: `registry/ui/side-navigation/` — 9 stories, 10 tests.
 
 ### Stories vs. upstream examples
 
@@ -23,9 +23,9 @@ Registry: `registry/ui/side-navigation/` — 9 stories, 6 tests.
 | Keyboard navigation skips items of collapsed lists   | expands with the button and the arrow keys and moves across all visible rows | ✅ covered |                                       |
 | Keyboard navigation includes items of expanded lists | expands with the button and the arrow keys …                                 | ✅ covered | Also Home/End and ArrowLeft collapse. |
 
-Registry-only coverage: tree roles/levels described by group headers, selection with parent highlight, `selectable=false` keeping `[selected]`, condensed popovers, building from `sideNavigationConfiguration`.
+Registry-only coverage: tree roles/levels described by group headers, selection with parent highlight, `selectable=false` keeping `[selected]`, condensed popovers, building from `sideNavigationConfiguration`, RTL arrow keys, `[expanded]` and `[selected]` changed from outside, and arrow keys from the main into the utility list (wrapping at the ends).
 
 ### Gaps to fill
 
-- **Tests:** "arrow keys to expand and collapse are mirrored in RTL"; "changing [expanded] from outside opens and closes the child list and updates aria-expanded"; "changing [selected] from outside moves the selection when not selectable"; "keyboard navigation moves from the main list into the utility list".
-- **Effort:** S — four small tests.
+- **Tests:** none left.
+- **Effort:** none left.

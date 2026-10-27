@@ -1,7 +1,7 @@
 ## nested-list
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/side-navigation) (examples live in the side-navigation page) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/nested-list)
-Registry: `registry/ui/nested-list/` — 3 stories, 5 tests (also exercised through `registry/ui/side-navigation/`: 9 stories, 6 tests).
+Registry: `registry/ui/nested-list/` — 3 stories, 5 tests (also exercised through `registry/ui/side-navigation/`: 9 stories, 10 tests).
 
 ### Stories vs. upstream examples
 
