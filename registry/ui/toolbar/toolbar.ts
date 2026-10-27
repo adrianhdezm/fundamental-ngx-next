@@ -288,8 +288,12 @@ export class Toolbar {
     private readonly slot = viewChild<ElementRef<HTMLElement>>('slot');
     private readonly checker = inject(InteractivityChecker);
 
-    readonly overflown = signal<ToolbarItem[]>([]);
+    /** Equal when the same items overflow in the same order, so a re-measure moves nothing. */
+    readonly overflown = signal<ToolbarItem[]>([], {
+        equal: (a, b) => a.length === b.length && a.every((item, i) => item === b[i])
+    });
     private readonly measure = signal(0);
+    private readonly observer = signal<ResizeObserver | null>(null);
     private readonly placeholders = new Map<ToolbarItem, Comment>();
 
     protected readonly hasFlexibleSpacer = computed(() => this.spacers().some((spacer) => !spacer.fixed()));
@@ -301,7 +305,13 @@ export class Toolbar {
             observer.observe(this.elementRef.nativeElement);
             const title = this.titleElement()?.nativeElement ?? this.projectedTitle()?.nativeElement;
             if (title) observer.observe(title);
+            this.observer.set(observer);
             destroyRef.onDestroy(() => observer.disconnect());
+        });
+        // items change size after the first measure (fonts, inner controls that render later)
+        effect(() => {
+            const observer = this.observer();
+            this.items().forEach((item) => observer?.observe(item.element));
         });
         // recompute the overflow when the size, items or options change
         effect(() => {

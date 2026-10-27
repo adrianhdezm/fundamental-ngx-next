@@ -205,6 +205,17 @@ describe('Toolbar', () => {
         expect(inRow()).toContain('e');
     });
 
+    it('recomputes the overflow by itself when items change their width', async () => {
+        const { stable, root, inRow, inPanel } = await setupOverflow(1000);
+        expect(inRow()).toEqual(['a', 'b', 'c', 'd', 'e', 'g']);
+        root.querySelectorAll<HTMLElement>('fd-toolbar > button').forEach((b) => (b.style.width = '200px'));
+        await stable();
+        await stable();
+        // the low priority item overflows first
+        expect(inRow()).toEqual(['a', 'c', 'd', 'e']);
+        expect(inPanel()).toEqual(['b', 'g', 'f']);
+    });
+
     it('spacer, separator, label; title renders a heading', async () => {
         const { root, host, stable } = await render(PartsHost);
         const toolbar = root.querySelector<HTMLElement>('fd-toolbar')!;
