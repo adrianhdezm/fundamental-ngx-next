@@ -61,4 +61,15 @@ describe('QuickView', () => {
         ]);
         expect(el.querySelector('fd-form-group')!.getAttribute('role')).toBe('group');
     });
+
+    it('names each group by its title', async () => {
+        const fixture = TestBed.createComponent(Host);
+        await fixture.whenStable();
+        const el = fixture.nativeElement as HTMLElement;
+        const group = el.querySelector('fd-quick-view-group [role=group]')!;
+        const title = el.querySelector('fd-quick-view-group-title [role=heading]')!;
+        expect(title.id).toMatch(/^fd-quick-view-group-title-/);
+        expect(group.getAttribute('aria-labelledby')).toBe(title.id);
+        expect(document.getElementById(group.getAttribute('aria-labelledby')!)!.textContent!.trim()).toBe('Contact');
+    });
 });

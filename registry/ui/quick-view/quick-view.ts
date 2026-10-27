@@ -5,7 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Directive, booleanAttribute, inject, input } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    Directive,
+    booleanAttribute,
+    contentChild,
+    forwardRef,
+    inject,
+    input
+} from '@angular/core';
 import { Bar, BarElement, BarLeft, BarMiddle, BarRight } from '@/ui/bar/bar';
 import { FormGroup, FormGroupHeader, FormItem, FormLabel } from '@/ui/form/form';
 import { PopoverBodyHeader } from '@/ui/popover/popover';
@@ -150,15 +159,19 @@ export class QuickViewSubheaderSubtitle {
     readonly allowWrap = input(false, { transform: booleanAttribute });
 }
 
-/** A group of label-value pairs. */
+/** A group of label-value pairs, named by its `fd-quick-view-group-title`. */
 @Component({
     selector: 'fd-quick-view-group',
     imports: [FormGroup],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'block' },
-    template: `<fd-form-group role="group"><ng-content /></fd-form-group>`
+    template: `<fd-form-group role="group" [attr.aria-labelledby]="title()?.id() ?? null"
+        ><ng-content
+    /></fd-form-group>`
 })
-export class QuickViewGroup {}
+export class QuickViewGroup {
+    protected readonly title = contentChild(forwardRef(() => QuickViewGroupTitle));
+}
 
 /** Title of a group. */
 @Component({
