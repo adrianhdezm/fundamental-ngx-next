@@ -1,5 +1,6 @@
 import { Component, input, signal } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import {
     NestedItem,
     NestedLink,
@@ -179,7 +180,11 @@ class StorySideNavModel {
 const meta: Meta<SideNavigation> = {
     title: 'Components/Side Navigation',
     component: SideNavigation,
-    decorators: [moduleMetadata({ imports: [StorySideNav, StorySideNavModel] })],
+    decorators: [
+        moduleMetadata({
+            imports: [StorySideNav, StorySideNavModel]
+        })
+    ],
     parameters: {
         docs: {
             description: {
@@ -207,4 +212,34 @@ export const FromData: Story = {
 export const FromDataCondensed: Story = {
     name: 'From data, condensed',
     render: () => ({ template: `<story-side-nav-model [condensed]="true" />` })
+};
+/** Opens the child list of a condensed first-level row in its popover from the keyboard. */
+async function openChildPopover(canvas: HTMLElement, title: string): Promise<void> {
+    const row = await waitFor(() => {
+        const el = [...canvas.querySelectorAll<HTMLElement>('[aria-haspopup=tree]')].find(
+            (r) => r.textContent?.trim() === title
+        );
+        expect(el).toBeTruthy();
+        return el!;
+    });
+    if (row.getAttribute('aria-expanded') !== 'true') {
+        row.focus();
+        await userEvent.keyboard('{ArrowRight}');
+    }
+    await waitFor(() =>
+        expect(document.querySelector('.cdk-overlay-pane fd-popover-body [role=treeitem]')).not.toBeNull()
+    );
+}
+
+export const OpenCondensed: Story = {
+    name: 'Open: condensed popover',
+    tags: ['!autodocs'],
+    render: Condensed.render,
+    play: ({ canvasElement }) => openChildPopover(canvasElement, 'Settings')
+};
+export const OpenFromDataCondensed: Story = {
+    name: 'Open: from data, condensed',
+    tags: ['!autodocs'],
+    render: FromDataCondensed.render,
+    play: ({ canvasElement }) => openChildPopover(canvasElement, 'Link 3')
 };

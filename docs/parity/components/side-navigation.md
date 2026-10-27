@@ -1,19 +1,19 @@
 ## side-navigation
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/side-navigation) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/side-navigation)
-Registry: `registry/ui/side-navigation/` — 5 stories, 6 tests.
+Registry: `registry/ui/side-navigation/` — 7 stories, 6 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                                                   | Registry story                               | Status     | Notes                                                                                                                                        |
-| ------------------------------------------------------------------ | -------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Side Navigation                                                    | `Default`                                    | 🟡 partial | Group headers, main and utility lists, a selected link; upstream's basic example is `textOnly` (no icons), which no story shows.             |
-| Side Navigation With Multiple Levels and Selected Option           | `Default`                                    | ✅ covered | Expandable "Settings" with child rows; selection highlights the parent.                                                                      |
-| Side Navigation with Programmatically State Change                 | `NotSelectable` ("Not selectable")           | 🟡 partial | `selectable=false` with `[selected]` inputs, but no external Open/Close and Select/Unselect buttons driving `[(expanded)]` and `[selected]`. |
-| Side Navigation with Icons                                         | `Default`                                    | ✅ covered |                                                                                                                                              |
-| Side Navigation Condensed Mode                                     | `Condensed`                                  | ✅ covered | Child lists open in popovers, but no "Open: …" story opens one in `play`.                                                                    |
-| Side Navigation Generated from Configuration Object                | `FromData` ("From data")                     | ✅ covered |                                                                                                                                              |
-| Side Navigation Condensed Mode Generated from Configuration Object | `FromDataCondensed` ("From data, condensed") | ✅ covered |                                                                                                                                              |
+| Upstream example                                                   | Registry story                                                              | Status     | Notes                                                                                                                                        |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Side Navigation                                                    | `Default`                                                                   | 🟡 partial | Group headers, main and utility lists, a selected link; upstream's basic example is `textOnly` (no icons), which no story shows.             |
+| Side Navigation With Multiple Levels and Selected Option           | `Default`                                                                   | ✅ covered | Expandable "Settings" with child rows; selection highlights the parent.                                                                      |
+| Side Navigation with Programmatically State Change                 | `NotSelectable` ("Not selectable")                                          | 🟡 partial | `selectable=false` with `[selected]` inputs, but no external Open/Close and Select/Unselect buttons driving `[(expanded)]` and `[selected]`. |
+| Side Navigation with Icons                                         | `Default`                                                                   | ✅ covered |                                                                                                                                              |
+| Side Navigation Condensed Mode                                     | `Condensed`, `OpenCondensed` ("Open: condensed popover")                    | ✅ covered | The Open story opens a child list in its popover in `play`, so axe checks it.                                                                |
+| Side Navigation Generated from Configuration Object                | `FromData` ("From data")                                                    | ✅ covered |                                                                                                                                              |
+| Side Navigation Condensed Mode Generated from Configuration Object | `FromDataCondensed`, `OpenFromDataCondensed` ("Open: from data, condensed") | ✅ covered |                                                                                                                                              |
 
 ### Tests vs. upstream specs
 
@@ -27,6 +27,6 @@ Registry-only coverage: tree roles/levels described by group headers, selection 
 
 ### Gaps to fill
 
-- **Stories:** `Open: Condensed popover` (play opens a child list in condensed mode so axe checks it); `Text only` (`textOnly` lists with headers, as upstream's basic example); `Programmatic` (buttons toggling `[(expanded)]` and `[selected]` from outside).
+- **Stories:** `Text only` (`textOnly` lists with headers, as upstream's basic example); `Programmatic` (buttons toggling `[(expanded)]` and `[selected]` from outside).
 - **Tests:** "arrow keys to expand and collapse are mirrored in RTL"; "changing [expanded] from outside opens and closes the child list and updates aria-expanded"; "changing [selected] from outside moves the selection when not selectable"; "keyboard navigation moves from the main list into the utility list".
 - **Effort:** S — three stories on the existing story component and four small tests.
