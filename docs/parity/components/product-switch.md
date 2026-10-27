@@ -1,7 +1,7 @@
 ## product-switch
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/product-switch) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/product-switch)
-Registry: `registry/ui/product-switch/` — 8 stories, 3 tests.
+Registry: `registry/ui/product-switch/` — 10 stories, 3 tests.
 
 ### Stories vs. upstream examples
 
@@ -10,12 +10,12 @@ Registry: `registry/ui/product-switch/` — 8 stories, 3 tests.
 | Basic Product Switch (App Launcher) inside Shellbar | Large (4 columns); shellbar stories | ✅ covered | Drag and drop with a sticky, non-draggable "Home"; shellbar integration lives in `shellbar.stories.ts` |
 | Large                                               | Large (4 columns); Open: large      | ✅ covered |                                                                                                        |
 | Medium                                              | Medium (3 columns); Open: medium    | ✅ covered |                                                                                                        |
-| Two-Column Layout                                   | Two columns                         | 🟡 partial | No "Open: …" story for the two-column overlay                                                          |
+| Two-Column Layout                                   | Two columns; Open: two columns      | ✅ covered |                                                                                                        |
 | List Mode                                           | List; Open: list                    | ✅ covered |                                                                                                        |
-| Busy State                                          | Busy and custom button              | 🟡 partial | No "Open: …" story, so the busy indicator inside the popover is never checked by axe                   |
+| Busy State                                          | Busy and custom button; Open: busy  | ✅ covered |                                                                                                        |
 | URL Navigation                                      | —                                   | ❌ missing | Items with `url` and `target` (`_blank`, `_self`) rendering as anchors                                 |
 
-The "Open: …" stories open via an `autoOpen` input and `setTimeout`, not via `play()`.
+The "Open: …" stories open the switch in `play()` by clicking its button.
 
 ### Tests vs. upstream specs
 
@@ -45,6 +45,6 @@ Registry-only coverage: trigger `aria-haspopup="menu"`/`aria-expanded`, `aria-po
 
 ### Gaps to fill
 
-- **Stories:** "URL navigation" — items with `url` and `target` `_blank`/`_self`; "Open: two columns" and "Open: busy" (opened in `play()`); move existing "Open: …" stories from `autoOpen` to `play()` clicking the button.
+- **Stories:** "URL navigation" — items with `url` and `target` `_blank`/`_self`.
 - **Tests:** "renders a subtitle only when given and an anchor only for items with a url"; "lays out two, three or four columns by product count"; "ArrowDown/ArrowUp move by three columns with 3–6 products"; "forceListMode shows a list where ArrowDown/ArrowUp wrap"; "busy shows the busy indicator"; "url items open with window.open in \_blank by default or their target, not when a callback is set"; "a click that ends a drag does not open the product, the next click does"; "dropping an item emits the reordered products, sticky items keep their place"; "dragAndDropEnabled false or disabledDragAndDrop makes items not draggable"; "Space opens the focused product"; "setting isOpen opens the menu and isOpenChange is not emitted on init"; "the callback receives the click event"; "a disabled product switch does not open"; "a custom fdProductSwitchButton replaces the grid button".
 - **Effort:** M, about 15 tests on an existing host plus two small stories.
