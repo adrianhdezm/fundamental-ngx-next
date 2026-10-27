@@ -687,6 +687,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "flexible-column-layout",
+      "type": "registry:ui",
+      "title": "Flexible Column Layout",
+      "description": "Up to three columns (list, detail, detail-detail) with expand/collapse separators and responsive layouts.",
+      "registryDependencies": ["utils", "theme", "button"],
+      "files": [
+        {
+          "path": "registry/ui/flexible-column-layout/flexible-column-layout.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
