@@ -1,10 +1,23 @@
 import { JsonPipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, TemplateRef, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { DatetimeAdapter, FdDate, provideDateTimeFormats } from '@/lib/datetime';
+import { ButtonBar } from '@/ui/bar/bar';
+import { Button } from '@/ui/button/button';
+import {
+    Dialog,
+    DialogBody,
+    DialogCloseButton,
+    DialogFooter,
+    DialogHeader,
+    DialogService,
+    DialogTemplate,
+    DialogTitle
+} from '@/ui/dialog/dialog';
 import { Title } from '@/ui/title/title';
-import { Calendar, CalendarLegend, DateRange, type SpecialDayRule } from './calendar';
+import { Calendar, CalendarCloseButton, CalendarLegend, DateRange, type SpecialDayRule } from './calendar';
 
 const heading = 'mt-6 mb-2 first:mt-0';
 const value = 'font-sap-font-family text-sap-font-size text-sap-text-color';
@@ -167,6 +180,88 @@ class StoryCalendarLocale {
     }
 }
 
+@Component({
+    selector: 'story-calendar-mobile',
+    imports: [
+        Calendar,
+        CalendarCloseButton,
+        Button,
+        ButtonBar,
+        Dialog,
+        DialogHeader,
+        DialogBody,
+        DialogFooter,
+        DialogCloseButton,
+        DialogTemplate,
+        DialogTitle,
+        Title
+    ],
+    template: `
+        <ng-template fdDialogTemplate let-dialog #tpl>
+            <fd-dialog [dialogRef]="dialog">
+                <fd-dialog-header>
+                    <h1 fd-title fd-dialog-title>Pick a date</h1>
+                    <button
+                        fd-dialog-close-button
+                        fd-calendar-close-button
+                        mobile
+                        ariaLabel="Close calendar"
+                        (click)="dialog.dismiss()"
+                    ></button>
+                </fd-dialog-header>
+                <fd-dialog-body>
+                    <fd-calendar
+                        #calendar
+                        [mobileLandscape]="layout() === 'landscape'"
+                        [mobilePortrait]="layout() === 'portrait'"
+                        [selectedDate]="date()"
+                        [escapeFocusFunction]="null"
+                        (closeClicked)="dialog.dismiss()"
+                    />
+                </fd-dialog-body>
+                <fd-dialog-footer>
+                    <fd-button-bar
+                        variant="emphasized"
+                        label="OK"
+                        (click)="date.set(calendar.selectedDate()); dialog.close()"
+                    />
+                </fd-dialog-footer>
+            </fd-dialog>
+        </ng-template>
+        <div class="flex flex-wrap gap-2">
+            <button fdButton label="Open in landscape mode" (click)="open('landscape')"></button>
+            <button fdButton label="Open in portrait mode" (click)="open('portrait')"></button>
+        </div>
+        <p class="${value} mt-2">Selected: {{ show(date()) }}</p>
+    `
+})
+class StoryCalendarMobile {
+    protected readonly show = show;
+    protected readonly date = signal<FdDate | null | undefined>(new FdDate(2024, 3, 9));
+    protected readonly layout = signal<'landscape' | 'portrait'>('landscape');
+    private readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
+    private readonly dialogs = inject(DialogService);
+
+    protected open(layout: 'landscape' | 'portrait'): void {
+        this.layout.set(layout);
+        this.dialogs.open(
+            this.tpl(),
+            layout === 'landscape'
+                ? { mobile: true, responsivePadding: true, verticalPadding: false, width: '40rem', height: '25rem' }
+                : { mobile: true, responsivePadding: true, verticalPadding: false, width: '22.5rem', height: '40rem' }
+        );
+    }
+}
+
+/** Clicks the button that opens the calendar dialog and waits for its grid. */
+async function openMobile(canvasElement: HTMLElement, label: string): Promise<void> {
+    const button = [...canvasElement.querySelectorAll<HTMLButtonElement>('button')].find((b) =>
+        b.textContent!.includes(label)
+    )!;
+    await userEvent.click(button);
+    await waitFor(() => expect(document.querySelector('[role="dialog"] fd-calendar [role="grid"]')).not.toBeNull());
+}
+
 const meta: Meta<Calendar<FdDate>> = {
     title: 'Components/Calendar',
     component: Calendar,
@@ -177,7 +272,8 @@ const meta: Meta<Calendar<FdDate>> = {
                 StoryCalendarRange,
                 StoryCalendarSpecial,
                 StoryCalendarForm,
-                StoryCalendarLocale
+                StoryCalendarLocale,
+                StoryCalendarMobile
             ]
         })
     ],
@@ -205,3 +301,15 @@ export const SpecialDays: Story = {
 };
 export const Forms: Story = { name: 'Forms and navigation', render: () => ({ template: `<story-calendar-form />` }) };
 export const Locale: Story = { render: () => ({ template: `<story-calendar-locale />` }) };
+export const OpenMobileLandscape: Story = {
+    name: 'Open: mobile landscape',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-calendar-mobile />` }),
+    play: ({ canvasElement }) => openMobile(canvasElement, 'landscape')
+};
+export const OpenMobilePortrait: Story = {
+    name: 'Open: mobile portrait',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-calendar-mobile />` }),
+    play: ({ canvasElement }) => openMobile(canvasElement, 'portrait')
+};
