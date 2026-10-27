@@ -7,6 +7,7 @@ import {
     ReactiveFormsModule
 } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { ContentDensityDirective } from '@/ui/content-density/content-density';
 import { FormItem, FormLabel } from '@/ui/form/form';
 import { ListByline, ListContent, ListIcon, ListTitle } from '@/ui/list/list';
@@ -344,3 +345,25 @@ export const Items: Story = {
 };
 export const Forms: Story = { render: () => ({ template: `<story-multi-input-forms />` }) };
 export const Mobile: Story = { render: () => ({ template: `<story-multi-input-mobile />` }) };
+
+/** Clicks the addon button of the multi input whose field has the given id and waits for its popup. */
+async function openMultiInput(canvasElement: HTMLElement, inputId: string, popup: string): Promise<void> {
+    const host = canvasElement.querySelector<HTMLInputElement>(`#${inputId}`)!.closest('fd-multi-input')!;
+    await userEvent.click(host.querySelector<HTMLButtonElement>('button[aria-haspopup]')!);
+    await waitFor(() => expect(document.querySelector(popup)).not.toBeNull());
+}
+
+export const OpenItemTemplate: Story = {
+    name: 'Open: item template',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-multi-input-items />` }),
+    play: ({ canvasElement }) =>
+        openMultiInput(canvasElement, 'mi-items-2', '.cdk-overlay-container [role=listbox] [role=option] [fdListIcon]')
+};
+export const OpenMobile: Story = {
+    name: 'Open: mobile',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-multi-input-mobile />` }),
+    play: ({ canvasElement }) =>
+        openMultiInput(canvasElement, 'mi-mobile', '[role=dialog] [role=listbox] [role=option]')
+};
