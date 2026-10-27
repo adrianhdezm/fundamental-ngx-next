@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { DatetimeAdapter, FdDate, provideDateTimeFormats } from '@/lib/datetime';
 import { Button } from '@/ui/button/button';
 import { type SpecialDayRule } from '@/ui/calendar/calendar';
@@ -181,6 +182,7 @@ const meta: Meta<DatetimePicker<FdDate>> = {
     decorators: [
         moduleMetadata({
             imports: [
+                DatetimePicker,
                 StoryDatetimePickerBasic,
                 StoryDatetimePickerSpecial,
                 StoryDatetimePickerForm,
@@ -207,3 +209,47 @@ export const SpecialDays: Story = { render: () => ({ template: `<story-datetime-
 export const Forms: Story = { render: () => ({ template: `<story-datetime-picker-form />` }) };
 export const Locale: Story = { render: () => ({ template: `<story-datetime-picker-locale />` }) };
 export const Mobile: Story = { render: () => ({ template: `<story-datetime-picker-mobile />` }) };
+
+/** Opens the picker with its button (or its field, in mobile mode) and waits for the calendar and the time. */
+async function openPicker(canvasElement: HTMLElement, target: 'button' | 'input' = 'button'): Promise<void> {
+    const control = canvasElement.querySelector<HTMLElement>(
+        target === 'button' ? 'fd-datetime-picker button[aria-haspopup]' : 'fd-datetime-picker input'
+    )!;
+    await userEvent.click(control);
+    await waitFor(() => {
+        expect(document.querySelector('fd-calendar [role="grid"]')).not.toBeNull();
+        expect(document.querySelector('fd-time')).not.toBeNull();
+    });
+}
+
+export const OpenPopover: Story = {
+    name: 'Open: popover',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { date: new FdDate(2024, 3, 9, 14, 30, 0) },
+        template: `<fd-datetime-picker [(date)]="date" message="Times are local" messageType="information" />`
+    }),
+    play: ({ canvasElement }) => openPicker(canvasElement)
+};
+export const OpenMobile: Story = {
+    name: 'Open: mobile',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { date: new FdDate(2024, 3, 9, 14, 30, 0) },
+        template: `<fd-datetime-picker
+            mobile
+            [(date)]="date"
+            [mobileConfig]="{ title: 'Meeting', approveButtonText: 'Save', cancelButtonText: 'Cancel' }"
+        />`
+    }),
+    play: ({ canvasElement }) => openPicker(canvasElement, 'input')
+};
+export const OpenMobileLandscape: Story = {
+    name: 'Open: mobile landscape',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { date: new FdDate(2024, 3, 9, 14, 30, 0) },
+        template: `<fd-datetime-picker mobile mobileLandscape [(date)]="date" [mobileConfig]="{ title: 'Meeting' }" />`
+    }),
+    play: ({ canvasElement }) => openPicker(canvasElement, 'input')
+};

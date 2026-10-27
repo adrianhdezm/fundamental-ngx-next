@@ -1,7 +1,7 @@
 ## datetime-picker
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/datetime-picker) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/datetime-picker)
-Registry: `registry/ui/datetime-picker/` — 5 stories, 15 tests.
+Registry: `registry/ui/datetime-picker/` — 8 stories, 15 tests.
 
 ### Stories vs. upstream examples
 
@@ -15,10 +15,10 @@ Registry: `registry/ui/datetime-picker/` — 5 stories, 15 tests.
 | Date Time Picker in Reactive Form               | Forms          | ✅ covered | Required, disable toggle                                                                                                             |
 | Internationalization                            | Locale         | ✅ covered |                                                                                                                                      |
 | Date Time picker that updates its value on blur | Basic          | ✅ covered | `processInputOnBlur`                                                                                                                 |
-| Mobile mode                                     | Mobile         | ✅ covered | Portrait and landscape; no "Open: …" story                                                                                           |
+| Mobile mode                                     | Mobile         | ✅ covered | Portrait and landscape; "Open: mobile" and "Open: mobile landscape" open the dialog in `play`                                        |
 | Calendar Legend                                 | SpecialDays    | ✅ covered | `legendCol` not shown                                                                                                                |
 
-No story opens the popover or the mobile dialog in `play`, so axe never checks the calendar plus time columns.
+"Open: popover", "Open: mobile" and "Open: mobile landscape" open the picker in `play`, so axe checks the calendar, the time columns and the footer.
 
 ### Tests vs. upstream specs
 
@@ -45,6 +45,6 @@ Registry-only coverage: aria-valuetext on the time spinners, focus on the select
 
 ### Gaps to fill
 
-- **Stories:** "Open: popover" — play() clicks the button so axe checks calendar + time + footer; "Open: mobile" — mobile dialog opened; extend Formatting with a provider-level format and a day-period format.
+- **Stories:** extend Formatting with a provider-level format and a day-period format.
 - **Tests:** "does not open when disabled"; "shows 24-hour columns with seconds for a matching format"; "hides the message while open and shows it again on close"; "parses typed text with customDateTimeFormat"; "renders the legend inside the calendar"; "reopens on the month of the submitted date".
 - **Effort:** M, the dateChange emission matrix is the bulk; the rest are small.
