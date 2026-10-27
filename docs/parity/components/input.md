@@ -1,7 +1,7 @@
 ## input
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/input) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/form/form-control)
-Registry: `registry/ui/input/` — 8 stories, 9 tests.
+Registry: `registry/ui/input/` — 11 stories, 9 tests.
 
 Also covers the upstream [textarea docs](https://sap.github.io/fundamental-ngx/#/core/textarea) (same `fdFormControl` directive).
 
@@ -14,9 +14,9 @@ Also covers the upstream [textarea docs](https://sap.github.io/fundamental-ngx/#
 | Input States with Messages Components | `States`, `ValueStateMessages` | ✅ covered | All states, read-only, disabled, and message groups (focus and hover). `Open: value state message` opens the rich error message for axe. |
 | Reactive Form Input                   | `ReactiveForms`                | ✅ covered | Upstream has four controls (two enabled, two disabled); ours one of each.                                                                |
 | Textarea                              | `Textarea`                     | ✅ covered | Default, required with rows, compact, read-only.                                                                                         |
-| Textarea with Inline Help Elements    | —                              | ❌ missing | Only inputs get an inline-help label.                                                                                                    |
-| Textarea States                       | `Textarea`                     | 🟡 partial | Only an error state with message and read-only; upstream shows success/information/warning/error messages and a disabled textarea.       |
-| Reactive Form Textarea                | —                              | ❌ missing | `ReactiveForms` uses inputs only.                                                                                                        |
+| Textarea with Inline Help Elements    | `TextareaInlineHelp`           | ✅ covered | Textarea with an inline-help label.                                                                                                      |
+| Textarea States                       | `TextareaStates`               | ✅ covered | Success/information/warning/error textareas with messages, disabled and read-only.                                                       |
+| Reactive Form Textarea                | `TextareaReactiveForms`        | ✅ covered | Enabled and disabled textareas bound with `formControlName`.                                                                             |
 
 ### Tests vs. upstream specs
 
@@ -31,6 +31,6 @@ Registry-only coverage: ngModel and reactive forms including disable(), aria-inv
 
 ### Gaps to fill
 
-- **Stories:** `TextareaInlineHelp` — textarea with an inline-help label; `TextareaStates` — success/information/warning/error textareas with messages plus disabled and read-only; `TextareaReactiveForms` — textarea bound with `formControlName`, enabled and disabled.
+- **Stories:** none left.
 - **Tests:** "textarea works with reactive forms, including disable()" (only if the existing reactive test does not include a textarea).
 - **Effort:** S, stories only, plus at most one test.

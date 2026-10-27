@@ -229,6 +229,99 @@ export const Textarea: Story = {
     })
 };
 
+export const TextareaInlineHelp: Story = {
+    name: 'Textarea inline help',
+    render: () => ({
+        template: `
+            <div class="flex max-w-md flex-col gap-2">
+                <div fdFormItem>
+                    <label fdFormLabel colon for="textarea-31" inlineHelpContent="Inline Help">Textarea with inline help</label>
+                    <textarea fdFormControl id="textarea-31" placeholder="Field placeholder text"></textarea>
+                </div>
+            </div>`
+    })
+};
+
+export const TextareaStates: Story = {
+    name: 'Textarea states',
+    parameters: {
+        docs: {
+            description: {
+                story: 'Textareas with value state messages (shown on focus), plus disabled and read-only textareas.'
+            }
+        }
+    },
+    render: () => ({
+        template: `
+            <div class="flex max-w-md flex-col gap-4">
+                <div fdFormItem>
+                    <label fdFormLabel colon for="textarea-state-success">Project Description</label>
+                    <fd-form-input-message-group>
+                        <textarea fdFormControl id="textarea-state-success" state="success" placeholder="Describe the project scope and objectives"></textarea>
+                        <fd-form-message type="success">Description meets the <b>minimum requirement</b> of 100 characters. You can submit the form.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel colon for="textarea-state-error">Security Policy</label>
+                    <fd-form-input-message-group>
+                        <textarea fdFormControl id="textarea-state-error" state="error" aria-errormessage="textarea-state-error-message" placeholder="Define security requirements and compliance standards"></textarea>
+                        <fd-form-message type="error" id="textarea-state-error-message">Policy must include <code>authentication</code>, <code>authorization</code>, and <code>data encryption</code> sections. See <a fdLink href="#">template</a>.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel colon for="textarea-state-warning">Customer Feedback</label>
+                    <fd-form-input-message-group>
+                        <textarea fdFormControl id="textarea-state-warning" state="warning" placeholder="Enter customer comments and concerns"></textarea>
+                        <fd-form-message type="warning">This feedback contains <b>potentially sensitive information</b>. Ensure proper data handling before submission.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel colon for="textarea-state-info">Release Notes</label>
+                    <fd-form-input-message-group>
+                        <textarea fdFormControl id="textarea-state-info" state="information" placeholder="List new features, improvements, and bug fixes"></textarea>
+                        <fd-form-message type="information">Use <code>markdown</code> formatting for better readability. Include ticket references in format <code>JIRA-1234</code>.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel colon disabled for="textarea-state-disabled">System Logs (Processing)</label>
+                    <textarea fdFormControl id="textarea-state-disabled" disabled placeholder="Logs are being processed..."></textarea>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel colon for="textarea-state-readonly">Terms and Conditions</label>
+                    <textarea fdFormControl id="textarea-state-readonly" readonly>Standard terms (non-editable)</textarea>
+                </div>
+            </div>`
+    })
+};
+
+export const TextareaReactiveForms: Story = {
+    name: 'Textarea reactive forms',
+    render: () => {
+        const form = new NgFormGroup({
+            textAreaControl: new NgFormControl(''),
+            disabledTextAreaControl: new NgFormControl({ value: 'Disabled value', disabled: true })
+        });
+        return {
+            props: { form },
+            template: `
+                <form [formGroup]="form" class="max-w-md">
+                    <fieldset fdFieldset>
+                        <div fdFormItem>
+                            <label fdFormLabel colon for="textarea-21">Textarea</label>
+                            <textarea fdFormControl formControlName="textAreaControl" id="textarea-21" placeholder="Field placeholder text"></textarea>
+                        </div>
+                        <div fdFormItem>
+                            <label fdFormLabel colon for="textarea-22">Disabled Textarea</label>
+                            <textarea fdFormControl formControlName="disabledTextAreaControl" id="textarea-22" placeholder="Field placeholder text"></textarea>
+                        </div>
+                    </fieldset>
+                </form>
+                <pre class="text-sap-font-small-size">Value: {{ form.getRawValue() | json }}
+Touched: {{ form.touched }}  Dirty: {{ form.dirty }}  Valid: {{ form.valid }}</pre>`
+        };
+    }
+};
+
 /** Points at the error field (its message opens on hover) so axe checks the open message popover with rich content. */
 export const OpenValueStateMessage: Story = {
     name: 'Open: value state message',
