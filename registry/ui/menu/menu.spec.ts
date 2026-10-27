@@ -102,7 +102,7 @@ class Host {
             [restoreFocusOnClose]="restoreFocus()"
             [disableScrollbar]="noScrollbar()"
             [openOnHoverTime]="hoverTime()"
-            (beforeOpen)="events.push('beforeOpen')"
+            (beforeOpen)="events.push(rendered() ? 'beforeOpen (rendered)' : 'beforeOpen')"
             (isOpenChange)="events.push('isOpenChange: ' + $event)"
         >
             <li fd-menu-item disabled>
@@ -154,6 +154,9 @@ class ConfigHost {
     readonly hideShortcut = signal(true);
     readonly selected = signal(0);
     readonly events: string[] = [];
+    protected rendered(): boolean {
+        return !!document.querySelector('[aria-label="Configurable menu"]');
+    }
     readonly long = 'A very long menu item text that does not fit into the width of the menu and wraps or is truncated';
 }
 
@@ -182,6 +185,15 @@ const wait = (ms = 60) => new Promise((r) => setTimeout(r, ms));
 const item = (text: string) =>
     [...document.querySelectorAll<HTMLElement>('[data-menu-link]')].find((e) => e.textContent!.trim() === text)!;
 const focused = () => document.activeElement!.textContent!.trim();
+/** The interactive element of an item, by the text of its title. */
+const link = (title: string) =>
+    [...document.querySelectorAll<HTMLElement>('[data-menu-link]')].find(
+        (e) => e.querySelector('[fd-menu-title]')?.textContent!.trim() === title
+    );
+const settle = async (fixture: { whenStable(): Promise<unknown> }, ms = 60) => {
+    await fixture.whenStable();
+    await wait(ms);
+};
 
 async function open() {
     const fixture = TestBed.createComponent(Host);
@@ -303,5 +315,25 @@ describe('Menu options', () => {
         expect(menu.getBoundingClientRect().top).toBeGreaterThanOrEqual(trigger.getBoundingClientRect().bottom - 1);
         // fillControlMode has no value of its own, so config.fillControlMode applies
         expect(Math.round(body.getBoundingClientRect().width)).toBe(Math.round(trigger.getBoundingClientRect().width));
+    });
+
+    it('truncate clips the title and subtitle to one line', async () => {
+        const { fixture, host, trigger } = await setup();
+        await userEvent.click(trigger);
+        await wait();
+        const el = link(host.long)!;
+        const title = el.querySelector<HTMLElement>('[fd-menu-title]')!;
+        const subtitle = el.querySelector<HTMLElement>('[fd-menu-subtitle]')!;
+        // one line of text: the height of the short "Save" title
+        const line = link('Save')!.querySelector<HTMLElement>('[fd-menu-title]')!.offsetHeight;
+        expect(title.offsetHeight).toBeGreaterThan(line * 1.5);
+        expect(subtitle.offsetHeight).toBeGreaterThan(line * 1.5);
+        host.truncate.set(true);
+        await settle(fixture);
+        for (const text of [title, subtitle]) {
+            expect(text.offsetHeight).toBeLessThan(line * 1.5);
+            expect(text.scrollWidth).toBeGreaterThan(text.clientWidth);
+            expect(getComputedStyle(text).textOverflow).toBe('ellipsis');
+        }
     });
 });

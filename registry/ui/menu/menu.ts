@@ -924,10 +924,10 @@ export class MenuTitle {
 
     protected readonly computedClass = computed(() =>
         cn(
-            'm-0 my-1 box-border w-full p-0 text-start font-sap-font-family text-sap-font-size text-(--mi-tc) whitespace-normal',
+            'm-0 my-1 box-border w-full p-0 text-start font-sap-font-family text-sap-font-size text-(--mi-tc)',
             'has-[+[fd-menu-item-input]]:w-fit has-[+[fd-menu-item-input]]:min-w-fit',
             TEXT_IN_ICON_LIST,
-            this.truncate() && 'truncate',
+            this.truncate() ? 'truncate' : 'whitespace-normal',
             this.userClass()
         )
     );
@@ -954,8 +954,8 @@ export class MenuSubtitle {
     readonly userClass = input<ClassValue>('', { alias: 'class' });
     protected readonly computedClass = computed(() =>
         cn(
-            'm-0 mb-1 box-border w-full p-0 text-start font-sap-font-family text-sap-font-size text-sap-content-label-color whitespace-normal',
-            this.truncate() && 'truncate',
+            'm-0 mb-1 box-border w-full p-0 text-start font-sap-font-family text-sap-font-size text-sap-content-label-color',
+            this.truncate() ? 'truncate' : 'whitespace-normal',
             this.userClass()
         )
     );
