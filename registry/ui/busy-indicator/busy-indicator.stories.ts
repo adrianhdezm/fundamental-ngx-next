@@ -1,13 +1,40 @@
-import { signal } from '@angular/core';
+import { Component, TemplateRef, inject, signal } from '@angular/core';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { Button } from '@/ui/button/button';
 import { FormControl } from '@/ui/input/input';
+import { MessageToastService } from '@/ui/message-toast/message-toast';
 import { BusyIndicator, BusyIndicatorExtended } from './busy-indicator';
+
+/** Opens an extended busy indicator in a message toast that stays until "Hide all". */
+@Component({
+    selector: 'story-busy-indicator-toast',
+    imports: [BusyIndicator, BusyIndicatorExtended, Button],
+    host: { class: 'flex flex-wrap gap-2' },
+    template: `
+        <button fdButton label="Open from template" (click)="open(template)"></button>
+        <button fdButton variant="emphasized" label="Hide all" (click)="toasts.hideAll()"></button>
+        <ng-template #template>
+            <div fdBusyIndicatorExtended>
+                <fd-busy-indicator loading contrast ariaLabel="Loading" title="Please wait" ariaValueText="Busy" />
+            </div>
+        </ng-template>
+    `
+})
+class StoryBusyIndicatorToast {
+    protected readonly toasts = inject(MessageToastService);
+    protected open(template: TemplateRef<unknown>): void {
+        this.toasts.open(template, { mousePersist: true, duration: 0 });
+    }
+}
 
 const meta: Meta<BusyIndicator> = {
     title: 'Components/Busy Indicator',
     component: BusyIndicator,
-    decorators: [moduleMetadata({ imports: [BusyIndicator, BusyIndicatorExtended, Button, FormControl] })],
+    decorators: [
+        moduleMetadata({
+            imports: [BusyIndicator, BusyIndicatorExtended, Button, FormControl, StoryBusyIndicatorToast]
+        })
+    ],
     parameters: {
         docs: {
             description: {
@@ -93,4 +120,16 @@ export const Extended: Story = {
                 <fd-busy-indicator loading ariaLabel="Loading" label="Loading data..." ariaValueText="Busy" />
             </div>`
     })
+};
+
+export const WithMessageToast: Story = {
+    name: 'With message toast',
+    parameters: {
+        docs: {
+            description: {
+                story: 'An extended busy indicator in a message toast opened from a template. The toast stays open until "Hide all".'
+            }
+        }
+    },
+    render: () => ({ template: `<story-busy-indicator-toast />` })
 };
