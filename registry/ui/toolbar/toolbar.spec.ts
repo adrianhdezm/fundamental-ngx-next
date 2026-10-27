@@ -2,9 +2,13 @@ import { Component, ElementRef, signal, viewChild, viewChildren } from '@angular
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
+import { Button } from '@/ui/button/button';
+import { Menu, MenuInteractive, MenuItem, MenuTitle, MenuTrigger } from '@/ui/menu/menu';
+import { Select, SelectOption } from '@/ui/select/select';
 import {
     Toolbar,
     ToolbarItem,
+    ToolbarOverflowButton,
     ToolbarLabel,
     ToolbarSeparator,
     ToolbarSpacer,
@@ -16,7 +20,7 @@ import {
 @Component({
     imports: [Toolbar, ToolbarItem, ToolbarSpacer],
     template: `
-        <div [style.width.px]="width()">
+        <div [style.width.px]="width()" [style.display]="display()">
             <fd-toolbar shouldOverflow [forceOverflow]="force()" ariaLabel="Actions" [(overflowOpen)]="open">
                 <fd-toolbar-spacer />
                 <button #item fd-toolbar-item id="a" style="width: 100px">A</button>
@@ -34,6 +38,7 @@ class OverflowHost {
     readonly toolbar = viewChild.required(Toolbar);
     readonly items = viewChildren('item', { read: ElementRef });
     readonly width = signal(1000);
+    readonly display = signal('block');
     readonly force = signal(false);
     readonly open = signal(false);
 }
@@ -50,6 +55,40 @@ class OverflowHost {
 })
 class TitleHost {
     readonly title = signal('Short');
+}
+
+@Component({
+    imports: [
+        Toolbar,
+        ToolbarItem,
+        ToolbarOverflowButton,
+        Button,
+        Select,
+        SelectOption,
+        Menu,
+        MenuItem,
+        MenuInteractive,
+        MenuTitle,
+        MenuTrigger
+    ],
+    template: `
+        <fd-toolbar shouldOverflow ariaLabel="Overlays" style="width: 200px">
+            <button fdButton fdToolbarOverflowButton label="First"></button>
+            <fd-select fd-toolbar-item placeholder="Fruit" ariaLabel="Fruit" [(value)]="fruit">
+                <li fd-option value="apple">Apple</li>
+                <li fd-option value="pear">Pear</li>
+            </fd-select>
+            <button fdButton fdToolbarOverflowButton fdMenu label="Menu" [fdMenuTrigger]="menu"></button>
+        </fd-toolbar>
+        <fd-menu #menu>
+            <li fd-menu-item>
+                <div fd-menu-interactive><span fd-menu-title>Option 1</span></div>
+            </li>
+        </fd-menu>
+    `
+})
+class OverlayHost {
+    readonly fruit = signal<string | null>(null);
 }
 
 @Component({
@@ -230,6 +269,40 @@ describe('Toolbar', () => {
         expect(inPanel()).toEqual(['b', 'g', 'f']);
     });
 
+    it('recomputes the overflow when a hidden toolbar becomes visible', async () => {
+        const fixture = TestBed.createComponent(OverflowHost);
+        const host = fixture.componentInstance;
+        host.width.set(500);
+        host.display.set('none');
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        await frame();
+        await fixture.whenStable();
+        const toolbar = (fixture.nativeElement as HTMLElement).querySelector('fd-toolbar')!;
+        const inRow = () => [...toolbar.querySelectorAll<HTMLElement>(':scope > button[id]')].map((b) => b.id);
+        // while hidden nothing has a width; once shown the items are measured and overflow as usual
+        host.display.set('block');
+        await expect.poll(inRow).toEqual(['a', 'e']);
+        host.width.set(1000);
+        await expect.poll(inRow).toEqual(['a', 'b', 'c', 'd', 'e', 'g']);
+    });
+
+    it('a longer title moves more items into the overflow', async () => {
+        const { host, root, stable } = await render(TitleHost);
+        const toolbar = root.querySelector<HTMLElement>('fd-toolbar')!;
+        const inRow = () => [...toolbar.querySelectorAll<HTMLElement>(':scope > button[id]')].map((b) => b.id);
+        expect(inRow()).toEqual(['a', 'b', 'c']);
+        host.title.set('A much longer toolbar title that takes most of the room');
+        await stable();
+        await stable();
+        expect(inRow().length).toBeLessThan(3);
+        expect(toolbar.querySelector('button[aria-haspopup]')).not.toBeNull();
+        host.title.set('Short');
+        await stable();
+        await stable();
+        expect(inRow()).toEqual(['a', 'b', 'c']);
+    });
+
     it('the title truncates with an ellipsis and keeps the full text in title', async () => {
         const { host, root, stable } = await render(TitleHost);
         const long = 'A very long toolbar title that does not fit into the toolbar at all, even without items';
@@ -243,6 +316,37 @@ describe('Toolbar', () => {
         expect(heading.getBoundingClientRect().right).toBeLessThanOrEqual(toolbar.getBoundingClientRect().right);
         expect(heading.title).toBe(long);
         expect(heading.textContent).toBe(long);
+    });
+
+    it('overflown select and menu buttons still open their overlays from the popover', async () => {
+        const { fixture, host, root, stable } = await render(OverlayHost);
+        const toolbar = root.querySelector<HTMLElement>('fd-toolbar')!;
+        await expect.poll(() => toolbar.querySelector(':scope > fd-select')).toBeNull();
+        await userEvent.click(toolbar.querySelector<HTMLElement>('button[aria-haspopup="true"]')!);
+        await stable();
+        const panel = document.querySelector<HTMLElement>('.cdk-overlay-container [data-toolbar-overflow]')!;
+        const combobox = panel.querySelector<HTMLElement>('fd-select [role=combobox]')!;
+        await userEvent.click(combobox);
+        await stable();
+        expect(combobox.getAttribute('aria-expanded')).toBe('true');
+        const pear = [...document.querySelectorAll<HTMLElement>('[role=listbox] [role=option]')].find(
+            (o) => o.textContent!.trim() === 'Pear'
+        )!;
+        await userEvent.click(pear);
+        await fixture.whenStable();
+        expect(host.fruit()).toBe('pear');
+
+        const menuButton = [...panel.querySelectorAll<HTMLElement>('button')].find(
+            (b) => b.textContent!.trim() === 'Menu'
+        );
+        if (!document.querySelector('.cdk-overlay-container [data-toolbar-overflow]')) {
+            await userEvent.click(toolbar.querySelector<HTMLElement>('button[aria-haspopup="true"]')!);
+            await stable();
+        }
+        await userEvent.click(menuButton!);
+        await stable();
+        expect(menuButton!.getAttribute('aria-expanded')).toBe('true');
+        expect(document.querySelector('.cdk-overlay-container [role=menu] [role=menuitem]')).not.toBeNull();
     });
 
     it('spacer, separator, label; title renders a heading', async () => {
