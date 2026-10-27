@@ -1,7 +1,7 @@
 ## wizard
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/wizard) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/wizard)
-Registry: `registry/ui/wizard/` — 4 stories, 9 tests.
+Registry: `registry/ui/wizard/` — 5 stories, 9 tests.
 
 ### Stories vs. upstream examples
 
@@ -16,7 +16,7 @@ Registry: `registry/ui/wizard/` — 4 stories, 9 tests.
 | Visible summary step in progress bar | Branching                                           | ✅ covered | `displaySummaryStep`                                                                                                          |
 | Loading                              | —                                                   | ❌ missing | Skeleton placeholders in steps and content                                                                                    |
 
-The stacked-steps indicator opens an action sheet, which also has no "Open: …" story.
+The stacked-steps indicator opens an action sheet; "Open: stacked steps" opens it in `play()`.
 
 ### Tests vs. upstream specs
 
@@ -35,6 +35,6 @@ Registry-only coverage: list/region/nav roles and aria-current, `stepClickValida
 
 ### Gaps to fill
 
-- **Stories:** "Customizable" — solid content background, sm/md sizes, compact next-step buttons; "Mobile" — floating-footer bar with a floating next-step button; "Open: dialog" — `play` opens a dialog with a wizard and a visible summary step; "Loading" — skeleton step labels and content; "Open: stacked steps" — narrow wizard whose `play` opens the step list action sheet.
+- **Stories:** "Customizable" — solid content background, sm/md sizes, compact next-step buttons; "Mobile" — floating-footer bar with a floating next-step button; "Open: dialog" — `play` opens a dialog with a wizard and a visible summary step; "Loading" — skeleton step labels and content.
 - **Tests:** "the step indicator shows its glyph"; "stacked steps get their labels back when the wizard grows"; "displaySummaryStep keeps the summary in the progress bar"; "branching step draws the branching connector"; "floating next step stays above the footer"; "arrow keys between steps are mirrored in RTL".
 - **Effort:** M, five stories (two with overlays) and six tests.

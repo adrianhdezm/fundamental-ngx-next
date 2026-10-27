@@ -1,6 +1,7 @@
 import { Component, computed, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Bar, BarElement, BarRight } from '@/ui/bar/bar';
 import { Button } from '@/ui/button/button';
 import { FormItem, FormLabel } from '@/ui/form/form';
@@ -325,4 +326,18 @@ export const Branching: Story = {
 export const Narrow: Story = {
     name: 'Stacked steps and a footer',
     render: () => ({ template: `<story-wizard-narrow />` })
+};
+export const OpenStacked: Story = {
+    name: 'Open: stacked steps',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-wizard-narrow />` }),
+    play: async ({ canvasElement }) => {
+        let trigger: HTMLElement | null = null;
+        await waitFor(() => {
+            trigger = canvasElement.querySelector<HTMLElement>('fd-wizard-step-indicator [aria-haspopup="menu"]');
+            expect(trigger).not.toBeNull();
+        });
+        await userEvent.click(trigger!);
+        await waitFor(() => expect(document.querySelector('.cdk-overlay-pane fd-action-sheet-body')).not.toBeNull());
+    }
 };
