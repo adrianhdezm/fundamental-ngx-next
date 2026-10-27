@@ -455,6 +455,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "toolbar",
+      "type": "registry:ui",
+      "title": "Toolbar",
+      "description": "Row of actions with title, spacers and separators; items that do not fit move into an overflow popover by priority and group.",
+      "registryDependencies": ["utils", "theme", "button", "popover", "title"],
+      "files": [
+        {
+          "path": "registry/ui/toolbar/toolbar.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk"]
     }
   ]
 }
