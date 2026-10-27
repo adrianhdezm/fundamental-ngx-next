@@ -1,15 +1,15 @@
 ## resizable-card-layout
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/resizable-card-layout) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/resizable-card-layout)
-Registry: `registry/ui/resizable-card-layout/` — 1 story, 13 tests.
+Registry: `registry/ui/resizable-card-layout/` — 3 stories, 13 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                          | Registry story                | Status     | Notes                                                                                                                                                                                                                         |
-| ----------------------------------------- | ----------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Resizable Card Layout                     | `Default` ("Resizable cards") | 🟡 partial | Cards, a non-resizable card and resize status are shown, but via `[config]` objects; upstream binds the item inputs (`rank`, `cardWidthColSpan`, `cardHeightRowSpan`, mini spans) and grows the card content on `stepChange`. |
-| Resizable Card Layout using Layout config | —                             | ❌ missing | `layoutConfig` input exists on `ResizableCardLayout` but no story uses it.                                                                                                                                                    |
-| Resizable Card Layout using Item config   | `Default`                     | ✅ covered | Same `[config]` per item approach.                                                                                                                                                                                            |
+| Upstream example                          | Registry story                   | Status     | Notes                                                                                                                                                                       |
+| ----------------------------------------- | -------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Resizable Card Layout                     | `ItemInputs` ("Item inputs")     | ✅ covered | Cards bound with the item inputs (`rank`, `cardWidthColSpan`, `cardHeightRowSpan`, mini spans, `resizable`); each list shows the rows that fit and updates on `stepChange`. |
+| Resizable Card Layout using Layout config | `LayoutConfig` ("Layout config") | ✅ covered | Same cards through `layoutConfig` on `fd-resizable-card-layout`.                                                                                                            |
+| Resizable Card Layout using Item config   | `Default` ("Resizable cards")    | ✅ covered | Same `[config]` per item approach.                                                                                                                                          |
 
 ### Tests vs. upstream specs
 
@@ -32,6 +32,6 @@ Registry-only coverage: focusable groups named by title, arrow-key focus between
 
 ### Gaps to fill
 
-- **Stories:** `Layout config` — the same cards driven by `layoutConfig` on `fd-resizable-card-layout`; `Item inputs` — cards bound with `rank`/`cardWidthColSpan`/`cardHeightRowSpan`/mini spans whose list shows more rows on `stepChange`.
+- **Stories:** none.
 - **Tests:** "a one-column card dragged left stays one column wide"; "item inputs (rank, cardWidthColSpan, cardHeightRowSpan) place and size a card like config".
 - **Effort:** S — tests are already thorough; two stories and three focused tests reusing the existing host.
