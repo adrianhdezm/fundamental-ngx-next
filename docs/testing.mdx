@@ -19,9 +19,8 @@ pnpm test:a11y    # accessibility of every story (also part of pnpm check)
 Each component has a `<name>.spec.ts` next to its source, for example `registry/ui/grid-list/grid-list.spec.ts`.
 Spec files are not part of the registry items, so they are not copied into apps.
 
-A spec starts as a **test plan**: `it.todo(...)` entries for the behaviour worth covering, ported from
-`@fundamental-ngx/core` and from what was checked by hand in Storybook. Turning a todo into a test is the way to add
-coverage; `pnpm test` lists the remaining todos.
+New behaviour can start as a **test plan**: `it.todo(...)` entries for what is worth covering, ported from
+`@fundamental-ngx/core` or found by hand in Storybook. `pnpm test` lists the remaining todos; turn each one into a test.
 
 ## Writing a test
 

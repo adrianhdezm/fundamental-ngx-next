@@ -55,6 +55,7 @@
     "axe-core": "4.14.0",
     "playwright": "1.63.0",
     "prettier": "^3.6.2",
+    "remark-gfm": "4.0.1",
     "storybook": "^10.6.4",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.0",
