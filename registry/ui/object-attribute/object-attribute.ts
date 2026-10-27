@@ -49,7 +49,7 @@ export class ObjectAttribute {
 
     protected readonly computedClass = computed(() =>
         cn(
-            'm-0 block truncate p-0 font-sap-font-family text-sap-font-size leading-normal text-sap-content-label-color',
+            'm-0 block truncate p-0 font-sap-font-family text-sap-font-size leading-[normal] text-sap-content-label-color',
             this.userClass()
         )
     );

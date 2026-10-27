@@ -375,7 +375,7 @@ export class ButtonBadge {
             'z-[1] box-border inline-flex items-center justify-center whitespace-nowrap',
             'absolute -top-[0.3125rem] -end-[0.3125rem] h-4 px-[0.3125rem] rounded-lg',
             'border border-solid border-sap-content-badge-border-color bg-sap-content-badge-background',
-            'font-sap-font-family text-sap-font-small-size text-sap-content-badge-text-color leading-normal',
+            'font-sap-font-family text-sap-font-small-size text-sap-content-badge-text-color leading-[normal]',
             'compact:static compact:ms-1',
             this.attention() &&
                 'size-3 px-0 -top-[0.1875rem] -end-[0.1875rem] compact:absolute compact:ms-0 compact:size-2.5',

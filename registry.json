@@ -617,6 +617,23 @@
         }
       ],
       "dependencies": ["@angular/cdk"]
+    },
+    {
+      "name": "tile",
+      "type": "registry:ui",
+      "title": "Tile",
+      "description": "Launch, KPI, feed, slide and line tiles with numeric content.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/tile/tile.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ui/tile/numeric-content.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
