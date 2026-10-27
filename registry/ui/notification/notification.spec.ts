@@ -1,9 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
+import { Button } from '@/ui/button/button';
 import {
     Notification,
+    NotificationActions,
     NotificationBody,
     NotificationContent,
     NotificationFooter,
@@ -84,6 +86,38 @@ class BannerContent {
     readonly ref = inject(NotificationRef);
 }
 
+@Component({
+    imports: [...PARTS, NotificationActions, Button],
+    template: `
+        <fd-notification>
+            <fd-notification-body>
+                <fd-notification-content>
+                    @if (withHeader()) {
+                        <fd-notification-header id="first-header"
+                            ><h4 fd-notification-title>First</h4></fd-notification-header
+                        >
+                        <fd-notification-header id="second-header"
+                            ><h4 fd-notification-title>Second</h4></fd-notification-header
+                        >
+                    }
+                    <p fd-notification-paragraph>Text</p>
+                </fd-notification-content>
+                <fd-notification-actions>
+                    <button fdButton id="btn1" glyph="accept" ariaLabel="Accept"></button>
+                    <button fdButton id="btn2" glyph="decline" ariaLabel="Decline" aria-describedby="existing"></button>
+                    @if (extra()) {
+                        <button fdButton id="btn3" glyph="overflow" ariaLabel="More"></button>
+                    }
+                </fd-notification-actions>
+            </fd-notification-body>
+        </fd-notification>
+    `
+})
+class ActionsHost {
+    readonly withHeader = signal(true);
+    readonly extra = signal(false);
+}
+
 const wait = (ms = 80) => new Promise((r) => setTimeout(r, ms));
 
 describe('Notification', () => {
@@ -152,5 +186,30 @@ describe('Notification', () => {
         await wait();
         expect(service.isAnyOpened()).toBe(false);
         expect(document.activeElement).toBe(trigger);
+    });
+    it('describes the action buttons by the first header and keeps existing descriptions', async () => {
+        const fixture = TestBed.createComponent(ActionsHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        await wait();
+        const button = (id: string) => document.getElementById(id)!;
+        expect(button('btn1').getAttribute('aria-describedby')).toBe('first-header');
+        expect(button('btn2').getAttribute('aria-describedby')).toBe('existing');
+
+        fixture.componentInstance.extra.set(true);
+        await fixture.whenStable();
+        await wait();
+        expect(button('btn3').getAttribute('aria-describedby')).toBe('first-header');
+        fixture.nativeElement.remove();
+    });
+
+    it('does not describe the action buttons without a header', async () => {
+        const fixture = TestBed.createComponent(ActionsHost);
+        fixture.componentInstance.withHeader.set(false);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        await wait();
+        expect(document.getElementById('btn1')!.hasAttribute('aria-describedby')).toBe(false);
+        fixture.nativeElement.remove();
     });
 });

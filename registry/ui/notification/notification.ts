@@ -22,6 +22,7 @@ import {
     Type,
     ViewContainerRef,
     afterNextRender,
+    afterRenderEffect,
     booleanAttribute,
     computed,
     contentChild,
@@ -130,12 +131,43 @@ export class NotificationHeader {
     readonly id = input(`fd-notification-header-${nextId++}`);
 }
 
-/** Avatar, content and actions of a notification. */
+/**
+ * Avatar, content and actions of a notification. The action buttons are described by the first
+ * header (`aria-describedby`), unless they already have a description.
+ */
 @Directive({
     selector: 'fd-notification-body',
     host: { class: 'relative m-0 box-border flex gap-3 p-4' }
 })
-export class NotificationBody {}
+export class NotificationBody {
+    private readonly headers = contentChildren(NotificationHeader, { descendants: true });
+    private readonly actions = contentChildren<NotificationActions>(forwardRef(() => NotificationActions));
+
+    constructor() {
+        const destroyRef = inject(DestroyRef);
+        const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+        const apply = () => {
+            const header = this.headers()[0];
+            if (!header) return;
+            const id = header.id();
+            for (const actions of this.actions()) {
+                actions.elementRef.nativeElement
+                    .querySelectorAll('button, a[fdButton]')
+                    .forEach(
+                        (button) =>
+                            button.hasAttribute('aria-describedby') || button.setAttribute('aria-describedby', id)
+                    );
+            }
+        };
+        afterRenderEffect(apply);
+        // buttons added later (e.g. by an @if) get the description too
+        afterNextRender(() => {
+            const observer = new MutationObserver(apply);
+            observer.observe(host, { childList: true, subtree: true });
+            destroyRef.onDestroy(() => observer.disconnect());
+        });
+    }
+}
 
 /** Header, paragraph, footer and status of a notification. */
 @Directive({
@@ -149,7 +181,9 @@ export class NotificationContent {}
     selector: 'fd-notification-actions',
     host: { 'data-nt-actions': '', class: 'absolute end-0 top-0 m-0 box-border flex gap-0.5 ps-1 pe-2 pt-2' }
 })
-export class NotificationActions {}
+export class NotificationActions {
+    readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+}
 
 /** A footnote, e.g. the source or the time. */
 @Directive({
