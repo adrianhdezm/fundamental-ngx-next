@@ -1384,6 +1384,33 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "datetime-picker",
+      "type": "registry:ui",
+      "title": "Datetime Picker",
+      "description": "A field with a button that opens a calendar and time columns, applying with OK or at once, reading typed values, with validation states, messages and a mobile dialog.",
+      "registryDependencies": [
+        "utils",
+        "theme",
+        "datetime",
+        "bar",
+        "button",
+        "calendar",
+        "dialog",
+        "form",
+        "input-group",
+        "popover",
+        "segmented-button",
+        "time",
+        "title"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/datetime-picker/datetime-picker.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
