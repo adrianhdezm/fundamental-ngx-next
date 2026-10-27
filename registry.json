@@ -1294,6 +1294,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "tree",
+      "type": "registry:ui",
+      "title": "Tree",
+      "description": "A hierarchy of expandable items, nested or from data with lazily loaded children, with selection as a form control, navigatable items, highlights and action buttons.",
+      "registryDependencies": ["utils", "theme", "icon", "checkbox", "radio", "skeleton"],
+      "files": [
+        {
+          "path": "registry/ui/tree/tree.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
