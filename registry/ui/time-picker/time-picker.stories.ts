@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { DatetimeAdapter, FdDate, provideDateTimeFormats } from '@/lib/datetime';
 import { Button } from '@/ui/button/button';
 import { Select, SelectOption } from '@/ui/select/select';
@@ -136,3 +137,32 @@ type Story = StoryObj<TimePicker<FdDate>>;
 export const Basic: Story = { render: () => ({ template: `<story-time-picker-basic />` }) };
 export const Forms: Story = { render: () => ({ template: `<story-time-picker-form />` }) };
 export const LocaleAndNull: Story = { render: () => ({ template: `<story-time-picker-locale />` }) };
+
+/** Opens the picker with its button and waits for the time columns. */
+async function openPicker(canvasElement: HTMLElement): Promise<void> {
+    await userEvent.click(canvasElement.querySelector<HTMLElement>('fd-time-picker button[aria-haspopup]')!);
+    await waitFor(() => expect(document.querySelector('.cdk-overlay-pane fd-time [role="spinbutton"]')).not.toBeNull());
+}
+
+export const OpenTimeColumns: Story = {
+    name: 'Open: Time columns',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { time: new FdDate(2024, 3, 9, 14, 30, 0) },
+        template: `<fd-time-picker [(time)]="time" message="Times are local" messageType="information" />`
+    }),
+    play: ({ canvasElement }) => openPicker(canvasElement)
+};
+export const OpenTimeColumnsSeconds: Story = {
+    name: 'Open: 24-hour clock with seconds',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { time: new FdDate(2024, 3, 9, 14, 30, 15) },
+        template: `<fd-time-picker
+            [(time)]="time"
+            [displayFormat]="{ hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }"
+            keepTwoDigitsTime
+        />`
+    }),
+    play: ({ canvasElement }) => openPicker(canvasElement)
+};

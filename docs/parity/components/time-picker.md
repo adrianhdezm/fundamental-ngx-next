@@ -1,20 +1,20 @@
 ## time-picker
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/time-picker) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/time-picker)
-Registry: `registry/ui/time-picker/` — 3 stories, 8 tests.
+Registry: `registry/ui/time-picker/` — 5 stories, 8 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                                                  | Registry story  | Status     | Notes                                                                      |
-| ----------------------------------------------------------------- | --------------- | ---------- | -------------------------------------------------------------------------- |
-| Default Time Picker                                               | `Basic`         | ✅ covered | No `Open: …` story, so axe never checks the open popover with the columns. |
-| Time parsing/formatting (custom `displayFormat`, with day period) | `Basic`         | ✅ covered | 24-hour with seconds; no day-period format.                                |
-| Disabled Time Picker                                              | `Basic`         | ✅ covered |                                                                            |
-| Compact Time Picker                                               | —               | ❌ missing | No compact density example.                                                |
-| Null Validity (`allowNull=false`)                                 | `LocaleAndNull` | ✅ covered | Set to null / valid time buttons.                                          |
-| Time Picker in Form (state follows validity)                      | `Forms`         | ✅ covered | Required control with error message.                                       |
-| Time Picker Locale                                                | `LocaleAndNull` | ✅ covered | Locale select drives the adapter.                                          |
-| Minute Step (1, 5, 10, 15, 30)                                    | `Basic`         | ✅ covered | Step 15 only.                                                              |
+| Upstream example                                                  | Registry story  | Status     | Notes                                                                                 |
+| ----------------------------------------------------------------- | --------------- | ---------- | ------------------------------------------------------------------------------------- |
+| Default Time Picker                                               | `Basic`         | ✅ covered | `Open: Time columns` and `Open: 24-hour clock with seconds` open the popover for axe. |
+| Time parsing/formatting (custom `displayFormat`, with day period) | `Basic`         | ✅ covered | 24-hour with seconds; no day-period format.                                           |
+| Disabled Time Picker                                              | `Basic`         | ✅ covered |                                                                                       |
+| Compact Time Picker                                               | —               | ❌ missing | No compact density example.                                                           |
+| Null Validity (`allowNull=false`)                                 | `LocaleAndNull` | ✅ covered | Set to null / valid time buttons.                                                     |
+| Time Picker in Form (state follows validity)                      | `Forms`         | ✅ covered | Required control with error message.                                                  |
+| Time Picker Locale                                                | `LocaleAndNull` | ✅ covered | Locale select drives the adapter.                                                     |
+| Minute Step (1, 5, 10, 15, 30)                                    | `Basic`         | ✅ covered | Step 15 only.                                                                         |
 
 ### Tests vs. upstream specs
 
@@ -36,6 +36,6 @@ Registry-only coverage: Alt+Down opens and focuses the hours column, locale swit
 
 ### Gaps to fill
 
-- **Stories:** `Open: Time columns` (play clicks the button); add a compact picker (`data-density="compact"`) and the 5/10/30-minute steps and a day-period format to `Basic`.
+- **Stories:** add a compact picker (`data-density="compact"`) and the 5/10/30-minute steps and a day-period format to `Basic`.
 - **Tests:** "a 24-hour display format with seconds shows hours, minutes and seconds without a period"; "an empty field is valid with allowNull"; "blurring without changes does not emit a change"; "picking the same time does not emit a change"; "the message hides while the columns are open and returns on close"; "clicking outside closes the popover"; "disabled picker does not open"; "Tab from the columns closes the popover".
 - **Effort:** M, overlay specs plus an Open story.
