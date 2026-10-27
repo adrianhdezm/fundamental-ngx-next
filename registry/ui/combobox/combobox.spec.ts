@@ -4,7 +4,8 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { Dialog, DialogBody, DialogService, type DialogRef } from '@/ui/dialog/dialog';
-import { Combobox } from './combobox';
+import { iconGlyphChar } from '@/ui/icon/icon';
+import { Combobox, type ComboboxMobileConfig } from './combobox';
 
 interface Item {
     id: number;
@@ -136,6 +137,60 @@ class DialogHost {
         return this.dialogs.open(this.tpl(), { ariaLabel: 'Fruits' });
     }
 }
+
+@Component({
+    imports: [Combobox, ReactiveFormsModule],
+    template: `
+        <fd-combobox
+            ariaLabel="Fruit"
+            [communicateByObject]="byObject()"
+            [valueProperty]="valueProperty()"
+            [isSearch]="isSearch()"
+            [closeOnSelect]="closeOnSelect()"
+            [mobile]="mobile()"
+            [mobileConfig]="mobileConfig()"
+            [searchFn]="search"
+            [displayFn]="display"
+            [dropdownValues]="values()"
+            [formControl]="control"
+            (openChange)="openChanges.push($event)"
+        />
+        <button type="button">Outside</button>
+    `
+})
+class OptionsHost {
+    readonly byObject = signal(false);
+    readonly valueProperty = signal<string | null>(null);
+    readonly isSearch = signal(false);
+    readonly closeOnSelect = signal(true);
+    readonly mobile = signal(false);
+    readonly mobileConfig = signal<ComboboxMobileConfig>({ title: 'Fruit' });
+    readonly values = signal<unknown[]>(['Apple', 'Banana', 'Kiwi']);
+    readonly display = (item: unknown) =>
+        item == null ? '' : typeof item === 'string' ? item : ((item as Fruit).name ?? '');
+    readonly searches = signal(0);
+    readonly search = () => this.searches.update((n) => n + 1);
+    readonly openChanges: boolean[] = [];
+    readonly control = new FormControl<unknown>(null);
+}
+
+async function setupOptions(configure: (host: OptionsHost) => void = () => {}) {
+    const fixture = TestBed.createComponent(OptionsHost);
+    configure(fixture.componentInstance);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    const input = root.querySelector<HTMLInputElement>('fd-combobox input')!;
+    const emitted: unknown[] = [];
+    fixture.componentInstance.control.valueChanges.subscribe((v) => emitted.push(v));
+    return { fixture, host: fixture.componentInstance, root, input, emitted };
+}
+
+/** A button of the open mobile dialog by its text or label. */
+const dialogButton = (label: string) =>
+    [...document.querySelectorAll<HTMLButtonElement>('[role=dialog] button')].find(
+        (b) => b.textContent?.trim().startsWith(label) || b.getAttribute('aria-label') === label
+    );
 
 const wait = (ms = 50) => new Promise((r) => setTimeout(r, ms));
 const options = () => [...document.querySelectorAll<HTMLElement>('[role=option]')];
@@ -394,5 +449,195 @@ describe('Combobox', () => {
         await userEvent.keyboard('{Escape}');
         await fixture.whenStable();
         expect(ref.isClosed()).toBe(true);
+    });
+
+    it('calls searchFn on Enter and on the button', async () => {
+        const { fixture, host, root, input } = await setupOptions();
+        input.focus();
+        await userEvent.keyboard('{Enter}');
+        expect(host.searches()).toBe(1);
+        await userEvent.click(root.querySelector<HTMLButtonElement>('fd-combobox button')!);
+        await fixture.whenStable();
+        expect(host.searches()).toBe(2);
+    });
+
+    it('marks the control touched on blur', async () => {
+        const { fixture, host, root, input } = await setupOptions();
+        input.focus();
+        expect(host.control.touched).toBe(false);
+        await userEvent.click(
+            [...root.querySelectorAll<HTMLButtonElement>('button')].find((b) => b.textContent === 'Outside')!
+        );
+        await fixture.whenStable();
+        expect(host.control.touched).toBe(true);
+    });
+
+    it('search field shows a search addon and a clear button once there is text', async () => {
+        const { fixture, host, root, input } = await setupOptions((h) => h.isSearch.set(true));
+        const buttons = () => [...root.querySelectorAll<HTMLButtonElement>('fd-combobox button')];
+        expect(buttons()).toHaveLength(1);
+        expect(buttons()[0].querySelector('fd-icon')!.getAttribute('data-glyph')).toBe(iconGlyphChar('search'));
+        await userEvent.type(input, 'Ki');
+        await fixture.whenStable();
+        expect(buttons()).toHaveLength(2);
+        expect(buttons()[0].getAttribute('aria-label')).toBe('Clear');
+        await userEvent.click(buttons()[0]);
+        await fixture.whenStable();
+        expect(input.value).toBe('');
+        expect(host.control.value).toBe('');
+        expect(document.activeElement).toBe(input);
+        expect(buttons()).toHaveLength(1);
+    });
+
+    it('keeps the list open on select when closeOnSelect is false', async () => {
+        const { fixture, host, input } = await setupOptions((h) => h.closeOnSelect.set(false));
+        input.focus();
+        await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}');
+        await fixture.whenStable();
+        await userEvent.click(options()[1]);
+        await fixture.whenStable();
+        expect(host.control.value).toBe('Banana');
+        expect(input.value).toBe('Banana');
+        expect(input.getAttribute('aria-expanded')).toBe('true');
+        expect(options()[1].getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('valueProperty: an unmatched written value shows no text, null clears', async () => {
+        const { fixture, host, input } = await setupOptions((h) => {
+            h.byObject.set(true);
+            h.valueProperty.set('code');
+            h.values.set([KIWI, BANANA]);
+            h.control.setValue('B1');
+        });
+        expect(input.value).toBe('Banana');
+        host.control.setValue(99);
+        await fixture.whenStable();
+        expect(input.value).toBe('');
+        host.control.setValue('K1');
+        await fixture.whenStable();
+        expect(input.value).toBe('Kiwi');
+        host.control.setValue(null);
+        await fixture.whenStable();
+        expect(input.value).toBe('');
+    });
+
+    it('valueProperty is ignored without communicateByObject', async () => {
+        const { fixture, host, input } = await setupOptions((h) => {
+            h.valueProperty.set('code');
+            h.values.set([KIWI, BANANA]);
+        });
+        input.focus();
+        await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}');
+        await fixture.whenStable();
+        await userEvent.click(options()[0]);
+        await fixture.whenStable();
+        expect(host.control.value).toBe('Kiwi');
+    });
+
+    it('communicateByObject: clearing emits null, duplicate labels do not pick an arbitrary object', async () => {
+        const { fixture, host, root, input, emitted } = await setupOptions((h) => {
+            h.byObject.set(true);
+            h.isSearch.set(true);
+            h.values.set([APPLE, APPLE_2, BANANA]);
+        });
+        await userEvent.type(input, 'Banana');
+        await fixture.whenStable();
+        expect(host.control.value).toBe(BANANA);
+        emitted.length = 0;
+        await userEvent.click(root.querySelector<HTMLButtonElement>('fd-combobox button[aria-label=Clear]')!);
+        await fixture.whenStable();
+        expect(emitted).toEqual([null]);
+
+        emitted.length = 0;
+        input.value = 'Apple';
+        input.dispatchEvent(new InputEvent('input', { inputType: 'insertFromPaste' }));
+        await fixture.whenStable();
+        expect(emitted).toHaveLength(1);
+        expect(emitted[0]).not.toBe(APPLE);
+        expect(emitted[0]).not.toBe(APPLE_2);
+    });
+
+    describe('mobile', () => {
+        it('Approve commits the draft once, Cancel restores the form value', async () => {
+            const { fixture, host, input, emitted } = await setupOptions((h) => {
+                h.mobile.set(true);
+                h.byObject.set(true);
+                h.values.set([KIWI, BANANA, APPLE]);
+                h.mobileConfig.set({ title: 'Fruit', approveButtonText: 'Save', cancelButtonText: 'Cancel' });
+                h.control.setValue(KIWI);
+            });
+            expect(input.getAttribute('aria-haspopup')).toBe('dialog');
+            await userEvent.click(input);
+            await fixture.whenStable();
+            await wait();
+            expect(document.querySelector('[role=dialog] [role=listbox]')).not.toBeNull();
+            expect(input.getAttribute('aria-expanded')).toBe('true');
+
+            await userEvent.click(options().find((o) => o.textContent?.trim() === 'Banana')!);
+            await fixture.whenStable();
+            expect(document.querySelector('[role=dialog]')).not.toBeNull();
+            expect(host.control.value).toBe(KIWI);
+            expect(emitted).toEqual([]);
+
+            await userEvent.click(dialogButton('Cancel')!);
+            await fixture.whenStable();
+            await wait(300);
+            expect(document.querySelector('[role=dialog]')).toBeNull();
+            expect(input.value).toBe('Kiwi');
+            expect(host.control.value).toBe(KIWI);
+            expect(emitted).toEqual([]);
+
+            await userEvent.click(input);
+            await fixture.whenStable();
+            await wait();
+            await userEvent.click(options().find((o) => o.textContent?.trim() === 'Apple')!);
+            await fixture.whenStable();
+            await userEvent.click(dialogButton('Save')!);
+            await fixture.whenStable();
+            await wait(300);
+            expect(document.querySelector('[role=dialog]')).toBeNull();
+            expect(input.value).toBe('Apple');
+            expect(host.control.value).toBe(APPLE);
+            expect(emitted).toEqual([APPLE]);
+            expect(host.openChanges).toEqual([true, false, true, false]);
+        });
+
+        it('immediate mode (no approve text) commits on select and closes when closeOnSelect', async () => {
+            const { fixture, host, input, emitted } = await setupOptions((h) => {
+                h.mobile.set(true);
+                h.mobileConfig.set({ title: 'Fruit', approveButtonText: '  ', cancelButtonText: 'Cancel' });
+            });
+            await userEvent.click(input);
+            await fixture.whenStable();
+            await wait();
+            expect(document.querySelectorAll('[role=dialog] fd-dialog-footer button')).toHaveLength(1);
+            await userEvent.click(options().find((o) => o.textContent?.trim() === 'Kiwi')!);
+            await fixture.whenStable();
+            await wait(300);
+            expect(document.querySelector('[role=dialog]')).toBeNull();
+            expect(host.control.value).toBe('Kiwi');
+            expect(emitted).toEqual(['Kiwi']);
+            expect(input.value).toBe('Kiwi');
+        });
+
+        it('immediate mode keeps the dialog open on select when closeOnSelect is false', async () => {
+            const { fixture, host, input } = await setupOptions((h) => {
+                h.mobile.set(true);
+                h.closeOnSelect.set(false);
+                h.mobileConfig.set({ title: 'Fruit', cancelButtonText: 'Cancel' });
+            });
+            await userEvent.click(input);
+            await fixture.whenStable();
+            await wait();
+            await userEvent.click(options().find((o) => o.textContent?.trim() === 'Banana')!);
+            await fixture.whenStable();
+            expect(document.querySelector('[role=dialog]')).not.toBeNull();
+            expect(host.control.value).toBe('Banana');
+            await userEvent.click(dialogButton('Close')!);
+            await fixture.whenStable();
+            await wait(300);
+            expect(document.querySelector('[role=dialog]')).toBeNull();
+            expect(host.control.value).toBe('Banana');
+        });
     });
 });
