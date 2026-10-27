@@ -367,6 +367,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "generic-tag",
+      "type": "registry:ui",
+      "title": "Generic Tag",
+      "description": "Key figure with name, value and optional status, as used in object page headers.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/generic-tag/generic-tag.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
