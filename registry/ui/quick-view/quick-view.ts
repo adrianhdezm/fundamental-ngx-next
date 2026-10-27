@@ -129,6 +129,7 @@ export class QuickViewSubheader {}
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'block min-w-0' },
     template: `<span
+        class="block"
         role="heading"
         [attr.aria-level]="headerSize()"
         fdTitle

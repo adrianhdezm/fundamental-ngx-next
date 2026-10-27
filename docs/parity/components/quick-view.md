@@ -1,7 +1,7 @@
 ## quick-view
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/quick-view) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/quick-view)
-Registry: `registry/ui/quick-view/` — 6 stories, 2 tests.
+Registry: `registry/ui/quick-view/` — 6 stories, 3 tests.
 
 ### Stories vs. upstream examples
 
@@ -23,9 +23,9 @@ Registry: `registry/ui/quick-view/` — 6 stories, 2 tests.
 | Quick view title: header bar, section, element, shows text   | —                                            | ❌ missing | Bar classes are n/a, but "title shows in the header bar, aligned by `align`" is untested.                                                                                 |
 | fd-form-item / fd-bar / fd-bar-left class assignments        | —                                            | ➖ n/a     | Pure class-name checks.                                                                                                                                                   |
 
-Registry-only coverage: none beyond the above.
+Registry-only coverage: `allowWrap` on the subheader title and subtitle, group titles and labels (wraps instead of truncating).
 
 ### Gaps to fill
 
-- **Tests:** "renders the id on the quick view"; "shows the title in a header bar on the left, middle or right by align"; "allowWrap wraps the titles and labels instead of truncating".
+- **Tests:** "renders the id on the quick view"; "shows the title in a header bar on the left, middle or right by align".
 - **Effort:** S — small static host; the group-naming fix may need a few lines in the source.
