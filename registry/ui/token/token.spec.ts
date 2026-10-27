@@ -1,6 +1,6 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { Token, Tokenizer, TokenizerInput } from './token';
 
@@ -121,9 +121,48 @@ describe('Token', () => {
         expect(host.closes).toHaveLength(1);
         expect(host.clicks).toHaveLength(1);
     });
+    it('is a focusable option described as a token, selected through its model', async () => {
+        const { fixture, host, token } = await setupToken();
+        expect(token.getAttribute('role')).toBe('option');
+        expect(token.getAttribute('tabindex')).toBe('0');
+        expect(token.getAttribute('aria-roledescription')).toBe('token');
+        expect(token.getAttribute('aria-selected')).toBe('false');
+        const background = getComputedStyle(token).backgroundColor;
+        host.selected.set(true);
+        await fixture.whenStable();
+        expect(token.getAttribute('aria-selected')).toBe('true');
+        expect(getComputedStyle(token).backgroundColor).not.toBe(background);
+    });
+
+    it('emits elementFocused on focus and blur', async () => {
+        const { host, token } = await setupToken();
+        token.focus();
+        expect(host.focusEvents).toEqual([true]);
+        token.blur();
+        expect(host.focusEvents).toEqual([true, false]);
+    });
+
+    it('does not emit onCloseClick when disabled and is aria-disabled', async () => {
+        const { host, token, close } = await setupToken((h) => h.disabled.set(true));
+        expect(token.getAttribute('aria-disabled')).toBe('true');
+        close()!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        expect(host.closes).toHaveLength(0);
+    });
+
+    it('has no close icon when read-only', async () => {
+        const { fixture, host, close } = await setupToken((h) => h.readOnly.set(true));
+        expect(close()).toBeNull();
+        host.token().closeClickHandler(new MouseEvent('click'));
+        expect(host.closes).toHaveLength(0);
+        host.readOnly.set(false);
+        await fixture.whenStable();
+        expect(close()).not.toBeNull();
+    });
 });
 
 describe('Tokenizer', () => {
+    afterEach(() => document.documentElement.removeAttribute('dir'));
+
     it('lists tokens as options with their positions', async () => {
         const { root } = await setup();
         expect(root.querySelector('[role=listbox]')).not.toBeNull();
@@ -281,5 +320,55 @@ describe('Tokenizer', () => {
         await fixture.whenStable();
         expect(host.values()).not.toContain(hidden[0]);
         expect(host.values()).toHaveLength(4);
+    });
+
+    it('toggles a token with a Ctrl click without clearing the others', async () => {
+        const { fixture } = await setup();
+        const selected = () => options().map((o) => o.getAttribute('aria-selected'));
+        await userEvent.click(options()[0]);
+        options()[2].dispatchEvent(new MouseEvent('click', { bubbles: true, ctrlKey: true }));
+        await fixture.whenStable();
+        expect(selected()).toEqual(['true', 'false', 'true']);
+        options()[0].dispatchEvent(new MouseEvent('click', { bubbles: true, ctrlKey: true }));
+        await fixture.whenStable();
+        expect(selected()).toEqual(['false', 'false', 'true']);
+        options()[1].dispatchEvent(new MouseEvent('click', { bubbles: true, metaKey: true }));
+        await fixture.whenStable();
+        expect(selected()).toEqual(['false', 'true', 'true']);
+    });
+
+    it('shows the collapsed tokens again when the tokenizer gets wider', async () => {
+        const { fixture, host, root } = await setup('14rem', [
+            'Apple',
+            'Banana',
+            'Cherry',
+            'Dragon fruit',
+            'Elderberry'
+        ]);
+        expect(root.querySelector('[data-tokenizer-more]')).not.toBeNull();
+        expect(options().some((o) => o.offsetParent === null)).toBe(true);
+        host.width.set('60rem');
+        await fixture.whenStable();
+        await wait(100);
+        await fixture.whenStable();
+        expect(root.querySelector('[data-tokenizer-more]')).toBeNull();
+        expect(options().every((o) => o.offsetParent !== null)).toBe(true);
+    });
+
+    it('mirrors the arrow keys in RTL', async () => {
+        document.documentElement.setAttribute('dir', 'rtl');
+        const { input } = await setup();
+        input.focus();
+        await userEvent.keyboard('{ArrowRight}');
+        expect(focused()).toBe('Cherry');
+        await userEvent.keyboard('{ArrowRight}');
+        expect(focused()).toBe('Banana');
+        await userEvent.keyboard('{ArrowLeft}{ArrowLeft}');
+        expect(document.activeElement).toBe(input);
+    });
+
+    it('keeps tokens in a tokenizer out of the tab order', async () => {
+        await setup();
+        expect(options().every((o) => o.getAttribute('tabindex') === '-1')).toBe(true);
     });
 });
