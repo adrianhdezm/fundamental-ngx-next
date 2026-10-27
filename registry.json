@@ -755,6 +755,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "menu",
+      "type": "registry:ui",
+      "title": "Menu",
+      "description": "Actions in a popover opened by a trigger: icons, subtitles, shortcuts, separators, nested submenus, toggle and single-choice items, item inputs, keyboard navigation and a full-screen mobile mode.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "popover", "dialog", "bar", "button", "icon", "title"],
+      "files": [
+        {
+          "path": "registry/ui/menu/menu.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
