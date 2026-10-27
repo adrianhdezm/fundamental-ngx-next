@@ -1,0 +1,55 @@
+## menu
+
+Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/menu) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/menu)
+Registry: `registry/ui/menu/` — 13 stories, 5 tests.
+
+### Stories vs. upstream examples
+
+| Upstream example     | Registry story                   | Status     | Notes                                                                                                          |
+| -------------------- | -------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------- |
+| Simple Menu          | Basic, OpenBasic                 | ✅ covered | Titles, subtitles, truncation                                                                                  |
+| Menu with Icons      | Addons, OpenIcons, OpenShortcuts | ✅ covered | Plus shortcuts                                                                                                 |
+| Menu with Separator  | Basic, OpenBasic                 | ✅ covered | One `hasSeparator` item inside the basic menu                                                                  |
+| Menu with Scrollbar  | —                                | ❌ missing | 40 items, scrolling body; `disableScrollbar` never shown                                                       |
+| Menu with Submenu    | Submenus, Dynamic, OpenSubmenus  | ✅ covered | Incl. multi-level and data-driven                                                                              |
+| Extended Menu Items  | Extended, OpenExtended           | ✅ covered | Toggle, single-choice group, input                                                                             |
+| Mobile Mode          | Mobile, OpenMobile               | ✅ covered |                                                                                                                |
+| Programmatic Control | Programmatic                     | ✅ covered | open/close/toggle + event log; no Open: variant needed (same overlay as OpenBasic)                             |
+| Disabled States      | Basic                            | 🟡 partial | Disabled item only; no whole-menu `disabled` toggle                                                            |
+| Placement & Triggers | —                                | ❌ missing | No placement/fill-mode/fixedPosition switcher, no hover `triggers` menu (Programmatic only uses `right-start`) |
+
+### Tests vs. upstream specs
+
+| Upstream behaviour                                                                                    | Registry test                                                              | Status     | Notes                                                                                    |
+| ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------- |
+| Create, DI/service plumbing, elementRef, dialogConfig, cleanup, removeKeyboardSupport                 | —                                                                          | ➖ n/a     |                                                                                          |
+| Addon position before/after                                                                           | —                                                                          | ❌ missing |                                                                                          |
+| MenuContent projection / class                                                                        | —                                                                          | ➖ n/a     | Class/projection only                                                                    |
+| Shortcut hidden in mobile mode (`hideOnMobile`)                                                       | —                                                                          | ❌ missing |                                                                                          |
+| Title/subtitle text and truncate on/off                                                               | —                                                                          | ❌ missing | Title `title` attribute not ported; `titleText` feeds `activePath`                       |
+| Trigger links the menu and sets ARIA                                                                  | opens from its trigger, announces it…                                      | ✅ covered | haspopup, expanded, controls                                                             |
+| Segmented option click + selected indicator                                                           | keeps the menu open for toggles and single-choice options                  | 🟡 partial | `aria-checked` covered; check-mark visibility not                                        |
+| Interactive selected/disabled/submenu state                                                           | skips disabled items…                                                      | 🟡 partial | Disabled skipped by keys; `aria-disabled`, `aria-haspopup` on submenu items not asserted |
+| Item click activates; disabled item ignores click                                                     | keeps the menu open for toggles…                                           | 🟡 partial | Clicking a disabled item untested                                                        |
+| Submenu opens on hover, sibling hover closes it (`openOnHoverTime`)                                   | —                                                                          | ❌ missing | Keyboard path only                                                                       |
+| Keyboard: arrows, Home/End, skip disabled, Escape                                                     | skips disabled items with the arrow keys and closes on Escape              | 🟡 partial | Home and wrap-around untested                                                            |
+| Activation: Enter/Space on leaf; on submenu item focuses first child                                  | selects a plain item and closes the menu; opens a submenu with ArrowRight… | 🟡 partial | Space, and Enter/Space on a submenu parent, untested                                     |
+| Mobile: dialog instead of popover, mobileConfig title/close/approve/dismiss, sub-level + back, reopen | —                                                                          | ❌ missing | Whole mobile path untested                                                               |
+| open() / close() / toggle(); items rendered only while open                                           | —                                                                          | ❌ missing |                                                                                          |
+| isOpenChange (no duplicates) and beforeOpen                                                           | —                                                                          | ❌ missing |                                                                                          |
+| Trigger: repeated clicks toggle                                                                       | opens from its trigger…                                                    | 🟡 partial | Open only                                                                                |
+| Disabled menu does not open                                                                           | —                                                                          | ❌ missing |                                                                                          |
+| disableScrollbar                                                                                      | —                                                                          | ❌ missing |                                                                                          |
+| Submenu ARIA: haspopup (not in mobile), expanded, posinset/setsize, activePath                        | opens from its trigger…; opens a submenu with ArrowRight…                  | 🟡 partial | posinset/setsize, expanded, activePath length covered; haspopup + mobile not             |
+| `config` input; direct inputs win over config                                                         | —                                                                          | ❌ missing |                                                                                          |
+| closeOnNavigation, appendTo, scrollStrategy forwarding                                                | —                                                                          | ➖ n/a     | Not separate inputs in our API                                                           |
+| restoreFocusOnClose default and opt-out                                                               | skips disabled items…                                                      | 🟡 partial | Default (focus back on Escape) only                                                      |
+| fixedPosition default                                                                                 | —                                                                          | ➖ n/a     | Default-value check only                                                                 |
+
+Registry-only coverage: toggle `aria-checked` / `menuitemcheckbox`, single-choice group keeps menu open, `onSelect` output.
+
+### Gaps to fill
+
+- **Stories:** "Scrollbar" (40 items) + "Open: scrollbar"; "Disabled states" (checkbox toggling `disabled` on the whole menu + disabled items); "Placement & triggers" (placement/fill-mode/fixedPosition controls, click vs. hover triggers) + "Open: placement".
+- **Tests:** "open(), close() and toggle() drive isOpen and emit isOpenChange once"; "emits beforeOpen before opening"; "a second trigger click closes the menu"; "a disabled menu does not open"; "Home focuses the first enabled item"; "Space activates the focused item"; "Enter on a submenu parent opens it and focuses its first child"; "hovering a submenu parent opens it and hovering a sibling closes it"; "clicking a disabled item does nothing"; "submenu parents have aria-haspopup except in mobile mode"; "mobile mode opens a dialog with the mobileConfig title and buttons"; "mobile mode navigates into a submenu and back"; "shortcuts are hidden in mobile mode unless hideOnMobile is false"; "addons render before/after the title"; "truncate clips title and subtitle to one line"; "disableScrollbar removes the scroll container"; "restoreFocusOnClose=false leaves focus where it was"; "direct inputs override config".
+- **Effort:** L — ~18 tests across popover, hover timing and the mobile dialog path, plus three stories.

@@ -1,0 +1,43 @@
+## nested-list
+
+Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/side-navigation) (examples live in the side-navigation page) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/nested-list)
+Registry: `registry/ui/nested-list/` — 0 stories, 0 tests (exercised only through `registry/ui/side-navigation/`: 5 stories, 6 tests).
+
+### Stories vs. upstream examples
+
+| Upstream example                               | Registry story                           | Status     | Notes                                                                                                               |
+| ---------------------------------------------- | ---------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------- |
+| Side Navigation (one level, text only)         | side-navigation Default                  | 🟡 partial | Ours always has icons and a nested group; no flat `[textOnly]="true"` list as upstream                              |
+| Multiple Levels and Selected Option            | side-navigation Default / Not selectable | ✅ covered | Two levels, expanded Settings group, selected link                                                                  |
+| Programmatic State Change                      | —                                        | ❌ missing | Upstream: `[selectable]="false"`, external buttons toggle `[(expanded)]` and `[selected]` on content and child link |
+| Side Navigation with Icons                     | side-navigation Default                  | ✅ covered |                                                                                                                     |
+| Condensed Mode (`fd-nested-list-popover`)      | side-navigation Condensed                | 🟡 partial | Renders, but no "Open: …" story opens the child popover for the a11y run                                            |
+| Generated from Configuration Object            | side-navigation From data                | ✅ covered |                                                                                                                     |
+| Condensed, Generated from Configuration Object | side-navigation From data, condensed     | 🟡 partial | No "Open: …" story for the auto-created popover                                                                     |
+
+### Tests vs. upstream specs
+
+| Upstream behaviour                                                               | Registry test                                                      | Status     | Notes                                                                                                                            |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| List classes and nesting levels (`level-1..4`)                                   | renders trees of rows with levels, described by their group header | ✅ covered | Checks `aria-level` 1/2 instead of level classes                                                                                 |
+| Content density when `compact` not provided                                      | —                                                                  | ➖ n/a     | Density is the global `compact:` variant                                                                                         |
+| Content: selected class, expanded state propagated to expand icon                | expands with the button…; selects the clicked row…                 | ✅ covered | `aria-expanded` / `aria-selected` on the content row                                                                             |
+| Link: title text and selected class                                              | keeps the selected inputs when items are not selectable            | ✅ covered | `aria-label="Home, Selected"`                                                                                                    |
+| Expand icon toggles on click                                                     | expands with the button and the arrow keys…                        | ✅ covered |                                                                                                                                  |
+| Title `getInnerText`, icon `sap-icon--` class                                    | —                                                                  | ➖ n/a     | Class/helper only                                                                                                                |
+| Item with child list: hasChildren, expanded change in/out                        | expands with the button…; builds the navigation from data          | ✅ covered | `[(expanded)]` two-way checked                                                                                                   |
+| Item with popover: children, react to popover open change, pass reference        | opens child lists in popovers when condensed                       | 🟡 partial | Only keyboard open/close; no click on the expand icon in condensed mode, no outside-click/Escape closing syncing `expanded` back |
+| Empty item has no children                                                       | —                                                                  | ❌ missing | Leaf rows should carry no `aria-expanded` and Right arrow does nothing; not asserted                                             |
+| Keyboard from link and from sub items (list)                                     | expands with the button and the arrow keys…                        | ✅ covered | Down/Up/Home/End, Left/Right close/open                                                                                          |
+| Keyboard from link and sub items (popover)                                       | opens child lists in popovers when condensed                       | ✅ covered | Right opens and focuses first, Enter activates, Left closes and refocuses parent                                                 |
+| Keyboard service: collects all visible items, Arrow Down/Up, open/close triggers | expands with the button and the arrow keys…                        | ✅ covered |                                                                                                                                  |
+| Keyboard service: Up on first focuses last, Down on last focuses first (wrap)    | —                                                                  | ❌ missing | Our `onRowKeydown` does not wrap (`rows[index ± 1]?.focus()`); unclear whether intentional                                       |
+| NestedListPopover `should create`                                                | —                                                                  | ➖ n/a     |                                                                                                                                  |
+
+Registry-only coverage: tree/treeitem roles with roledescription, `aria-describedby` to group header, parent highlighted when a child is selected, `selectable=false` keeps inputs, condensed hides headers (all in the side-navigation spec).
+
+### Gaps to fill
+
+- **Stories:** "Programmatic state" (side-navigation) — `selectable=false`, buttons "Select child" / "Open" bound to `[selected]` and `[(expanded)]`; "Text only" — flat `textOnly` list with no icons; "Open: condensed popover" and "Open: from data, condensed" — `play` focuses Settings and presses ArrowRight (or clicks the expand icon). Consider a minimal own `nested-list.stories.ts` (list outside a side nav) since the registry ships nested-list standalone.
+- **Tests:** add `registry/ui/nested-list/nested-list.spec.ts` with: "a leaf item has no aria-expanded and ArrowRight does nothing"; "clicking the expand icon in condensed mode opens the popover and closing it by Escape/outside click resets expanded"; "external [selected] and [(expanded)] changes update aria-selected / aria-expanded"; "ArrowUp on the first row and ArrowDown on the last row wrap" (only if wrap is adopted, else document the deviation); "works without a side navigation (scope falls back to the list)".
+- **Effort:** M, needs a new spec file and story host; behaviour decision on wrap-around.

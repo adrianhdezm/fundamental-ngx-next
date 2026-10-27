@@ -1,0 +1,34 @@
+## flexible-column-layout
+
+Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/flexible-column-layout) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/flexible-column-layout)
+Registry: `registry/ui/flexible-column-layout/` — 3 stories, 9 tests.
+
+### Stories vs. upstream examples
+
+| Upstream example                                 | Registry story            | Status     | Notes                                                                                                                                                                                          |
+| ------------------------------------------------ | ------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Flexible Column Layout                           | `Default`, `ThreeColumns` | ✅ covered | Layout switcher over all 10 layouts, resizable box shows the responsive collapse; transparent background in `ThreeColumns`.                                                                    |
+| Flexible Column Layout With Dynamic Page         | —                         | ❌ missing | Upstream puts a `fd-dynamic-page` (collapsible/pinnable subheader, fullscreen/close actions) in the mid column inside a full-screen overlay. Registry has `dynamic-page`, so this is portable. |
+| Flexible Column Layout with custom layout config | `CustomConfig`            | ✅ covered | Uses `provideFlexibleColumnLayoutConfig` (50/50 for TwoColumnsMidExpanded).                                                                                                                    |
+
+### Tests vs. upstream specs
+
+| Upstream behaviour                                                                                                        | Registry test                                                                                             | Status     | Notes                                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Should create                                                                                                             | —                                                                                                         | ➖ n/a     |                                                                                                                                            |
+| backgroundDesign translucent modifier                                                                                     | backgroundDesign solid/translucent/transparent, including high contrast                                   | ✅ covered | Checks the resulting token colours, not class names.                                                                                       |
+| Each layout renders the right columns (one/two/three columns, start minimized)                                            | each layout sets the start/mid/end widths ...; hidden columns are aria-hidden                             | ✅ covered | Loops over every layout definition.                                                                                                        |
+| MD screen: THREE_COLUMNS_MID → START_MINIMIZED, THREE_COLUMNS_END → TWO_COLUMNS_END                                       | between sm and lg three-column layouts reduce to two columns ...                                          | ✅ covered | Also covers restore when wide again.                                                                                                       |
+| Layout updates on resize without manual change detection                                                                  | below smBreakPoint ... collapse ... and restore; a layout chosen while narrow replaces the one to restore | ✅ covered |                                                                                                                                            |
+| Separator direction values per layout                                                                                     | separators appear only between visible columns with the right arrow direction (mirrored in RTL)           | ✅ covered | Checks glyphs and RTL mirroring.                                                                                                           |
+| layoutChange emitted on separator click                                                                                   | clicking a separator or its button switches to the next layout and emits layoutChange                     | ✅ covered |                                                                                                                                            |
+| Separator click transitions (2-col start/mid toggles, 3-col mid→end expanded, 3-col mid→end minimized via left separator) | clicking a separator ...; the separator buttons are keyboard operable                                     | 🟡 partial | TwoColumnsStart↔Mid and ThreeColumnsMid↔End are tested; ThreeColumnsMidExpanded → ThreeColumnsEndMinimized via the start separator is not. |
+| Separator aria-labels: collapse/expand per-button titles and fallback                                                     | separators appear only between visible columns ...                                                        | 🟡 partial | Fallback to `expandTitle`/`collapseTitle` and `collapseTitleEndBtn` are asserted; `expandTitleStartBtn`/`collapseTitleStartBtn` are not.   |
+
+Registry-only coverage: keyboard (Enter/Space) on separator buttons, RTL arrow mirroring, aria-hidden/visibility of hidden columns, high-contrast separator colour, config merge with defaults.
+
+### Gaps to fill
+
+- **Stories:** `WithDynamicPage` — mid column hosts a `fd-dynamic-page` with collapsible/pinnable subheader and fullscreen (OneColumnMidFullScreen) / close actions in the header.
+- **Tests:** "the start separator switches ThreeColumnsMidExpanded to ThreeColumnsEndMinimized"; "expandTitleStartBtn and collapseTitleStartBtn label the start separator button".
+- **Effort:** S, two small spec additions and one composed story from existing components.
