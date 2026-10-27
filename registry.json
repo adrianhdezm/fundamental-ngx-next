@@ -315,6 +315,32 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "object-marker",
+      "type": "registry:ui",
+      "title": "Object Marker",
+      "description": "Technical object states such as draft, locked or favourite as icon and/or text; clickable markers are links.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/object-marker/object-marker.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "object-number",
+      "type": "registry:ui",
+      "title": "Object Number",
+      "description": "Formatted number with unit, coloured by value state; emphasized, large, inverted or interactive.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/object-number/object-number.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
