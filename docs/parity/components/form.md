@@ -1,14 +1,14 @@
 ## form
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/form-message) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/form)
-Registry: `registry/ui/form/` — 3 stories, 18 tests.
+Registry: `registry/ui/form/` — 5 stories, 18 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                 | Registry story                                  | Status     | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| -------------------------------- | ----------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Form Message Input Group         | — (closest: `input` story `ValueStateMessages`) | 🟡 partial | No form story uses `fd-form-input-message-group`. Upstream shows six variants: default (focus), controlled `[(isOpen)]` with `triggers=[]` toggled from an input-group button, hover/focus triggers on an icon input group, textarea, multi-input on hover, and rich (HTML) message content. Only focus and hover triggers on plain inputs exist (in `input`). `placementContainer="self"` is not ported (input absent from our source). No "Open: …" story with `play()`, so axe never checks the open message popover. |
-| Form Message State in Input Type | `Messages` (+ `input` `ValueStateMessages`)     | 🟡 partial | `Messages` shows the four types standalone (plus static/embedded); the per-state inputs with linked messages exist only in the `input` story.                                                                                                                                                                                                                                                                                                                                                                            |
+| Upstream example                 | Registry story                 | Status     | Notes                                                                                                                                                                                                                                                                                         |
+| -------------------------------- | ------------------------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Form Message Input Group         | `MessageGroup`                 | ✅ covered | All six upstream variants: focus (default), controlled `[(isOpen)]` with `triggers=[]` from an input-group button, hover/focus on an icon input group, textarea, multi-input on hover, rich content. `placementContainer="self"` is not ported, so the rich variant uses the default overlay. |
+| Form Message State in Input Type | `MessageStates` (+ `Messages`) | ✅ covered | The four state inputs with linked messages; `Messages` shows the types standalone.                                                                                                                                                                                                            |
 
 ### Tests vs. upstream specs
 
@@ -35,6 +35,6 @@ Registry-only coverage: label click focuses control, generated label ids, allowW
 
 ### Gaps to fill
 
-- **Stories:** `MessageGroup` — the upstream variants (focus default, hover triggers, controlled `isOpen` toggled from an input-group button, textarea, rich content); `Open: Message group` — `play()` focuses an input so the message popover is checked by axe; `MessageStates` — the four state inputs with their messages in the form story itself (or link from `input`).
+- **Stories:** `Open: Message group` — `play()` focuses an input so the message popover is checked by axe.
 - **Tests:** "focus moves to another message group's input on one click and the first message closes"; "rapid focus changes across several groups leave only the focused group's message open"; "the message popover body has an aria-label (popoverAriaLabel)"; "non-error message types set aria-describedby without aria-invalid"; "changing the message text or type while open updates the popover"; "independent label renders stand-alone"; "a disabled legend is dimmed".
 - **Effort:** M, focus-transfer tests across overlays need care, plus three stories.
