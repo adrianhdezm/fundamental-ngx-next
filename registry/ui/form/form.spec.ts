@@ -33,6 +33,10 @@ import { FormMessage, type FormMessageType } from './form-message';
             <input fdFormControl id="amount" />
             <label fdFormLabel unitDescription>EUR</label>
         </div>
+        <div style="display: flex; height: 60px" id="row">
+            <label fdFormLabel id="alone" independent>Stand-alone</label>
+            <label fdFormLabel id="dependent">Dependent</label>
+        </div>
         <div style="width: 120px">
             <label fdFormLabel id="wrap" allowWrap>A long label that is allowed to wrap onto lines</label>
             <label fdFormLabel id="truncate">A long label that is truncated at the end</label>
@@ -60,12 +64,16 @@ class LabelHost {
                 <label fdFormLabel for="country">Country</label><input fdFormControl id="country" />
             </div>
         </fd-form-group>
+        <fieldset fdFieldset>
+            <legend fdFormLegend id="own-legend" [disabled]="legendDisabled()">Own legend</legend>
+        </fieldset>
         <div fdFormGroupHeader id="group-header" [noBorder]="noBorder()">Group header</div>
     `
 })
 class LayoutHost {
     readonly disabled = signal(false);
     readonly noBorder = signal(false);
+    readonly legendDisabled = signal(false);
 }
 
 @Component({
@@ -96,6 +104,24 @@ class MessageHost {
     readonly prefix = signal('');
     readonly showMessage = signal(true);
     readonly open = signal(false);
+}
+
+@Component({
+    imports: [FormMessage, FormInputMessageGroup, FormControl],
+    template: `
+        @for (group of groups; track group) {
+            <fd-form-input-message-group [popoverAriaLabel]="ariaLabel()">
+                <input fdFormControl [id]="'field-' + group" [attr.aria-label]="'Field ' + group" [state]="type()" />
+                <fd-form-message [type]="type()">{{ text() }} {{ group }}</fd-form-message>
+            </fd-form-input-message-group>
+        }
+    `
+})
+class GroupsHost {
+    readonly groups = [1, 2, 3, 4];
+    readonly type = signal<FormMessageType>('error');
+    readonly text = signal('Message');
+    readonly ariaLabel = signal('Field validation messages');
 }
 
 const frame = () => new Promise((r) => requestAnimationFrame(r));
@@ -166,6 +192,18 @@ describe('Form', () => {
             expect(labelText($('label[for=plain]')).hasAttribute('aria-disabled')).toBe(false);
         });
 
+        it('an independent label renders stand-alone: centred, with no end margin', async () => {
+            const { $ } = await render(LabelHost);
+            const row = $('#row').getBoundingClientRect();
+            const alone = labelText($('#alone'));
+            const dependent = labelText($('#dependent'));
+            const middle = (r: DOMRect) => r.top + r.height / 2;
+            expect(Math.abs(middle(alone.getBoundingClientRect()) - middle(row))).toBeLessThanOrEqual(1);
+            expect(getComputedStyle(alone).marginInlineEnd).toBe('0px');
+            expect(dependent.getBoundingClientRect().top).toBeLessThan(alone.getBoundingClientRect().top);
+            expect(getComputedStyle(dependent).marginInlineEnd).not.toBe('0px');
+        });
+
         it('gets a generated id', async () => {
             const { $ } = await render(LabelHost);
             expect($('label[for=plain]').id).toMatch(/^fd-form-label-\d+$/);
@@ -221,6 +259,16 @@ describe('Form', () => {
             await stable();
             expect($<HTMLInputElement>('#street').matches(':disabled')).toBe(true);
             expect(Number(getComputedStyle($('#legend')).opacity)).toBeLessThan(1);
+        });
+
+        it('a disabled legend is dimmed on its own', async () => {
+            const { $, host, stable } = await render(LayoutHost);
+            const legend = $('#own-legend');
+            expect(getComputedStyle(legend).opacity).toBe('1');
+            host.legendDisabled.set(true);
+            await stable();
+            expect(Number(getComputedStyle(legend).opacity)).toBeLessThan(1);
+            expect(legend.closest('fieldset')!.disabled).toBe(false);
         });
 
         it('a form group stacks items in a column; withSpacing adds the gap', async () => {
@@ -321,6 +369,93 @@ describe('Form', () => {
             await userEvent.tab();
             await stable();
             expect(host.open()).toBe(false);
+        });
+        describe('message groups', () => {
+            const openMessages = () =>
+                [...document.querySelectorAll<HTMLElement>('.cdk-overlay-container fd-form-message')].filter(
+                    (m) => m.getBoundingClientRect().height > 0
+                );
+            const settle = async (stable: () => Promise<void>) => {
+                await stable();
+                await new Promise((r) => setTimeout(r, 50));
+                await stable();
+            };
+
+            it('one click moves focus to another group and only its message stays open', async () => {
+                const { $, stable } = await render(GroupsHost);
+                await userEvent.click($('#field-1'));
+                await settle(stable);
+                expect(openMessages().map((m) => m.textContent)).toEqual([expect.stringContaining('Message 1')]);
+                await userEvent.click($('#field-2'));
+                await settle(stable);
+                expect(document.activeElement).toBe($('#field-2'));
+                expect(openMessages().map((m) => m.textContent)).toEqual([expect.stringContaining('Message 2')]);
+            });
+
+            it('rapid focus changes across groups leave only the focused group open', async () => {
+                const { $, stable } = await render(GroupsHost);
+                for (const id of [1, 3, 2, 4, 1, 3]) $(`#field-${id}`).focus();
+                await settle(stable);
+                expect(document.activeElement).toBe($('#field-3'));
+                expect(openMessages().map((m) => m.textContent)).toEqual([expect.stringContaining('Message 3')]);
+                for (const id of [4, 3, 2]) await userEvent.click($(`#field-${id}`));
+                await settle(stable);
+                expect(document.activeElement).toBe($('#field-2'));
+                expect(openMessages().map((m) => m.textContent)).toEqual([expect.stringContaining('Message 2')]);
+            });
+
+            it('the message popover body has an aria-label (popoverAriaLabel)', async () => {
+                const { $, host, stable } = await render(GroupsHost);
+                await userEvent.click($('#field-1'));
+                await settle(stable);
+                const body = () => openMessages()[0].parentElement!.closest<HTMLElement>('[aria-label]')!;
+                expect(body().getAttribute('aria-label')).toBe('Field validation messages');
+                await userEvent.tab();
+                await settle(stable);
+                host.ariaLabel.set('VAT messages');
+                await stable();
+                await userEvent.click($('#field-1'));
+                await settle(stable);
+                expect(body().getAttribute('aria-label')).toBe('VAT messages');
+            });
+
+            it('non-error message types set aria-describedby without aria-invalid', async () => {
+                const { $, host, stable } = await render(GroupsHost);
+                const input = $('#field-1');
+                const id = input.getAttribute('aria-describedby');
+                expect(id).toMatch(/^fd-form-message-\d+$/);
+                expect(input.getAttribute('aria-invalid')).toBe('true');
+                for (const type of ['warning', 'success', 'information'] as const) {
+                    host.type.set(type);
+                    await stable();
+                    expect(input.getAttribute('aria-describedby')).toBe(id);
+                    expect(input.hasAttribute('aria-invalid')).toBe(false);
+                }
+                await userEvent.click(input);
+                await settle(stable);
+                expect(openMessages()[0].id).toBe(id);
+            });
+
+            it('changing the message text or type while open updates the popover', async () => {
+                const { $, host, stable } = await render(GroupsHost);
+                const input = $('#field-1');
+                await userEvent.click(input);
+                await settle(stable);
+                const message = openMessages()[0];
+                expect(message.textContent).toContain('Invalid Entry');
+                const errorBackground = getComputedStyle(message).backgroundColor;
+                host.text.set('Changed');
+                host.type.set('warning');
+                await settle(stable);
+                expect(openMessages()).toEqual([message]);
+                expect(message.textContent).toContain('Changed 1');
+                expect(message.textContent).toContain('Warning');
+                expect(getComputedStyle(message).backgroundColor).not.toBe(errorBackground);
+                expect(message.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+                    input.getBoundingClientRect().bottom - 1
+                );
+                expect(document.activeElement).toBe(input);
+            });
         });
     });
 });
