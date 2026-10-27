@@ -442,6 +442,19 @@
         }
       ],
       "dependencies": ["@angular/cdk"]
+    },
+    {
+      "name": "bar",
+      "type": "registry:ui",
+      "title": "Bar",
+      "description": "Header, subheader and footer bars with left, middle and right areas, bar elements and bar buttons.",
+      "registryDependencies": ["utils", "theme", "button", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/bar/bar.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

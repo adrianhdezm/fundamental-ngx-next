@@ -1,7 +1,9 @@
 import { signal } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { Avatar } from '@/ui/avatar/avatar';
+import { Bar, BarElement, BarLeft, BarRight, ButtonBar } from '@/ui/bar/bar';
 import { Button } from '@/ui/button/button';
+import { Title } from '@/ui/title/title';
 import {
     Popover,
     PopoverBody,
@@ -27,7 +29,13 @@ const meta: Meta<Popover> = {
                 PopoverBodyFooter,
                 PopoverContainer,
                 Button,
-                Avatar
+                Avatar,
+                Bar,
+                BarLeft,
+                BarRight,
+                BarElement,
+                ButtonBar,
+                Title
             ]
         })
     ],
@@ -47,9 +55,11 @@ type Story = StoryObj<Popover>;
 
 const header = (title: string) => `
     <div fdPopoverBodyHeader>
-        <div class="flex h-sap-element-height items-center gap-2 bg-sap-page-header-background px-2 shadow-sap-content-header-shadow compact:h-sap-element-compact-height">
-            <button fdButton variant="transparent" glyph="navigation-left-arrow" ariaLabel="Back"></button>
-            <h5 class="m-0 truncate font-sap-font-header-family text-sap-font-header5-size text-sap-title-color">${title}</h5>
+        <div fd-bar barDesign="header" aria-label="${title}">
+            <div fd-bar-left>
+                <fd-button-bar glyph="navigation-left-arrow" ariaLabel="Back" />
+                <fd-bar-element><h5 fdTitle>${title}</h5></fd-bar-element>
+            </div>
         </div>
     </div>`;
 
@@ -84,9 +94,11 @@ export const Simple: Story = {
                         ${header('Title')}
                         <fd-avatar circle size="xl" glyph="group" ariaLabel="Group" class="m-4" />
                         <div fdPopoverBodyFooter>
-                            <div class="flex h-sap-element-height items-center justify-end gap-2 bg-sap-page-footer-background px-2 compact:h-sap-element-compact-height">
-                                <button fdButton variant="emphasized" label="Save"></button>
-                                <button fdButton variant="transparent" label="Cancel"></button>
+                            <div fd-bar barDesign="footer" aria-label="Actions">
+                                <div fd-bar-right>
+                                    <fd-button-bar variant="emphasized" label="Save" />
+                                    <fd-button-bar label="Cancel" />
+                                </div>
                             </div>
                         </div>
                     </fd-popover-body>
