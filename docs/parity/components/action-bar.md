@@ -1,7 +1,7 @@
 ## action-bar
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/action-bar) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/action-bar)
-Registry: `registry/ui/action-bar/` — 4 stories, 11 tests.
+Registry: `registry/ui/action-bar/` — 6 stories, 11 tests.
 
 ### Stories vs. upstream examples
 
@@ -10,8 +10,8 @@ Registry: `registry/ui/action-bar/` — 4 stories, 11 tests.
 | Action Bar with Back Button, Description and Action Buttons | Default ("Back button, title and description") | ✅ covered | First variant of the story                                                                                                                                 |
 | Action Bar with Long Page Title                             | Default                                        | ✅ covered | "Long title and description are truncated" variant                                                                                                         |
 | Action Bar with Main Actions and No Back Button             | Default                                        | ✅ covered | "Without back button" variant                                                                                                                              |
-| Several Main Actions in a Contextual Menu                   | ContextualMenu                                 | ✅ covered | Overflow button (`ariaLabel="More"`) with `[fdMenuTrigger]` and the 5-item menu, placement bottom-end                                                      |
-| Action Bar Mobile View                                      | Mobile ("Small screen")                        | ✅ covered | The overflow button opens a `mobile` menu titled "Actions" with a close button. `fd-action-bar-mobile` wrapper is dropped in favour of a 600px media query |
+| Several Main Actions in a Contextual Menu                   | ContextualMenu, OpenContextualMenu             | ✅ covered | Overflow button (`ariaLabel="More"`) with `[fdMenuTrigger]` and the 5-item menu, placement bottom-end                                                      |
+| Action Bar Mobile View                                      | Mobile ("Small screen"), OpenMobile            | ✅ covered | The overflow button opens a `mobile` menu titled "Actions" with a close button. `fd-action-bar-mobile` wrapper is dropped in favour of a 600px media query |
 
 ### Tests vs. upstream specs
 
@@ -26,6 +26,6 @@ Registry-only coverage: back button name/click/Enter, title is an `h2`, long-tit
 
 ### Gaps to fill
 
-- **Stories:** "Open: contextual menu" and "Open: mobile actions" (`play` clicks the overflow button).
+- **Stories:** none.
 - **Tests:** none (upstream specs are class-only); optional: "overflow button in the actions opens its menu and returns focus on Escape".
 - **Effort:** S, stories only, reusing the existing menu component.

@@ -1,4 +1,5 @@
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
 import { Menu, MenuInteractive, MenuItem, MenuTitle, MenuTrigger } from '@/ui/menu/menu';
 import {
@@ -124,4 +125,25 @@ const MOBILE = `
 export const Mobile: Story = {
     name: 'Small screen',
     render: () => ({ template: MOBILE })
+};
+
+/** Clicks the overflow button and waits until its menu shows the actions. */
+async function openActions(canvasElement: HTMLElement): Promise<void> {
+    const more = canvasElement.querySelector<HTMLElement>('button[aria-label=More]')!;
+    await userEvent.click(more);
+    await waitFor(() => expect(more.getAttribute('aria-expanded')).toBe('true'));
+    await waitFor(() => expect(document.querySelector('.cdk-overlay-container [role=menuitem]')).not.toBeNull());
+}
+
+export const OpenContextualMenu: Story = {
+    ...ContextualMenu,
+    name: 'Open: contextual menu',
+    tags: ['!autodocs'],
+    play: ({ canvasElement }) => openActions(canvasElement)
+};
+export const OpenMobile: Story = {
+    ...Mobile,
+    name: 'Open: mobile actions',
+    tags: ['!autodocs'],
+    play: ({ canvasElement }) => openActions(canvasElement)
 };
