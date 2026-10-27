@@ -113,6 +113,18 @@ describe('Skeleton', () => {
         expect(size(el)).toEqual([200, 8]);
     });
 
+    it('text with textLines 0 draws no lines but keeps the one-line height', async () => {
+        const { parts } = await setup((h) => {
+            h.type.set('text');
+            h.height.set(null);
+            h.width.set('200px');
+            h.textLines.set(0);
+        });
+        const { el, mask } = parts('main');
+        expect(mask.querySelectorAll('rect')).toHaveLength(0);
+        expect(size(el)).toEqual([200, 8]);
+    });
+
     it('text without a width fills its container', async () => {
         const { parts, root } = await setup((h) => {
             h.type.set('text');
