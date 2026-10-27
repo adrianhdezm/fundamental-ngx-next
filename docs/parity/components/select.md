@@ -1,7 +1,7 @@
 ## select
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/select) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/select)
-Registry: `registry/ui/select/` — 8 stories, 7 tests.
+Registry: `registry/ui/select/` — 11 stories, 7 tests.
 
 ### Stories vs. upstream examples
 
@@ -11,14 +11,14 @@ Registry: `registry/ui/select/` — 8 stories, 7 tests.
 | Select Semantic States          | `States`                                           | 🟡 partial | All four states with messages and the long-text success; upstream's "form message with event triggers" (`fd-form-input-message-group` on hover) is missing. |
 | Custom Control Content          | `RichOptions` ("Groups, icons and custom trigger") | ✅ covered | `controlTemplate`.                                                                                                                                          |
 | Extended Options                | `RichOptions`                                      | ✅ covered | Group headers, icons, secondary text.                                                                                                                       |
-| Select In Mobile Mode           | `Mobile`                                           | ✅ covered | No "Open: …" story for the dialog.                                                                                                                          |
+| Select In Mobile Mode           | `Mobile`                                           | ✅ covered | `Open: mobile` opens the dialog in `play`.                                                                                                                  |
 | Select Max Height               | `Programmatic`                                     | 🟡 partial | `maxHeight="12rem"` is set but with 5 options the limit never applies; no dedicated long-list story.                                                        |
 | Adding and Removing Options     | `Programmatic`                                     | ✅ covered | Add/Remove buttons.                                                                                                                                         |
 | Programmatic Control            | `Programmatic`                                     | ✅ covered | Change value, open, close; `closeOnOutsideClick=false`.                                                                                                     |
 | Select In A Reactive Form       | `Forms`                                            | ✅ covered | Required control with status, disabled control toggle.                                                                                                      |
 | Select With A Custom Comparator | `CustomComparator`                                 | ✅ covered |                                                                                                                                                             |
 
-No story opens the list in `play`: the a11y run never checks the open listbox or the mobile dialog.
+`Open: default`, `Open: groups and icons` and `Open: mobile` open the list or the mobile dialog in `play`, so the a11y run checks them.
 
 ### Tests vs. upstream specs
 
@@ -56,6 +56,6 @@ Registry-only coverage: combobox ARIA (`aria-haspopup`, `aria-activedescendant`)
 
 ### Gaps to fill
 
-- **Stories:** `Open: Default` (play clicks the trigger so axe checks the listbox), `Open: Mobile` (play opens the dialog), `Max height` (full fruit list with `maxHeight`), add the hover-triggered `fd-form-input-message-group` row to `States`.
+- **Stories:** `Max height` (full fruit list with `maxHeight`), add the hover-triggered `fd-form-input-message-group` row to `States`.
 - **Tests:** "clicking a disabled option does not select it"; "compact density shrinks the control and options"; "clicking the trigger again closes the list"; "an outside click closes the list unless closeOnOutsideClick is false"; "a value not among the options shows the placeholder (value null)"; "Home and End move the active option while open"; "Space selects the active option and closes"; "Enter, Space, Alt+ArrowDown and F4 open the list"; "opening scrolls the selected option into view"; "typing several characters moves to the matching option"; "compareWith matches the selected option by value"; "the default comparator does not match a copied object"; "mobile: Cancel closes the dialog and keeps the old value"; "mobile: renders with an empty mobileConfig".
 - **Effort:** M — about 14 tests on the existing host, plus two play stories.

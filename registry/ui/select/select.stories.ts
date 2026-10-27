@@ -2,6 +2,7 @@ import { JsonPipe } from '@angular/common';
 import { Component, signal } from '@angular/core';
 import { FormControl as NgFormControl, FormGroup as NgFormGroup, ReactiveFormsModule } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
 import { ContentDensityDirective } from '@/ui/content-density/content-density';
 import { FormItem, FormLabel } from '@/ui/form/form';
@@ -383,3 +384,30 @@ export const CustomComparator: Story = {
     render: () => ({ template: `<story-select-comparator />` })
 };
 export const Mobile: Story = { render: () => ({ template: `<story-select-mobile />` }) };
+
+/** Clicks the first select of the story and waits for its list (or mobile dialog) to open. */
+async function openSelect(canvasElement: HTMLElement, popup: string): Promise<void> {
+    const combobox = canvasElement.querySelector<HTMLElement>('[role=combobox]')!;
+    await userEvent.click(combobox);
+    await waitFor(() => expect(document.querySelector(popup)).not.toBeNull());
+    await waitFor(() => expect(combobox.getAttribute('aria-expanded')).toBe('true'));
+}
+
+export const OpenDefault: Story = {
+    name: 'Open: default',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-select-modes />` }),
+    play: ({ canvasElement }) => openSelect(canvasElement, '[role=listbox] [role=option]')
+};
+export const OpenRich: Story = {
+    name: 'Open: groups and icons',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-select-rich />` }),
+    play: ({ canvasElement }) => openSelect(canvasElement, '[role=listbox] [role=option]')
+};
+export const OpenMobile: Story = {
+    name: 'Open: mobile',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-select-mobile />` }),
+    play: ({ canvasElement }) => openSelect(canvasElement, '[role=dialog] [role=listbox]')
+};
