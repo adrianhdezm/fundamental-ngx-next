@@ -1,5 +1,6 @@
 import { Component, TemplateRef, inject, input, signal, viewChild } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Avatar } from '@/ui/avatar/avatar';
 import { Button } from '@/ui/button/button';
 import { Icon } from '@/ui/icon/icon';
@@ -210,7 +211,6 @@ class StoryNotificationStates {}
 })
 class StoryNotificationGroup {
     readonly open = signal(false);
-    readonly autoOpen = input(false);
     protected readonly last = signal('');
     protected readonly groups = [
         { title: 'Today', expanded: true, items: ['Leave request approved', 'New purchase order', 'Invoice overdue'] },
@@ -218,9 +218,6 @@ class StoryNotificationGroup {
     ];
     protected readonly onKey = (_: KeyboardEvent, key: 'enter' | 'delete') =>
         this.last.set(key === 'enter' ? 'Notification opened' : 'Notification removed');
-    constructor() {
-        queueMicrotask(() => this.autoOpen() && this.open.set(true));
-    }
 }
 
 @Component({
@@ -352,5 +349,20 @@ export const Service: Story = { name: 'Service', render: () => ({ template: `<st
 export const OpenGroup: Story = {
     name: 'Open: groups',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-notification-group [autoOpen]="true" />` })
+    render: () => ({ template: `<story-notification-group />` }),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open notification group' }));
+        await waitFor(() =>
+            expect(document.querySelector('.cdk-overlay-pane [fd-notification-popover]')).not.toBeNull()
+        );
+    }
+};
+export const OpenService: Story = {
+    name: 'Open: service banner',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-notification-service />` }),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open from component' }));
+        await waitFor(() => expect(document.querySelector('.cdk-overlay-container fd-notification')).not.toBeNull());
+    }
 };
