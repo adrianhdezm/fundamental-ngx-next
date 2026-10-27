@@ -661,6 +661,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "facets",
+      "type": "registry:ui",
+      "title": "Facets",
+      "description": "Facets of an object page header: form, key-value, rating and image facets in a facet group.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/facets/facets.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
