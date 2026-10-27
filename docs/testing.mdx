@@ -1,0 +1,41 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Testing" />
+
+# Testing
+
+Components are tested in a real browser with [Vitest browser mode](https://vitest.dev/guide/browser/)
+(Chromium through Playwright). The tests render the components with the SAP theme and the Tailwind styles, so they
+can check behaviour that depends on layout: focus and keyboard navigation, measured layouts, overflow and resizing.
+
+```sh
+pnpm test         # run all tests once (also part of pnpm check)
+pnpm test:watch   # watch mode
+```
+
+## Where tests live
+
+Each component has a `<name>.spec.ts` next to its source, for example `registry/ui/grid-list/grid-list.spec.ts`.
+Spec files are not part of the registry items, so they are not copied into apps.
+
+A spec starts as a **test plan**: `it.todo(...)` entries for the behaviour worth covering, ported from
+`@fundamental-ngx/core` and from what was checked by hand in Storybook. Turning a todo into a test is the way to add
+coverage; `pnpm test` lists the remaining todos.
+
+## Writing a test
+
+- Render a small host component with `TestBed.createComponent` and wait for `fixture.whenStable()` (the tests run
+  zoneless, like the stories).
+- Drive it like a user with `userEvent` from `vitest/browser` (keyboard, clicks with modifiers, hover) and assert on
+  the DOM: roles and ARIA attributes, `document.activeElement`, positions from `getBoundingClientRect()`.
+- Prefer behaviour over class names. Visual details stay in the Storybook comparison with fundamental-styles; the
+  accessibility rules stay in `pnpm check:a11y`.
+- Set `data-sap-theme`, `data-density` or `dir` on `document.documentElement` to test themes, compact density and RTL.
+
+```ts
+import { userEvent } from 'vitest/browser';
+
+items()[0].focus();
+await userEvent.keyboard('{ArrowDown}');
+expect(document.activeElement).toBe(items()[3]);
+```

@@ -38,7 +38,8 @@ Requires Node `>=22.22.3` (see `.nvmrc`) and pnpm.
 pnpm install
 pnpm storybook          # http://localhost:6006
 pnpm build-storybook    # dist/storybook, including the registry under /r
-pnpm check              # typecheck (strict templates), style, cn() and registry checks
+pnpm check              # typecheck (strict templates), style, cn() and registry checks, tests
+pnpm test               # component tests in Chromium (Vitest browser mode); specs next to each component
 pnpm check:a11y         # axe on every story of a running Storybook (needs Playwright); --theme=sap_horizon_hcb
 pnpm tokens             # regenerate the theme layer after bumping theming-base-content
 ```
