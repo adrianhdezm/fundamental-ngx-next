@@ -59,6 +59,23 @@ const FOCUS_FRAME = [
     'hc:focus:active:before:border-sap-content-contrast-focus-color'
 ];
 
+/**
+ * Item of a dropdown list (select, combobox): `aria-selected` marks the selection, `data-active` the
+ * option highlighted with aria-activedescendant and `aria-disabled` an unavailable option.
+ */
+export const LIST_DROPDOWN_ITEM = [
+    'relative m-0 box-border flex min-h-10 list-none items-center gap-x-4 px-[0.9375rem] py-0 compact:min-h-8',
+    'bg-(--li-bg) font-sap-font-family text-sap-font-size text-sap-list-text-color [--li-bg:var(--sapList_Background)]',
+    'cursor-pointer outline-none [&_[fdListSecondary]]:ms-auto [&_[fd-list-secondary]]:ms-auto',
+    'hover:[--li-bg:var(--sapList_Hover_Background)] aria-selected:hover:[--li-bg:var(--sapList_Hover_SelectionBackground)]',
+    'active:[--li-bg:var(--sapList_Active_Background)] active:text-sap-list-active-text-color aria-selected:active:[--li-bg:var(--sapList_Active_Background)]',
+    'aria-selected:[--li-bg:var(--sapList_SelectionBackgroundColor)] aria-selected:border-b-(length:--sapList_BorderWidth) aria-selected:border-solid aria-selected:border-sap-list-selection-border-color',
+    // keyboard focus frame of the active descendant
+    "data-[active]:before:pointer-events-none data-[active]:before:absolute data-[active]:before:inset-x-0.5 data-[active]:before:top-0.5 data-[active]:before:bottom-px data-[active]:before:content-['']",
+    'data-[active]:before:border-(length:--sapContent_FocusWidth) data-[active]:before:[border-style:var(--sapContent_FocusStyle)] data-[active]:before:border-sap-content-focus-color',
+    'aria-disabled:cursor-not-allowed aria-disabled:opacity-(--sapContent_DisabledOpacity) aria-disabled:hover:[--li-bg:var(--sapList_Background)] aria-disabled:active:[--li-bg:var(--sapList_Background)]'
+];
+
 /** Hover and pressed states of interactive items and links (through the --li-* colours). */
 const INTERACTIVE_STATES = [
     'cursor-pointer enabled-hover:[--li-bg:var(--sapList_Hover_Background)]',

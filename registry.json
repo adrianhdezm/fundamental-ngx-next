@@ -1094,6 +1094,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "combobox",
+      "type": "registry:ui",
+      "title": "Combobox",
+      "description": "An input that suggests values while typing, with filtering, inline completion, highlighting, groups, item templates and a mobile dialog mode.",
+      "dependencies": ["@angular/forms"],
+      "registryDependencies": ["utils", "theme", "bar", "button", "dialog", "icon", "input", "input-group", "list", "popover", "title"],
+      "files": [
+        {
+          "path": "registry/ui/combobox/combobox.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
