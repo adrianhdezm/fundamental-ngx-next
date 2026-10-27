@@ -135,6 +135,10 @@ describe('OverflowLayout', () => {
         await userEvent.click(moreButton()!);
         await stable();
         expect(popoverLabels()).toEqual(['D', 'E']);
+        // the popover dialog is named like the button that opens it
+        const body = document.querySelector<HTMLElement>('.cdk-overlay-container fd-popover-body [role=dialog]')!;
+        expect(body.getAttribute('role')).toBe('dialog');
+        expect(body.getAttribute('aria-label')).toBe('2 more');
         const popoverItems = [...document.querySelectorAll<HTMLElement>('.cdk-overlay-container [data-hidden]')];
         // the item template knows it renders in the popover and its index among all items
         expect(popoverItems.map((b) => b.dataset['hidden'])).toEqual(['true', 'true']);

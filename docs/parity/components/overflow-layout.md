@@ -22,7 +22,7 @@ Registry: `registry/ui/overflow-layout/` — 2 stories, 7 tests.
 | Reacts on items resize                            | triggerRecalculation re-measures after content changes              | 🟡 partial | Our test calls `triggerRecalculation()` manually; upstream expects item width changes to be picked up. Our ResizeObserver watches host and row only, so automatic reaction is unclear |
 | Reacts on container resize                        | visibleItemsCount / hiddenItemsCount… after resizes                 | ✅ covered |                                                                                                                                                                                       |
 
-Registry-only coverage: `showMorePosition="left"`, `reverseHiddenItems`, custom expand template, `hiddenChange` per item, arrow-key roving focus (RTL aware), list/listitem roles and aria-label.
+Registry-only coverage: the "N more" popover dialog is named like its control (axe `aria-dialog-name`; upstream leaves it unnamed), `showMorePosition="left"`, `reverseHiddenItems`, custom expand template, `hiddenChange` per item, arrow-key roving focus (RTL aware), list/listitem roles and aria-label.
 
 ### Gaps to fill
 
