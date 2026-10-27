@@ -23,9 +23,9 @@ Node 24 (`.nvmrc`) and pnpm (settings in `pnpm-workspace.yaml`, not in `package.
 ```sh
 pnpm check                                  # everything below; takes about 5 minutes
 pnpm typecheck && pnpm typecheck:tests      # strict templates for sources and specs
-pnpm check:styles && pnpm check:cn          # SAP token classes, cn() merge rules
+pnpm check:styles                           # SAP token classes
 pnpm registry:check                         # registry.json and each component's imports
-pnpm test                                   # component tests (Vitest browser mode, project "unit")
+pnpm test                                   # component and lib tests (Vitest browser mode, project "unit")
 pnpm test:a11y                              # axe on every story, Horizon and Horizon HC Black
 pnpm exec vitest run --project unit registry/ui/menu/   # one component; keep the trailing slash
 pnpm format                                 # Prettier
