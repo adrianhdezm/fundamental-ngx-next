@@ -26,7 +26,7 @@ const NESTED = [
 
 /** A nested list on its own, outside a side navigation. */
 @Component({
-    imports: [NESTED],
+    imports: [...NESTED],
     template: `
         <ul fd-nested-list>
             <li fd-nested-list-header>Overview</li>

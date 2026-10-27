@@ -1,19 +1,19 @@
 ## nested-list
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/side-navigation) (examples live in the side-navigation page) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/nested-list)
-Registry: `registry/ui/nested-list/` — 0 stories, 1 test (exercised only through `registry/ui/side-navigation/`: 5 stories, 6 tests).
+Registry: `registry/ui/nested-list/` — 3 stories, 1 test (exercised only through `registry/ui/side-navigation/`: 5 stories, 6 tests).
 
 ### Stories vs. upstream examples
 
-| Upstream example                               | Registry story                           | Status     | Notes                                                                                                               |
-| ---------------------------------------------- | ---------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------- |
-| Side Navigation (one level, text only)         | side-navigation Default                  | 🟡 partial | Ours always has icons and a nested group; no flat `[textOnly]="true"` list as upstream                              |
-| Multiple Levels and Selected Option            | side-navigation Default / Not selectable | ✅ covered | Two levels, expanded Settings group, selected link                                                                  |
-| Programmatic State Change                      | —                                        | ❌ missing | Upstream: `[selectable]="false"`, external buttons toggle `[(expanded)]` and `[selected]` on content and child link |
-| Side Navigation with Icons                     | side-navigation Default                  | ✅ covered |                                                                                                                     |
-| Condensed Mode (`fd-nested-list-popover`)      | side-navigation Condensed                | 🟡 partial | Renders, but no "Open: …" story opens the child popover for the a11y run                                            |
-| Generated from Configuration Object            | side-navigation From data                | ✅ covered |                                                                                                                     |
-| Condensed, Generated from Configuration Object | side-navigation From data, condensed     | 🟡 partial | No "Open: …" story for the auto-created popover                                                                     |
+| Upstream example                               | Registry story                                                 | Status     | Notes                                                                                                               |
+| ---------------------------------------------- | -------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------- |
+| Side Navigation (one level, text only)         | nested-list Text only                                          | ✅ covered | `[textOnly]="true"` list with no icons, outside a side navigation                                                   |
+| Multiple Levels and Selected Option            | nested-list Default / side-navigation Default / Not selectable | ✅ covered | Two levels, expanded Settings group, selected link                                                                  |
+| Programmatic State Change                      | —                                                              | ❌ missing | Upstream: `[selectable]="false"`, external buttons toggle `[(expanded)]` and `[selected]` on content and child link |
+| Side Navigation with Icons                     | side-navigation Default                                        | ✅ covered |                                                                                                                     |
+| Condensed Mode (`fd-nested-list-popover`)      | side-navigation Condensed                                      | 🟡 partial | Renders, but no "Open: …" story opens the child popover for the a11y run                                            |
+| Generated from Configuration Object            | side-navigation From data / nested-list From data              | ✅ covered | nested-list From data renders `fd-prepared-nested-list` on its own                                                  |
+| Condensed, Generated from Configuration Object | side-navigation From data, condensed                           | 🟡 partial | No "Open: …" story for the auto-created popover                                                                     |
 
 ### Tests vs. upstream specs
 
@@ -38,6 +38,6 @@ Registry-only coverage: tree/treeitem roles with roledescription, `aria-describe
 
 ### Gaps to fill
 
-- **Stories:** "Programmatic state" (side-navigation) — `selectable=false`, buttons "Select child" / "Open" bound to `[selected]` and `[(expanded)]`; "Text only" — flat `textOnly` list with no icons; "Open: condensed popover" and "Open: from data, condensed" — `play` focuses Settings and presses ArrowRight (or clicks the expand icon). Consider a minimal own `nested-list.stories.ts` (list outside a side nav) since the registry ships nested-list standalone.
+- **Stories:** "Programmatic state" (side-navigation) — `selectable=false`, buttons "Select child" / "Open" bound to `[selected]` and `[(expanded)]`; "Open: condensed popover" and "Open: from data, condensed" — `play` focuses Settings and presses ArrowRight (or clicks the expand icon).
 - **Tests:** add `registry/ui/nested-list/nested-list.spec.ts` with: "a leaf item has no aria-expanded and ArrowRight does nothing"; "clicking the expand icon in condensed mode opens the popover and closing it by Escape/outside click resets expanded"; "external [selected] and [(expanded)] changes update aria-selected / aria-expanded"; "works without a side navigation (scope falls back to the list)".
 - **Effort:** M, needs a new spec file and story host.
