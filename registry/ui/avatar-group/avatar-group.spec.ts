@@ -461,4 +461,13 @@ describe('AvatarGroup', () => {
         expect(body()).toBeNull();
         expect(document.activeElement).toBe(overflowTrigger());
     });
+
+    it('visibleCountChange follows changes of maxVisibleItems', async () => {
+        const { host, update } = await setup((h) => h.width.set(1000));
+        expect(host.visibleCount()).toBe(NAMES.length);
+        await update((h) => h.max.set(3));
+        expect(host.visibleCount()).toBe(2);
+        await update((h) => h.max.set(null));
+        expect(host.visibleCount()).toBe(NAMES.length);
+    });
 });

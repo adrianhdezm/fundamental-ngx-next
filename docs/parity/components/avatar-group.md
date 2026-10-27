@@ -1,7 +1,7 @@
 ## avatar-group
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/avatar-group) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/avatar-group)
-Registry: `registry/ui/avatar-group/` — 8 stories, 14 tests.
+Registry: `registry/ui/avatar-group/` — 8 stories, 15 tests.
 
 ### Stories vs. upstream examples
 
@@ -31,7 +31,7 @@ Registry: `registry/ui/avatar-group/` — 8 stories, 14 tests.
 | Overflow body: Escape emits/closes, even when a child stops propagation; other keys ignored                                          | overflow popover: list stage → details stage → back …; Escape closes the overflow popover even when its content stops propagation                               | ✅ covered | Fixed: the overflow list catches Escape in the capture phase, like upstream; other keys stay with the content                                                                       |
 | `should create`                                                                                                                      | —                                                                                                                                                               | ➖ n/a     |                                                                                                                                                                                     |
 
-Registry-only coverage: overflow "+N" wrapped in `<bdi dir="ltr">` for RTL, list → details → back stage navigation with focus restore, Enter/Space on avatars, `visibleCountChange` output, re-measure on resize and item changes.
+Registry-only coverage: overflow "+N" wrapped in `<bdi dir="ltr">` for RTL, list → details → back stage navigation with focus restore, Enter/Space on avatars, `visibleCountChange` output (also when maxVisibleItems changes), re-measure on resize and item changes.
 
 ### Gaps to fill
 

@@ -18,6 +18,7 @@ import {
     computed,
     contentChild,
     contentChildren,
+    effect,
     inject,
     input,
     output,
@@ -393,6 +394,11 @@ export class AvatarGroup {
             observer.observe(this.host);
             destroyRef.onDestroy(() => observer.disconnect());
         });
+        // after each measurement, and when maxVisibleItems, the orientation or the items change
+        effect(() => {
+            const count = this.visibleItems().length;
+            if (this.measured()) this.visibleCountChange.emit(count);
+        });
     }
 
     /** Closes the open popover of the group (details, overflow or group popover). */
@@ -428,7 +434,6 @@ export class AvatarGroup {
         if (overflow) this.widths.set('overflow', overflow.getBoundingClientRect().width + gap);
         this.available.set(this.host.clientWidth);
         this.measured.update((n) => n + 1);
-        this.visibleCountChange.emit(this.visibleItems().length);
     }
 
     protected readonly computedClass = computed(() =>
