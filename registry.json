@@ -973,6 +973,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "settings",
+      "type": "registry:ui",
+      "title": "Settings",
+      "description": "A list of settings next to the view of the selected one, with pushed detail views, a responsive single-column mode and a settings dialog size.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "bar", "button", "dialog", "list", "title"],
+      "files": [
+        {
+          "path": "registry/ui/settings/settings.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

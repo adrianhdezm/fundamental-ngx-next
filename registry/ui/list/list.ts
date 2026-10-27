@@ -386,6 +386,11 @@ export class ListItem<T = unknown> implements ListFocusable {
         if (link?.focusable()) link.element.focus();
     }
 
+    /** Sets the selection from outside, e.g. by a settings container; `selectedChange` does not emit. */
+    setSelected(selected: boolean): void {
+        this.selectedState.set(selected);
+    }
+
     private toggleSelected(): void {
         this.selectedState.update((v) => !v);
         this.selectedChange.emit(this.selectedState());
