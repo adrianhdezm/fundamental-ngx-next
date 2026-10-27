@@ -932,6 +932,33 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "nested-list",
+      "type": "registry:ui",
+      "title": "Nested List",
+      "description": "Navigation tree of links with group headers, expandable child lists, selection, arrow-key navigation and popovers for condensed mode.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "icon", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/nested-list/nested-list.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "side-navigation",
+      "type": "registry:ui",
+      "title": "Side Navigation",
+      "description": "Main and utility nested lists in a column, condensed to icons with popovers, from content or data.",
+      "registryDependencies": ["utils", "theme", "nested-list"],
+      "files": [
+        {
+          "path": "registry/ui/side-navigation/side-navigation.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
