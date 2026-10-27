@@ -79,7 +79,7 @@ export const NESTED_LIST_SCOPE = new InjectionToken<true>('NestedListScope');
 const SCOPE = 'data-nested-scope';
 const FOCUSABLE = 'data-nested-focusable';
 
-/** Arrow-key navigation over the visible rows of the scope of a row. */
+/** Arrow-key navigation over the visible rows of the scope of a row; Up and Down wrap around, as upstream. */
 function onRowKeydown(event: KeyboardEvent, item: NestedItem, rtl: boolean): void {
     const row = event.currentTarget as HTMLElement;
     const scope = row.closest(`[${SCOPE}]`) ?? row.closest('ul');
@@ -91,10 +91,10 @@ function onRowKeydown(event: KeyboardEvent, item: NestedItem, rtl: boolean): voi
     const backward = rtl ? 'ArrowRight' : 'ArrowLeft';
     switch (event.key) {
         case 'ArrowDown':
-            rows[index + 1]?.focus();
+            rows[(index + 1) % rows.length]?.focus();
             break;
         case 'ArrowUp':
-            rows[index - 1]?.focus();
+            rows[(index - 1 + rows.length) % rows.length]?.focus();
             break;
         case 'Home':
             rows[0]?.focus();
