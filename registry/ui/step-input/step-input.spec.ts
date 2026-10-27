@@ -144,4 +144,19 @@ describe('StepInput', () => {
         await userEvent.click(root.querySelector('button[type=button]:not([fdButton])')!);
         expect(host.focusEvents).toEqual(['in', 'out']);
     });
+
+    it('writes only null or numbers from the form', async () => {
+        const { fixture, host, input } = await setup();
+        host.control.setValue('12ab34' as unknown as number);
+        await fixture.whenStable();
+        expect(input.value).toBe('5');
+        expect(input.getAttribute('aria-valuenow')).toBe('5');
+        host.control.setValue(7);
+        await fixture.whenStable();
+        expect(input.value).toBe('7');
+        host.control.setValue(null);
+        await fixture.whenStable();
+        expect(input.value).toBe('');
+        expect(input.hasAttribute('aria-valuenow')).toBe(false);
+    });
 });

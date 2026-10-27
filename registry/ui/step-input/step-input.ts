@@ -265,8 +265,10 @@ export class StepInput implements ControlValueAccessor {
     private onChange: (value: number | null) => void = () => {};
     private onTouched: () => void = () => {};
 
+    /** Writes null or a number; any other value is ignored, as upstream. */
     writeValue(value: number | null | undefined): void {
-        this.value.set(value == null || isNaN(Number(value)) ? null : this.limit(Number(value)));
+        if (value == null) this.value.set(null);
+        else if (!isNaN(Number(value))) this.value.set(this.limit(Number(value)));
     }
     registerOnChange(fn: (value: number | null) => void): void {
         this.onChange = fn;
