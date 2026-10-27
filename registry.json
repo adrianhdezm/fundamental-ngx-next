@@ -1228,6 +1228,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "pagination",
+      "type": "registry:ui",
+      "title": "Pagination",
+      "description": "Page navigation with page numbers and ellipses or a page input, items per page, a results text, keyboard navigation and a mobile layout.",
+      "dependencies": ["@angular/cdk", "rxjs"],
+      "registryDependencies": ["utils", "theme", "button", "input", "select"],
+      "files": [
+        {
+          "path": "registry/ui/pagination/pagination.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
