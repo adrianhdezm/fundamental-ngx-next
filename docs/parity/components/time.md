@@ -1,22 +1,22 @@
 ## time
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/time) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/time)
-Registry: `registry/ui/time/` — 2 stories, 8 tests.
+Registry: `registry/ui/time/` — 4 stories, 8 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                  | Registry story     | Status     | Notes                                                                            |
-| --------------------------------- | ------------------ | ---------- | -------------------------------------------------------------------------------- |
-| 24-Hour Clock                     | `Basic`            | ✅ covered |                                                                                  |
-| 12-Hour Clock                     | `Basic`            | ✅ covered | Combined with two digits and no seconds; upstream shows it compact with seconds. |
-| No Spinners                       | `Basic`            | ✅ covered | Combined with hours only.                                                        |
-| Sizes (compact, tablet)           | `Options`          | 🟡 partial | Compact shown; `tablet` is not.                                                  |
-| Programmatically Changed Time     | —                  | ❌ missing | No button setting the hour from outside.                                         |
-| Clock Without Seconds             | `Basic`, `Options` | ✅ covered |                                                                                  |
-| Clock Without Minutes and Seconds | `Basic`            | ✅ covered |                                                                                  |
-| Time With Two Digits              | `Basic`            | ✅ covered |                                                                                  |
-| Time in Reactive Form             | `Options`          | 🟡 partial | Only a disabled `ngModel` control; no reactive form with value/touched shown.    |
-| Time with Minute Steps            | `Options`          | ✅ covered | Step 15; upstream also lists other steps with a 12-hour clock.                   |
+| Upstream example                  | Registry story     | Status     | Notes                                                                                                       |
+| --------------------------------- | ------------------ | ---------- | ----------------------------------------------------------------------------------------------------------- |
+| 24-Hour Clock                     | `Basic`            | ✅ covered |                                                                                                             |
+| 12-Hour Clock                     | `Basic`            | ✅ covered | Combined with two digits and no seconds; upstream shows it compact with seconds.                            |
+| No Spinners                       | `Basic`            | ✅ covered | Combined with hours only.                                                                                   |
+| Sizes (compact, tablet)           | `Options`          | ✅ covered | Compact and `tablet`.                                                                                       |
+| Programmatically Changed Time     | `Programmatic`     | ✅ covered | "Set hours to 11" button updating `[(time)]`.                                                               |
+| Clock Without Seconds             | `Basic`, `Options` | ✅ covered |                                                                                                             |
+| Clock Without Minutes and Seconds | `Basic`            | ✅ covered |                                                                                                             |
+| Time With Two Digits              | `Basic`            | ✅ covered |                                                                                                             |
+| Time in Reactive Form             | `ReactiveForm`     | ✅ covered | `formControlName` with value, touched, dirty and valid shown; `Options` keeps a disabled `ngModel` control. |
+| Time with Minute Steps            | `Options`          | ✅ covered | Step 15; upstream also lists other steps with a 12-hour clock.                                              |
 
 ### Tests vs. upstream specs
 
@@ -35,6 +35,5 @@ Registry-only coverage: spinbutton ARIA, Left/Right between columns, typed digit
 
 ### Gaps to fill
 
-- **Stories:** `Programmatic` (button "Set hours to 11" updating `[(time)]`); add a `tablet` example to `Options`; `ReactiveForm` (a `formControlName` time with value and touched shown).
 - **Tests:** "stepping hours from 11 to 12 switches AM to PM"; "dragging a column changes the value"; "the mouse wheel steps the active column"; "Page Up, Page Down, Home and End move within a column"; "spinnerButtons=false hides the buttons"; "tablet makes the columns larger"; "marks the control touched when focus leaves".
-- **Effort:** M, pointer/wheel specs plus three stories.
+- **Effort:** M, pointer/wheel specs.
