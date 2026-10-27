@@ -132,4 +132,22 @@ describe('UploadCollection', () => {
         await fixture.whenStable();
         expect(host.files()).toHaveLength(1);
     });
+    it('renders a file name with markup as text, also after a rename', async () => {
+        const { host, fixture, root } = await setup();
+        host.files.set([{ name: '<img src="x" onerror="window.__ucXss = true">' }]);
+        await fixture.whenStable();
+        await wait();
+        expect(root.querySelector('[fd-upload-collection-title] img')).toBeNull();
+        expect(titles()[0]).toBe('<img src="x" onerror="window.__ucXss = true">.pdf');
+
+        await userEvent.click(button('Edit'));
+        await fixture.whenStable();
+        const field = document.querySelector<HTMLInputElement>('fd-upload-collection-form-item input')!;
+        await userEvent.clear(field);
+        await userEvent.type(field, '<b>bold</b>{Enter}');
+        await wait();
+        expect(root.querySelector('[fd-upload-collection-title] b')).toBeNull();
+        expect(titles()[0]).toBe('<b>bold</b>.pdf');
+        expect((window as { __ucXss?: boolean }).__ucXss).toBeUndefined();
+    });
 });
