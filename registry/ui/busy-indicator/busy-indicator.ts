@@ -40,12 +40,12 @@ const DOT =
         '[class]': 'computedClass()',
         '[attr.role]': "loading() ? 'progressbar' : 'presentation'",
         '[attr.tabindex]': 'loading() ? 0 : -1',
-        '[attr.aria-busy]': 'loading()',
-        '[attr.aria-live]': 'ariaLive()',
-        '[attr.aria-label]': 'ariaLabel()',
+        '[attr.aria-busy]': 'loading() || null',
+        '[attr.aria-live]': 'loading() ? ariaLive() : null',
+        '[attr.aria-label]': 'loading() ? ariaLabel() : null',
         '[attr.aria-valuetext]': 'loading() ? ariaValueText() || "Busy" : null',
-        '[attr.aria-valuemin]': '0',
-        '[attr.aria-valuemax]': '100',
+        '[attr.aria-valuemin]': 'loading() ? 0 : null',
+        '[attr.aria-valuemax]': 'loading() ? 100 : null',
         '[attr.title]': 'loading() ? title() || "Please wait" : null'
     },
     template: `

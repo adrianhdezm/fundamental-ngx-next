@@ -1,4 +1,5 @@
 import {
+    inject,
     ChangeDetectionStrategy,
     Component,
     ElementRef,
@@ -77,7 +78,7 @@ let nextId = 0;
             [attr.readonly]="readOnly() ? '' : null"
             [attr.value]="value()"
             [checked]="checked()"
-            [attr.tabindex]="tabIndex() ?? null"
+            [attr.tabindex]="tabIndexState() ?? null"
             [attr.aria-label]="ariaLabel() || null"
             [attr.aria-labelledby]="ariaLabelledBy() || null"
             [attr.aria-describedby]="ariaDescribedBy() || null"
@@ -123,7 +124,10 @@ export class RadioButton<T = unknown> implements ControlValueAccessor {
 
     private readonly inputRef = viewChild.required<ElementRef<HTMLInputElement>>('input');
 
+    readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
     readonly currentValue = linkedSignal<T | undefined>(() => this.selectedValue());
+    /** Writable tab index; parents such as list items take the radio out of the tab order. */
+    readonly tabIndexState = linkedSignal<number | undefined>(() => this.tabIndex());
     protected readonly disabledState = linkedSignal(() => this.disabled());
 
     readonly checked = computed(() => this.value() !== undefined && this.currentValue() === this.value());

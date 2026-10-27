@@ -509,6 +509,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "list",
+      "type": "registry:ui",
+      "title": "List",
+      "description": "Lists with titles, secondary text, icons, bylines, sublines, links, selection, group headers, footers and keyboard navigation.",
+      "registryDependencies": ["utils", "theme", "icon", "checkbox", "radio"],
+      "files": [
+        {
+          "path": "registry/ui/list/list.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk"]
     }
   ]
 }

@@ -113,7 +113,7 @@ let nextId = 0;
             [readOnly]="readonlyState()"
             [indeterminate]="checkState() === 'indeterminate'"
             [checked]="checkState() === 'checked'"
-            [attr.tabindex]="tabIndexValue"
+            [attr.tabindex]="tabIndexValue()"
             [attr.role]="role()"
             [attr.aria-checked]="
                 checkState() === 'checked' ? 'true' : checkState() === 'indeterminate' ? 'mixed' : 'false'
@@ -188,8 +188,9 @@ export class Checkbox implements ControlValueAccessor {
     /** Emits the new model value. */
     readonly valueChange = output<unknown>();
 
-    protected readonly tabIndexValue = inject(new HostAttributeToken('tabIndexValue'), { optional: true }) ?? 0;
-    private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+    /** Tab index of the native input; parents such as list items take it out of the tab order. */
+    readonly tabIndexValue = signal(Number(inject(new HostAttributeToken('tabIndexValue'), { optional: true }) ?? 0));
+    readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
     private readonly inputRef = viewChild.required<ElementRef<HTMLInputElement>>('input');
     private readonly projected = viewChild<ElementRef<HTMLElement>>('projected');
 
