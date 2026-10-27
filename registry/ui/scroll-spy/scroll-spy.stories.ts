@@ -27,7 +27,7 @@ import { ScrollSpy } from './scroll-spy';
                 (spyChange)="active.set($event?.id)"
                 tabindex="0"
                 aria-label="Content"
-                class="scrollbar-sap h-72 flex-1 overflow-auto text-sap-text-color"
+                class="scrollbar-sap h-72 flex-1 overflow-auto pb-60 text-sap-text-color"
             >
                 @for (s of sections; track s) {
                     <section [id]="s" class="mb-6">
