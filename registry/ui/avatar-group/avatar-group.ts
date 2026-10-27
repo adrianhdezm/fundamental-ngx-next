@@ -300,7 +300,8 @@ export class AvatarGroup {
     readonly orientation = input<AvatarGroupOrientation>('horizontal');
     /** Upper limit of visible avatars; the rest go to the overflow popover. */
     readonly maxVisibleItems = input<number | null | undefined>();
-    readonly overflowButtonShape = input<'circle' | 'square'>('circle');
+    /** Shape of the default overflow button; use circle next to circle avatars. */
+    readonly overflowButtonShape = input<'circle' | 'square'>('square');
     readonly overflowPopoverTitle = input<string | null | undefined>();
     readonly overflowHeadingLevel = input(5);
     readonly placement = input<Placement | undefined>(undefined);

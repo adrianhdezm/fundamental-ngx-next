@@ -105,6 +105,32 @@ async function setup(configure?: (host: Host) => void) {
     };
 }
 
+@Component({
+    imports: [AvatarGroup, AvatarGroupItem, Avatar],
+    template: `
+        @for (shape of shapes; track $index) {
+            <div style="width: 1000px">
+                <fd-avatar-group size="s" [maxVisibleItems]="2" [overflowButtonShape]="shape!">
+                    @for (name of names; track name) {
+                        <fd-avatar *fdAvatarGroupItem circle size="s" [label]="name" />
+                    }
+                </fd-avatar-group>
+            </div>
+        }
+        <div style="width: 1000px">
+            <fd-avatar-group id="default-shape" size="s" [maxVisibleItems]="2">
+                @for (name of names; track name) {
+                    <fd-avatar *fdAvatarGroupItem circle size="s" [label]="name" />
+                }
+            </fd-avatar-group>
+        </div>
+    `
+})
+class ShapeHost {
+    readonly names = NAMES.slice(0, 4);
+    readonly shapes = ['circle', 'square'] as const;
+}
+
 describe('AvatarGroup', () => {
     afterEach(() => document.documentElement.removeAttribute('dir'));
 
@@ -320,5 +346,22 @@ describe('AvatarGroup', () => {
             h.ariaLabel.set(null);
         });
         expect(group.querySelector('[role=list]')!.getAttribute('aria-label')).toBe('Individual avatar group');
+    });
+
+    it('the overflow button is square by default and circular with overflowButtonShape=circle', async () => {
+        const fixture = TestBed.createComponent(ShapeHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        await frame();
+        await fixture.whenStable();
+        const root = fixture.nativeElement as HTMLElement;
+        const buttons = [...root.querySelectorAll<HTMLElement>('[data-avatar-group-overflow] [role=button] > span')];
+        const radius = (el: HTMLElement) => parseFloat(getComputedStyle(el).borderTopLeftRadius);
+        const [circle, square, byDefault] = buttons;
+        expect(buttons).toHaveLength(3);
+        expect(radius(circle)).toBeGreaterThanOrEqual(circle.getBoundingClientRect().width / 2);
+        expect(radius(square)).toBeLessThan(square.getBoundingClientRect().width / 2);
+        expect(radius(byDefault)).toBe(radius(square));
+        fixture.destroy();
     });
 });
