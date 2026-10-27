@@ -1,5 +1,6 @@
 import { Component, TemplateRef, inject, input, viewChild } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Avatar } from '@/ui/avatar/avatar';
 import { Button } from '@/ui/button/button';
 import { Dialog, DialogBody, DialogFooter, DialogHeader, DialogService } from '@/ui/dialog/dialog';
@@ -118,7 +119,7 @@ class StoryQuickView {
     providers: [DialogService],
     host: { class: 'flex flex-wrap gap-2' },
     template: `
-        <fd-popover placement="right-start" [noArrow]="false">
+        <fd-popover placement="right-start" [noArrow]="false" bodyAriaLabel="Employee">
             <fd-popover-control><button fdButton label="Open in a popover"></button></fd-popover-control>
             <fd-popover-body class="max-w-[37.5rem]">
                 <story-quick-view [withTitle]="true" />
@@ -127,7 +128,8 @@ class StoryQuickView {
         <button fdButton label="Open in a dialog" (click)="open()"></button>
         <ng-template #tpl let-dialog>
             <fd-dialog>
-                <fd-dialog-header><h1 fd-title fdTitle>Employee</h1></fd-dialog-header>
+                <!-- h4: the quick view below starts at heading level 5 -->
+                <fd-dialog-header><h4 fd-title>Employee</h4></fd-dialog-header>
                 <fd-dialog-body><story-quick-view /></fd-dialog-body>
                 <fd-dialog-footer
                     ><fd-button-bar variant="emphasized" label="Close" (click)="dialog.close()"
@@ -173,4 +175,23 @@ export const Overlays: Story = {
     name: 'In a popover or a dialog',
     parameters: { docs: { story: { inline: false, iframeHeight: 560 } } },
     render: () => ({ template: `<story-quick-view-overlays />` })
+};
+
+/** Clicks the button that opens the overlay and waits for the quick view inside it. */
+async function openOverlay(canvasElement: HTMLElement, label: string, overlay: string): Promise<void> {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: label }));
+    await waitFor(() => expect(document.querySelector(`${overlay} fd-quick-view`)).not.toBeNull());
+}
+
+export const OpenPopover: Story = {
+    name: 'Open: In a popover',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-quick-view-overlays />` }),
+    play: ({ canvasElement }) => openOverlay(canvasElement, 'Open in a popover', '.cdk-overlay-pane fd-popover-body')
+};
+export const OpenDialog: Story = {
+    name: 'Open: In a dialog',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-quick-view-overlays />` }),
+    play: ({ canvasElement }) => openOverlay(canvasElement, 'Open in a dialog', '[role=dialog]')
 };
