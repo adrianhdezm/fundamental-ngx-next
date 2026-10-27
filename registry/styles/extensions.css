@@ -8,6 +8,8 @@
     --fdPopover_Border_Width: 0.0625rem;
     --fdPopover_Border_Color: #acb8c1;
     --fdModal_BackgroundColor: rgb(0 0 0 / 20%);
+    /* skeleton shimmer: middle stop of --sapContent_Placeholderloading_Gradient */
+    --fdSkeleton_Gradient_Middle_Color: #999;
 
     /* info label accents */
     --fdInfoLabel_Background_1: var(--sapAvatar_1_Background);
@@ -36,6 +38,8 @@
     --fdPopover_Border_Width: 0.0625rem;
     --fdPopover_Border_Color: #636669;
     --fdModal_BackgroundColor: rgb(0 0 0 / 20%);
+    /* skeleton shimmer: middle stop of --sapContent_Placeholderloading_Gradient */
+    --fdSkeleton_Gradient_Middle_Color: #74879f;
 
     --fdInfoLabel_Background_1: var(--sapAvatar_1_Background);
     --fdInfoLabel_Color_1: var(--sapAvatar_1_TextColor);
@@ -63,6 +67,8 @@
     --fdPopover_Border_Width: 0.1875rem;
     --fdPopover_Border_Color: #fff;
     --fdModal_BackgroundColor: rgb(0 0 0 / 30%);
+    /* skeleton shimmer: middle stop of --sapContent_Placeholderloading_Gradient */
+    --fdSkeleton_Gradient_Middle_Color: #999;
 
     /* info label accents: the high contrast themes use a coloured palette */
     --fdInfoLabel_Background_1: #362401;
@@ -91,6 +97,8 @@
     --fdPopover_Border_Width: 0.1875rem;
     --fdPopover_Border_Color: #000;
     --fdModal_BackgroundColor: rgb(255 255 255 / 80%);
+    /* skeleton shimmer: middle stop of --sapContent_Placeholderloading_Gradient */
+    --fdSkeleton_Gradient_Middle_Color: #585858;
 
     --fdInfoLabel_Background_1: #ffc218;
     --fdInfoLabel_Color_1: #5f2900;

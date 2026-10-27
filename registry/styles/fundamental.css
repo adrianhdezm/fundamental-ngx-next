@@ -20,9 +20,21 @@
 @import './extensions.css';
 @import '@angular/cdk/overlay-prebuilt.css';
 
-/* Motion used by components (SAP busy indicator dots). */
+/* Motion used by components (busy indicator dots, skeleton shimmer). */
 @theme {
     --animate-sap-busy: sap-busy-grow 1.6s infinite cubic-bezier(0.32, 0.06, 0.85, 1.11);
+    --animate-sap-shimmer: sap-shimmer 2s linear infinite;
+
+    @keyframes sap-shimmer {
+        0%,
+        100% {
+            stop-color: var(--sapContent_Placeholderloading_Background);
+        }
+        35%,
+        65% {
+            stop-color: var(--fdSkeleton_Gradient_Middle_Color);
+        }
+    }
 
     @keyframes sap-busy-grow {
         0%,

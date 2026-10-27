@@ -393,6 +393,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "title": "Skeleton",
+      "description": "Shimmering loading placeholders: rectangle, circle, text lines or custom SVG shapes.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/skeleton/skeleton.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
