@@ -18,6 +18,19 @@
       ]
     },
     {
+      "name": "datetime",
+      "type": "registry:lib",
+      "title": "Datetime",
+      "description": "Date and time adapter (FdDate and an Intl based default), display and parse formats, and date pipes for the calendar, time and the pickers.",
+      "files": [
+        {
+          "path": "registry/lib/datetime.ts",
+          "type": "registry:lib",
+          "target": "src/lib/datetime.ts"
+        }
+      ]
+    },
+    {
       "name": "theme",
       "type": "registry:style",
       "title": "SAP Horizon theme",
