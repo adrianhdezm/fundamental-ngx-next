@@ -1,7 +1,7 @@
 ## action-bar
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/action-bar) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/action-bar)
-Registry: `registry/ui/action-bar/` — 6 stories, 11 tests.
+Registry: `registry/ui/action-bar/` — 6 stories, 12 tests.
 
 ### Stories vs. upstream examples
 
@@ -22,10 +22,10 @@ Registry: `registry/ui/action-bar/` — 6 stories, 11 tests.
 | `fd-action-bar-mobile` directive class                                       | hides the back button and description on small screens                   | ➖ n/a     | Directive dropped; replaced by `max-[600px]:hidden`, which our test covers                             |
 | `should create` (x7)                                                         | —                                                                        | ➖ n/a     |                                                                                                        |
 
-Registry-only coverage: back button name/click/Enter, title is an `h2`, long-title truncation without pushing actions out, actions end-aligned in LTR and RTL, `size` paddings, `hidden` actions.
+Registry-only coverage: overflow button opens its bottom-end menu and gets the focus back on Escape, back button name/click/Enter, title is an `h2`, long-title truncation without pushing actions out, actions end-aligned in LTR and RTL, `size` paddings, `hidden` actions.
 
 ### Gaps to fill
 
 - **Stories:** none.
-- **Tests:** none (upstream specs are class-only); optional: "overflow button in the actions opens its menu and returns focus on Escape".
-- **Effort:** S, stories only, reusing the existing menu component.
+- **Tests:** none (upstream specs are class-only); the optional overflow-menu test is done.
+- **Effort:** done.
