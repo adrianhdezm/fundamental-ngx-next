@@ -102,6 +102,7 @@ const INVALID = Symbol('invalid');
                 [attr.aria-invalid]="state() === 'error' || null"
                 [style.text-align]="textAlign() || null"
                 [class]="inputClass()"
+                (focusin)="onFocusIn.emit()"
                 (input)="onInput(field.value)"
                 (change)="commit()"
                 (keydown)="onKeydown($event)"

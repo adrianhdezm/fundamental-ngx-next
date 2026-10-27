@@ -1,7 +1,7 @@
 ## step-input
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/step-input) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/step-input)
-Registry: `registry/ui/step-input/` — 5 stories, 8 tests.
+Registry: `registry/ui/step-input/` — 5 stories, 9 tests.
 
 ### Stories vs. upstream examples
 
@@ -21,7 +21,7 @@ Registry: `registry/ui/step-input/` — 5 stories, 8 tests.
 | ----------------------------------------------------------------- | ------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------- |
 | should create                                                     | —                                                       | ➖ n/a     |                                                                                                |
 | Buttons increment/decrement by click and by keyboard, custom step | steps with the buttons and disables them at the limits  | 🟡 partial | Click covered; Enter/Space on the buttons and a custom integer `step` are not.                 |
-| onFocusIn / onFocusOut events                                     | —                                                       | ❌ missing | Outputs exist in `step-input.ts`.                                                              |
+| onFocusIn / onFocusOut events                                     | emits onFocusIn and onFocusOut                          | ✅ covered | `onFocusIn` was declared but never emitted; it now fires on the input's focusin, as upstream.  |
 | Compact mode                                                      | —                                                       | ❌ missing |                                                                                                |
 | Semantic state                                                    | —                                                       | ❌ missing | No check of `aria-invalid` for `error` or the state border colour.                             |
 | Title attributes and custom button icons                          | —                                                       | ❌ missing | `title` on buttons and `inputTitle` on the input, `incrementButtonIcon`/`decrementButtonIcon`. |
@@ -40,5 +40,5 @@ Registry-only coverage: spinbutton ARIA values, buttons disabled at limits with 
 
 ### Gaps to fill
 
-- **Tests:** "Enter and Space on the buttons step the value"; "a custom step of 5 steps by 5"; "emits onFocusIn and onFocusOut"; "compact density makes the field smaller"; "error state sets aria-invalid and the state border colour"; "buttons carry title attributes and custom icons"; "inputId and ariaLabel land on the input"; "the wheel steps only while focused and not with disableWheel"; "writeValue ignores non-numeric values"; "disable() disables the input and both buttons"; "Page Up and Page Down step by ten steps"; "clearing a value at max and incrementing starts from the minimum"; "currency mode formats and parses EUR"; "readonly hides the buttons and blocks typing".
+- **Tests:** "Enter and Space on the buttons step the value"; "a custom step of 5 steps by 5"; "compact density makes the field smaller"; "error state sets aria-invalid and the state border colour"; "buttons carry title attributes and custom icons"; "inputId and ariaLabel land on the input"; "the wheel steps only while focused and not with disableWheel"; "writeValue ignores non-numeric values"; "disable() disables the input and both buttons"; "Page Up and Page Down step by ten steps"; "clearing a value at max and incrementing starts from the minimum"; "currency mode formats and parses EUR"; "readonly hides the buttons and blocks typing".
 - **Effort:** M, many small specs on the existing host.

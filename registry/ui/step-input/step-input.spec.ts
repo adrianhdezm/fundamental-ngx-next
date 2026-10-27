@@ -16,6 +16,8 @@ import { StepInput } from './step-input';
             [locale]="locale()"
             [unit]="unit()"
             [formControl]="control"
+            (onFocusIn)="focusEvents.push('in')"
+            (onFocusOut)="focusEvents.push('out')"
         />
         <button type="button">Outside</button>
     `
@@ -25,6 +27,7 @@ class Host {
     readonly locale = signal('en-US');
     readonly unit = signal<string | null>(null);
     readonly control = new FormControl<number | null>(5);
+    readonly focusEvents: string[] = [];
 }
 
 const wait = (ms = 50) => new Promise((r) => setTimeout(r, ms));
@@ -132,5 +135,13 @@ describe('StepInput', () => {
         input.focus();
         await userEvent.click(root.querySelector('button[type=button]:not([fdButton])')!);
         expect(host.control.touched).toBe(true);
+    });
+
+    it('emits onFocusIn and onFocusOut', async () => {
+        const { host, root, input } = await setup();
+        await userEvent.click(input);
+        expect(host.focusEvents).toEqual(['in']);
+        await userEvent.click(root.querySelector('button[type=button]:not([fdButton])')!);
+        expect(host.focusEvents).toEqual(['in', 'out']);
     });
 });
