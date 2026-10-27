@@ -483,6 +483,19 @@
         }
       ],
       "dependencies": ["@angular/cdk", "@angular/forms"]
+    },
+    {
+      "name": "action-bar",
+      "type": "registry:ui",
+      "title": "Action Bar",
+      "description": "Page header with back button, title, description and actions.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/action-bar/action-bar.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
