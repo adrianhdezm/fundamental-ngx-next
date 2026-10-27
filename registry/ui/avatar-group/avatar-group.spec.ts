@@ -225,6 +225,8 @@ describe('AvatarGroup', () => {
         await userEvent.click(triggers[1]);
         await stable();
         expect(body()!.querySelector('.details-name')!.textContent).toBe(NAMES[1]);
+        // the details dialog is named by the avatar's title
+        expect(body()!.getAttribute('aria-label')).toBe(NAMES[1]);
         // focus moves into the details
         await wait(50);
         expect(body()!.contains(document.activeElement)).toBe(true);

@@ -200,7 +200,12 @@ export class AvatarGroupOverflowList {
                 @for (item of visibleItems(); track item) {
                     <div role="listitem" data-avatar-group-item class="flex">
                         @if (item.details()) {
-                            <fd-popover [noArrow]="false" [placement]="effectivePlacement()">
+                            <!-- the details dialog is named by the title of the avatar -->
+                            <fd-popover
+                                [noArrow]="false"
+                                [placement]="effectivePlacement()"
+                                [bodyAriaLabel]="item.fdAvatarGroupItemTitle()"
+                            >
                                 <fd-popover-control>
                                     <div
                                         role="button"
