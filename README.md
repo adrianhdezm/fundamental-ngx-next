@@ -82,12 +82,25 @@ import { Button } from '@/ui/button/button';
 
 ## Token utilities
 
-`--sapButton_Hover_Background` → `bg-sap-button-hover-background`, `--sapContent_Shadow1` → `shadow-sap-content-shadow1`,
-`--sapElement_Height` → `h-sap-element-height`. Rule: drop `sap`, split camelCase and `_`, kebab-case, prefix `sap-`.
-Tokens without a Tailwind namespace use the shorthand `opacity-(--sapContent_DisabledOpacity)`. In arbitrary
-values Tailwind may turn the `_` of `--sap*_*` names into spaces: write calc operators as `_-_`/`_+_`, multiply on the
-right (`calc(var(--sapX_Y)*2)`), and alias tokens into local variables (`[--bw:var(--sapList_BorderWidth)]`) before
-using them in multi-part values like `shadow-[0_var(--bw)_0_var(--c)]`. `pnpm check:styles` catches all of these.
+Every SAP theme token is available as a Tailwind utility. To get the class name, drop the `--sap` prefix, split the
+name at camelCase and `_`, write it in kebab-case and prefix it with `sap-`:
+
+| Token                          | Utility                          |
+| ------------------------------ | -------------------------------- |
+| `--sapButton_Hover_Background` | `bg-sap-button-hover-background` |
+| `--sapContent_Shadow1`         | `shadow-sap-content-shadow1`     |
+| `--sapElement_Height`          | `h-sap-element-height`           |
+
+Tokens without a Tailwind namespace use the variable shorthand, for example `opacity-(--sapContent_DisabledOpacity)`.
+
+In arbitrary values Tailwind may turn the `_` in `--sap*_*` names into spaces. To avoid that:
+
+- write calc operators as `_-_` and `_+_`;
+- multiply on the right: `calc(var(--sapX_Y)*2)`;
+- in multi-part values, alias the tokens into local variables first, e.g. `[--bw:var(--sapList_BorderWidth)]`, then
+  use `shadow-[0_var(--bw)_0_var(--c)]`.
+
+`pnpm check:styles` catches all of these.
 
 ## License and attribution
 
