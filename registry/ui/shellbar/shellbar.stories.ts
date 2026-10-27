@@ -1,5 +1,6 @@
 import { Component, inject, input, signal } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Avatar } from '@/ui/avatar/avatar';
 import { Bar, BarRight } from '@/ui/bar/bar';
 import { Button } from '@/ui/button/button';
@@ -308,6 +309,14 @@ class StoryShellbarSimple {
     ];
 }
 
+/** Clicks the button named `name` in the story and waits for the menu it opens. */
+function openFrom(name: string | RegExp): Story['play'] {
+    return async ({ canvasElement }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name }));
+        await waitFor(() => expect(document.querySelector('.cdk-overlay-container [role=menuitem]')).not.toBeNull());
+    };
+}
+
 const meta: Meta<Shellbar> = {
     title: 'Components/Shellbar',
     component: Shellbar,
@@ -347,4 +356,28 @@ export const ContextAreaOverflow: Story = {
 export const ProductMenuAndSimpleUserMenu: Story = {
     name: 'Product menu and simple user menu',
     render: () => ({ template: `<story-shellbar-simple />` })
+};
+export const OpenUserMenu: Story = {
+    name: 'Open: user menu',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-shellbar />` }),
+    play: openFrom('Lisa Miller')
+};
+export const OpenProductSwitch: Story = {
+    name: 'Open: product switch',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-shellbar />` }),
+    play: openFrom('Product switch')
+};
+export const OpenProductMenu: Story = {
+    name: 'Open: product menu',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-shellbar-simple />` }),
+    play: openFrom('Corporate Portal')
+};
+export const OpenSimpleUserMenu: Story = {
+    name: 'Open: simple user menu',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-shellbar-simple />` }),
+    play: openFrom('William Wallingham')
 };
