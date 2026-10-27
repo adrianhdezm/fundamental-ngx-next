@@ -850,6 +850,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "message-page",
+      "type": "registry:ui",
+      "title": "Message Page",
+      "description": "Full-page message for no items, no search or filter results and errors, with an icon, title, subtitle and actions.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/message-page/message-page.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
