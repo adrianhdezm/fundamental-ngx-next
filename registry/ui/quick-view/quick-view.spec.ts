@@ -122,6 +122,36 @@ describe('QuickView', () => {
         expect(document.getElementById(group.getAttribute('aria-labelledby')!)!.textContent!.trim()).toBe('Contact');
     });
 
+    it('renders the id on the quick view', async () => {
+        const { el } = await setupLayout();
+        expect(el.querySelector('fd-quick-view > div')!.id).toBe('employee');
+        const fixture = TestBed.createComponent(Host);
+        await fixture.whenStable();
+        // a generated id when none is given
+        expect((fixture.nativeElement as HTMLElement).querySelector('fd-quick-view > div')!.id).toMatch(
+            /^fd-quick-view-\d+$/
+        );
+    });
+
+    it('shows the title in a header bar on the left, middle or right by align', async () => {
+        const { fixture, host, el } = await setupLayout();
+        const bar = () => el.querySelector('fd-quick-view-title [fd-bar]')!.getBoundingClientRect();
+        const title = () => el.querySelector('[data-testid="title"]')!.getBoundingClientRect();
+        const centre = (r: DOMRect) => (r.left + r.right) / 2;
+
+        expect(Math.abs(centre(title()) - centre(bar()))).toBeLessThanOrEqual(2);
+
+        host.align.set('left');
+        await fixture.whenStable();
+        expect(title().left - bar().left).toBeLessThan(bar().width / 4);
+        expect(centre(title())).toBeLessThan(centre(bar()) - 20);
+
+        host.align.set('right');
+        await fixture.whenStable();
+        expect(bar().right - title().right).toBeLessThan(bar().width / 4);
+        expect(centre(title())).toBeGreaterThan(centre(bar()) + 20);
+    });
+
     it('allowWrap wraps the titles and labels instead of truncating', async () => {
         const { fixture, host, el } = await setupLayout();
         const texts = () =>
