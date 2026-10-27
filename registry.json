@@ -603,6 +603,20 @@
         }
       ],
       "dependencies": ["@angular/cdk"]
+    },
+    {
+      "name": "overflow-layout",
+      "type": "registry:ui",
+      "title": "Overflow Layout",
+      "description": "Single-row layout that moves items that do not fit into a \"N more\" popover.",
+      "registryDependencies": ["utils", "theme", "button", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/overflow-layout/overflow-layout.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk"]
     }
   ]
 }
