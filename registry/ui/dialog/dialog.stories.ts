@@ -1,5 +1,6 @@
-import { Component, TemplateRef, afterNextRender, computed, inject, input, signal, viewChild } from '@angular/core';
+import { Component, TemplateRef, computed, inject, input, signal, viewChild } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { BarElement, BarLeft, BarMiddle, BarRight, ButtonBar } from '@/ui/bar/bar';
 import { Button } from '@/ui/button/button';
 import { FormControl } from '@/ui/input/input';
@@ -94,8 +95,6 @@ function result(ref: DialogRef, set: (text: string) => void): void {
 })
 class StoryDialogTemplate {
     readonly kind = input<'basic' | 'configuration' | 'position' | 'mobile' | 'state'>('basic');
-    /** Index of the action to run on load. */
-    readonly autoOpen = input<number | null>(null);
     protected readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
     protected readonly dialogs = inject(DialogService);
     protected readonly status = signal('');
@@ -175,13 +174,6 @@ class StoryDialogTemplate {
         }
     );
 
-    constructor() {
-        afterNextRender(() => {
-            const action = this.actions()[this.autoOpen() ?? -1];
-            if (action) this.open(action.config, action.after);
-        });
-    }
-
     protected open(config: DialogConfig, after?: (ref: DialogRef) => void): void {
         const ref = this.dialogs.open(this.tpl(), config);
         result(ref, (text) => this.status.set(text));
@@ -258,12 +250,8 @@ class StorySecondDialog {
     `
 })
 class StoryDialogComponent {
-    readonly autoOpen = input(false);
     private readonly dialogs = inject(DialogService);
     protected readonly status = signal('');
-    constructor() {
-        afterNextRender(() => this.autoOpen() && this.open());
-    }
     protected open(): void {
         const ref = this.dialogs.open(StoryDialogContent, {
             data: { title: 'Pineapple Fun Facts' },
@@ -298,14 +286,10 @@ class StoryDialogComponent {
     `
 })
 class StoryDialogObject {
-    readonly autoOpen = input(false);
     private readonly dialogs = inject(DialogService);
     private readonly content = viewChild.required<TemplateRef<unknown>>('content');
     private readonly subHeader = viewChild.required<TemplateRef<unknown>>('subHeader');
     protected readonly status = signal('');
-    constructor() {
-        afterNextRender(() => this.autoOpen() && this.open());
-    }
     protected open(): void {
         let ref: DialogRef;
         const content: DialogDefaultContent = {
@@ -405,7 +389,6 @@ interface Fruit {
     `
 })
 class StoryDialogComplex {
-    readonly autoOpen = input(false);
     private readonly dialogs = inject(DialogService);
     private readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
     protected readonly search = signal('');
@@ -424,9 +407,6 @@ class StoryDialogComplex {
     protected readonly total = computed(() =>
         this.fruits.filter((f) => this.selected().has(f.id)).reduce((sum, f) => sum + f.price, 0)
     );
-    constructor() {
-        afterNextRender(() => this.autoOpen() && this.open());
-    }
     protected toggle(fruit: Fruit): void {
         const next = new Set(this.selected());
         if (!next.delete(fruit.id)) next.add(fruit.id);
@@ -569,29 +549,56 @@ export const Backdrop: Story = {
     render: () => ({ template: `<story-dialog-backdrop />` })
 };
 
-/** Opened on load, for visual checks. */
+/** Clicks the button with this label and waits until the dialog has faded in. */
+async function openDialog(canvasElement: HTMLElement, label: string): Promise<void> {
+    const button = [...canvasElement.querySelectorAll<HTMLElement>('button')].find(
+        (b) => b.textContent!.trim() === label
+    )!;
+    await userEvent.click(button);
+    await waitFor(() => expect(document.querySelectorAll('fd-dialog-container [role=dialog]')).toHaveLength(1));
+    const containers = [...document.querySelectorAll<HTMLElement>('fd-dialog-container')];
+    await Promise.all(containers.flatMap((c) => c.getAnimations().map((a) => a.finished)));
+}
+
 export const OpenTemplate: Story = {
     name: 'Open: template',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-dialog-template [autoOpen]="0" />` })
+    render: TemplateBased.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open from template')
 };
 export const OpenComponent: Story = {
     name: 'Open: component',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-dialog-component [autoOpen]="true" />` })
+    render: ComponentBased.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open from component')
 };
 export const OpenObject: Story = {
     name: 'Open: object',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-dialog-object [autoOpen]="true" />` })
+    render: ObjectBased.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open dialog from object')
 };
 export const OpenComplex: Story = {
     name: 'Open: custom header and footer',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-dialog-complex [autoOpen]="true" />` })
+    render: Complex.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open with custom header and footer')
 };
 export const OpenLoading: Story = {
     name: 'Open: loading',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-dialog-template kind="state" [autoOpen]="3" />` })
+    render: States.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open loading dialog')
+};
+export const OpenPosition: Story = {
+    name: 'Open: position',
+    tags: ['!autodocs'],
+    render: Position.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open in bottom right')
+};
+export const OpenMobile: Story = {
+    name: 'Open: mobile',
+    tags: ['!autodocs'],
+    render: Mobile.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open in mobile mode')
 };

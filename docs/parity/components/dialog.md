@@ -1,7 +1,7 @@
 ## dialog
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/dialog) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/dialog)
-Registry: `registry/ui/dialog/` — 14 stories, 7 tests.
+Registry: `registry/ui/dialog/` — 16 stories, 7 tests.
 
 ### Stories vs. upstream examples
 
@@ -14,8 +14,8 @@ Registry: `registry/ui/dialog/` — 14 stories, 7 tests.
 | Dialog State                  | States, OpenLoading           | ✅ covered | Close/dismiss/hide/loading                                                 |
 | Dialog Configuration          | Configuration                 | ✅ covered | Draggable, resizable, Escape disabled                                      |
 | Label dialog automatically    | all stories                   | ✅ covered | Every story relies on `fd-dialog-title` auto-labelling; no dedicated story |
-| Dialog Positioning            | Position                      | ✅ covered | Bottom-right only                                                          |
-| Dialog On Mobile Devices      | Mobile                        | ✅ covered | No "Open: mobile" story                                                    |
+| Dialog Positioning            | Position, OpenPosition        | ✅ covered | Bottom-right only                                                          |
+| Dialog On Mobile Devices      | Mobile, OpenMobile            | ✅ covered |                                                                            |
 | Complex Dialog                | Complex, OpenComplex          | ✅ covered | Bar header, search subheader, selectable list, footer total                |
 | Stacked Dialogs               | ComponentBased                | ✅ covered | "Open another dialog" button                                               |
 | Custom Backdrop and Container | Backdrop                      | ✅ covered | Custom backdrop, container, static dialog                                  |
@@ -23,7 +23,7 @@ Registry: `registry/ui/dialog/` — 14 stories, 7 tests.
 | Full screen toggler           | ComponentBased                | ✅ covered |                                                                            |
 | Playground Area               | —                             | ❌ missing | No Playground story with config controls                                   |
 
-Open stories open on load (`autoOpen`) rather than in `play`, which still lets axe check them.
+The "Open: …" stories open their dialog in `play` (they used an `autoOpen` input before).
 
 ### Tests vs. upstream specs
 
@@ -55,6 +55,6 @@ Registry-only coverage: focus trap (Tab cycling), focus returns to the trigger, 
 
 ### Gaps to fill
 
-- **Stories:** "Form" — dialog with a form-layout grid, required fields and checkboxes, Save/Cancel; "Inner popovers" — dialog with a select/combobox/multi-input whose overlay opens above the dialog, plus "Open: inner popover"; "Playground" — controls for width, draggable, resizable, mobile, backdropClickCloseable; "Open: mobile" — mobile dialog opened on load.
+- **Stories:** "Form" — dialog with a form-layout grid, required fields and checkboxes, Save/Cancel; "Inner popovers" — dialog with a select/combobox/multi-input whose overlay opens above the dialog, plus "Open: inner popover"; "Playground" — controls for width, draggable, resizable, mobile, backdropClickCloseable.
 - **Tests:** "opens a component and injects its DialogRef and data"; "object dialog without buttons renders no footer"; "dismissAll closes every open dialog"; "close() sets status closed and exposes the result"; "places the dialog at the configured position"; "applies width, height and min/max sizes"; "applies dialogPanelClass and backdropClass"; "mobile mode fills the viewport, mobileOuterSpacing keeps a margin"; "drags by the header when draggable"; "resizes with the handle when resizable and announces it"; "applies ariaLabel and ariaDescribedBy from the config"; "dismisses on router navigation when closeOnNavigation".
 - **Effort:** M, about 12 straightforward config tests plus three stories.
