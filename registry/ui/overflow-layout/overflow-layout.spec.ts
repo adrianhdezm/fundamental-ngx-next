@@ -24,6 +24,7 @@ import { OverflowExpand, OverflowItemRef, OverflowLayout, OverflowLayoutItem } f
                         fdOverflowLayoutItem
                         [forceVisibility]="forced() === item"
                         (hiddenChange)="moves.push(item + ':' + $event)"
+                        (click)="isHidden && forced.set(item)"
                         [attr.data-hidden]="isHidden"
                         [attr.data-index]="globalIndex"
                         [style.width.px]="itemWidth()"
@@ -258,5 +259,34 @@ describe('OverflowLayout', () => {
         host.layout().triggerRecalculation();
         await stable();
         expect(visibleLabels()).toEqual(['A', 'B', 'C', 'D', 'E']);
+    });
+
+    it('re-measures by itself when the items change width, without triggerRecalculation', async () => {
+        const { host, stable, visibleLabels } = await setup({ width: 1000 });
+        expect(visibleLabels()).toEqual(['A', 'B', 'C', 'D', 'E']);
+        host.itemWidth.set(300);
+        await stable();
+        await stable();
+        expect(visibleLabels()).toEqual(['A', 'B', 'C']);
+        host.itemWidth.set(100);
+        await stable();
+        await stable();
+        expect(visibleLabels()).toEqual(['A', 'B', 'C', 'D', 'E']);
+    });
+
+    it('moves a hidden item out of the popover when a click forces its visibility', async () => {
+        const { host, stable, visibleLabels, moreButton, popoverLabels } = await setup();
+        await userEvent.click(moreButton()!);
+        await stable();
+        expect(popoverLabels()).toEqual(['D', 'E']);
+        await userEvent.click(
+            [...document.querySelectorAll<HTMLElement>('.cdk-overlay-container [data-hidden]')].find(
+                (b) => b.textContent!.trim() === 'E'
+            )!
+        );
+        await stable();
+        expect(host.forced()).toBe('E');
+        expect(visibleLabels()).toEqual(['A', 'B', 'E']);
+        expect(popoverLabels()).toEqual(['C', 'D']);
     });
 });
