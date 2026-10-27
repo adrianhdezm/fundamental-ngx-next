@@ -5,14 +5,14 @@ Registry: `registry/ui/rating-indicator/` — 5 stories, 7 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                   | Registry story                         | Status     | Notes                                                                                                                                                                                           |
-| ---------------------------------- | -------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rating indicator examples          | `Default`                              | ✅ covered | Whole, halves, rounding (4.6 of 7), forms, disabled, non-interactive, empty. Upstream's out-of-range values (1231312312312313.99) are not shown.                                                |
-| Rating indicator with displayMode  | `Sizes` ("Sizes and display mode")     | ✅ covered | Display mode at every size.                                                                                                                                                                     |
-| Custom icons                       | `Ratings` ("Ratings and custom icons") | ✅ covered | Two icon pairs.                                                                                                                                                                                 |
-| Rating indicator sizes             | `Sizes`                                | 🟡 partial | xs–lg shown; upstream also shows each size with halves and with `totalRatings` + `showDynamicText`. The `cozy`/`compact`/`condensed` size aliases were dropped (sizes are `xs`/`sm`/`md`/`lg`). |
-| Rating indicator with ratings data | `Ratings`, `Open: Votes per rating`    | 🟡 partial | Average and "votes per rating" popover, opened for axe by `Open: Votes per rating` (play hovers the votes link); no `indicatorCapacity` 7 with ratings, no invalid ratings data.                |
-| Playground Area                    | `Playground`                           | ✅ covered |                                                                                                                                                                                                 |
+| Upstream example                   | Registry story                         | Status     | Notes                                                                                                                                                                  |
+| ---------------------------------- | -------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rating indicator examples          | `Default`                              | ✅ covered | Whole, halves, rounding (4.6 of 7), forms, disabled, non-interactive, empty. Upstream's out-of-range values (1231312312312313.99) are not shown.                       |
+| Rating indicator with displayMode  | `Sizes` ("Sizes and display mode")     | ✅ covered | Display mode at every size.                                                                                                                                            |
+| Custom icons                       | `Ratings` ("Ratings and custom icons") | ✅ covered | Two icon pairs.                                                                                                                                                        |
+| Rating indicator sizes             | `Sizes`                                | ✅ covered | xs–lg, each also with halves and with `totalRatings` + `showDynamicText`. The `cozy`/`compact`/`condensed` size aliases were dropped (sizes are `xs`/`sm`/`md`/`lg`).  |
+| Rating indicator with ratings data | `Ratings`, `Open: Votes per rating`    | ✅ covered | Average and "votes per rating" popover (opened for axe by `Open: Votes per rating`), `indicatorCapacity` 7 with ratings, and upstream's wrong ratings data (an array). |
+| Playground Area                    | `Playground`                           | ✅ covered |                                                                                                                                                                        |
 
 ### Tests vs. upstream specs
 
@@ -37,6 +37,5 @@ Registry-only coverage: slider role and ARIA values, Home/End/arrow/digit keys, 
 
 ### Gaps to fill
 
-- **Stories:** add halves and `totalRatings`/`showDynamicText` rows to `Sizes`; a `Ratings` row with `indicatorCapacity` 7.
 - **Tests:** "a disabled form control disables the rating (not focusable, no change on click or keys)"; "uses custom rated and unrated icons"; "size changes the icon size"; "indicatorCapacity sets the maximum and falls back to 5 for 0"; "shows half values in the value text (e.g. 3.5 of 5)"; "dynamicTextIndicator replaces 'of' in the value text"; "a click emits ratingChanged".
-- **Effort:** M — eight small tests plus a popover play story.
+- **Effort:** M — small tests.
