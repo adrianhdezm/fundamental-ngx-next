@@ -72,6 +72,7 @@ const STATES: Record<ProgressIndicatorState | 'neutral', { vars: string; glyph: 
                 placement="bottom"
                 [noArrow]="false"
                 fillControlMode="equal"
+                [bodyAriaLabel]="text()"
                 [(isOpen)]="open"
             >
                 <fd-popover-control>

@@ -78,5 +78,7 @@ describe('ProgressIndicator', () => {
         await userEvent.click(label);
         await fixture.whenStable();
         expect(document.querySelector('.cdk-overlay-container')?.textContent).toContain('customer master data');
+        const dialog = document.querySelector<HTMLElement>('.cdk-overlay-container [role=dialog]')!;
+        expect(dialog.getAttribute('aria-label')).toBe('Importing 35 of 100 records from the customer master data');
     });
 });
