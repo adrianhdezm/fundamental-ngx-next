@@ -6,6 +6,7 @@ import {
     ReactiveFormsModule
 } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
 import { ContentDensityDirective } from '@/ui/content-density/content-density';
 import { Fieldset, FormHeader, FormItem, FormLabel } from '@/ui/form/form';
@@ -272,9 +273,7 @@ export const Complex: Story = {
     })
 };
 
-export const States: Story = {
-    render: () => ({
-        template: `
+const STATES = `
             <div class="flex max-w-96 flex-col gap-4">
                 <div fdFormItem>
                     <label fdFormLabel for="ig-state-1">Discount Code</label>
@@ -313,9 +312,9 @@ export const States: Story = {
                     <fd-input-group inputId="ig-state-6" glyph="search" glyphAriaLabel="Search" button disabled placeholder="Search" />
                 </div>
             </div>
-        `
-    })
-};
+        `;
+
+export const States: Story = { render: () => ({ template: STATES }) };
 
 export const Compact: Story = {
     render: () => ({
@@ -349,3 +348,19 @@ export const Inline: Story = {
 export const Forms: Story = { render: () => ({ template: `<story-input-group-form />` }) };
 
 export const Search: Story = { render: () => ({ template: `<story-input-group-search />` }) };
+
+/** Focuses a stateful input group so its message popover opens and axe checks it. */
+export const OpenStates: Story = {
+    name: 'Open: states',
+    tags: ['!autodocs'],
+    render: () => ({ template: STATES }),
+    play: async ({ canvasElement }) => {
+        const input = canvasElement.querySelector<HTMLInputElement>('#ig-state-4')!;
+        await userEvent.click(input);
+        await waitFor(() =>
+            expect(document.querySelector('.cdk-overlay-container fd-form-message')?.textContent).toContain(
+                'license key'
+            )
+        );
+    }
+};
