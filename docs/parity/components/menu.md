@@ -1,22 +1,22 @@
 ## menu
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/menu) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/menu)
-Registry: `registry/ui/menu/` — 13 stories, 6 tests.
+Registry: `registry/ui/menu/` — 18 stories, 6 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example     | Registry story                   | Status     | Notes                                                                                                          |
-| -------------------- | -------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------- |
-| Simple Menu          | Basic, OpenBasic                 | ✅ covered | Titles, subtitles, truncation                                                                                  |
-| Menu with Icons      | Addons, OpenIcons, OpenShortcuts | ✅ covered | Plus shortcuts                                                                                                 |
-| Menu with Separator  | Basic, OpenBasic                 | ✅ covered | One `hasSeparator` item inside the basic menu                                                                  |
-| Menu with Scrollbar  | —                                | ❌ missing | 40 items, scrolling body; `disableScrollbar` never shown                                                       |
-| Menu with Submenu    | Submenus, Dynamic, OpenSubmenus  | ✅ covered | Incl. multi-level and data-driven                                                                              |
-| Extended Menu Items  | Extended, OpenExtended           | ✅ covered | Toggle, single-choice group, input                                                                             |
-| Mobile Mode          | Mobile, OpenMobile               | ✅ covered |                                                                                                                |
-| Programmatic Control | Programmatic                     | ✅ covered | open/close/toggle + event log; no Open: variant needed (same overlay as OpenBasic)                             |
-| Disabled States      | Basic                            | 🟡 partial | Disabled item only; no whole-menu `disabled` toggle                                                            |
-| Placement & Triggers | —                                | ❌ missing | No placement/fill-mode/fixedPosition switcher, no hover `triggers` menu (Programmatic only uses `right-start`) |
+| Upstream example     | Registry story                      | Status     | Notes                                                                                                                         |
+| -------------------- | ----------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Simple Menu          | Basic, OpenBasic                    | ✅ covered | Titles, subtitles, truncation                                                                                                 |
+| Menu with Icons      | Addons, OpenIcons, OpenShortcuts    | ✅ covered | Plus shortcuts                                                                                                                |
+| Menu with Separator  | Basic, OpenBasic                    | ✅ covered | One `hasSeparator` item inside the basic menu                                                                                 |
+| Menu with Scrollbar  | Scrollbar, OpenScrollbar            | ✅ covered | 40 items in the scrolling body; `disableScrollbar` is covered by a test                                                       |
+| Menu with Submenu    | Submenus, Dynamic, OpenSubmenus     | ✅ covered | Incl. multi-level and data-driven                                                                                             |
+| Extended Menu Items  | Extended, OpenExtended              | ✅ covered | Toggle, single-choice group, input                                                                                            |
+| Mobile Mode          | Mobile, OpenMobile                  | ✅ covered |                                                                                                                               |
+| Programmatic Control | Programmatic                        | ✅ covered | open/close/toggle + event log; no Open: variant needed (same overlay as OpenBasic)                                            |
+| Disabled States      | Disabled                            | ✅ covered | Checkbox disabling the whole menu, plus a menu with disabled items                                                            |
+| Placement & Triggers | PlacementAndTriggers, OpenPlacement | ✅ covered | Placement, fill mode and fixedPosition controls; click and hover `triggers`. No scroll strategy select (not an input of ours) |
 
 ### Tests vs. upstream specs
 
@@ -50,6 +50,6 @@ Registry-only coverage: toggle `aria-checked` / `menuitemcheckbox`, single-choic
 
 ### Gaps to fill
 
-- **Stories:** "Scrollbar" (40 items) + "Open: scrollbar"; "Disabled states" (checkbox toggling `disabled` on the whole menu + disabled items); "Placement & triggers" (placement/fill-mode/fixedPosition controls, click vs. hover triggers) + "Open: placement".
+- **Stories:** none.
 - **Tests:** "open(), close() and toggle() drive isOpen and emit isOpenChange once"; "emits beforeOpen before opening"; "a second trigger click closes the menu"; "Home focuses the first enabled item"; "Space activates the focused item"; "Enter on a submenu parent opens it and focuses its first child"; "hovering a submenu parent opens it and hovering a sibling closes it"; "clicking a disabled item does nothing"; "submenu parents have aria-haspopup except in mobile mode"; "mobile mode opens a dialog with the mobileConfig title and buttons"; "mobile mode navigates into a submenu and back"; "shortcuts are hidden in mobile mode unless hideOnMobile is false"; "addons render before/after the title"; "truncate clips title and subtitle to one line"; "disableScrollbar removes the scroll container"; "restoreFocusOnClose=false leaves focus where it was"; "direct inputs override config".
 - **Effort:** L — ~18 tests across popover, hover timing and the mobile dialog path, plus three stories.

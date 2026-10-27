@@ -2,8 +2,14 @@ import { Component, afterNextRender, input, signal, viewChild } from '@angular/c
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
+import { Checkbox } from '@/ui/checkbox/checkbox';
+import { FormItem, FormLabel } from '@/ui/form/form';
 import { FormControl } from '@/ui/input/input';
+import type { Placement, PopoverFillMode, TriggerConfig } from '@/ui/popover/popover';
+import { Select, SelectOption } from '@/ui/select/select';
+import { Title } from '@/ui/title/title';
 import {
     Menu,
     MenuAddon,
@@ -496,6 +502,164 @@ class StoryMenuProgrammatic {
     }
 }
 
+@Component({
+    selector: 'story-menu-scrollbar',
+    imports: [...MENU],
+    template: `
+        <button fdButton fdMenu label="Menu with 40 items" [fdMenuTrigger]="menu"></button>
+        <fd-menu #menu ariaLabel="Menu with a scrollbar">
+            @for (option of options; track $index) {
+                <li fd-menu-item>
+                    <a fd-menu-interactive
+                        ><span fd-menu-title>{{ option }} {{ $index + 1 }}</span></a
+                    >
+                </li>
+            }
+        </fd-menu>
+    `
+})
+class StoryMenuScrollbar {
+    protected readonly options = Array.from({ length: 40 }, () => 'Option');
+}
+
+@Component({
+    selector: 'story-menu-disabled',
+    imports: [...MENU, Checkbox, FormsModule, Title],
+    host: { class: 'flex flex-wrap gap-8' },
+    template: `
+        <div class="flex flex-col items-start gap-2">
+            <h4 fd-title headerSize="5">Disabled menu</h4>
+            <fd-checkbox label="Disable entire menu" [(ngModel)]="disabled" />
+            <button fdButton label="Menu" [disabled]="disabled()" [fdMenuTrigger]="whole"></button>
+            <fd-menu #whole ariaLabel="Menu that can be disabled" [disabled]="disabled()">
+                <li fd-menu-item>
+                    <a fd-menu-interactive><span fd-menu-title>Option 1</span></a>
+                </li>
+                <li fd-menu-item>
+                    <a fd-menu-interactive><span fd-menu-title>Option 2</span></a>
+                </li>
+                <li fd-menu-item>
+                    <a fd-menu-interactive><span fd-menu-title>Option 3</span></a>
+                </li>
+            </fd-menu>
+        </div>
+        <div class="flex flex-col items-start gap-2">
+            <h4 fd-title headerSize="5">Disabled menu items</h4>
+            <p class="m-0 ${TEXT}">Individual items can be disabled while the menu remains active.</p>
+            <button fdButton label="Menu with disabled items" [fdMenuTrigger]="items"></button>
+            <fd-menu #items ariaLabel="Menu with disabled items">
+                <li fd-menu-item>
+                    <a fd-menu-interactive><span fd-menu-title>Active option</span></a>
+                </li>
+                <li fd-menu-item disabled>
+                    <a fd-menu-interactive><span fd-menu-title>Disabled option</span></a>
+                </li>
+                <li fd-menu-item>
+                    <a fd-menu-interactive><span fd-menu-title>Another active option</span></a>
+                </li>
+                <li fd-menu-item disabled>
+                    <a fd-menu-interactive><span fd-menu-title>Another disabled option</span></a>
+                </li>
+            </fd-menu>
+        </div>
+    `
+})
+class StoryMenuDisabled {
+    protected readonly disabled = signal(false);
+}
+
+@Component({
+    selector: 'story-menu-placement',
+    imports: [...MENU, Checkbox, FormsModule, FormItem, FormLabel, Select, SelectOption, Title],
+    template: `
+        <h4 fd-title headerSize="5" class="mb-2">Placement options</h4>
+        <div class="mb-6 flex flex-wrap items-end gap-4">
+            <div fd-form-item class="w-40">
+                <label fd-form-label id="menu-placement-label">Placement</label>
+                <fd-select ariaLabelledBy="menu-placement-label" [(value)]="placement">
+                    @for (option of placements; track option) {
+                        <li fd-option [value]="option">{{ option }}</li>
+                    }
+                </fd-select>
+            </div>
+            <div fd-form-item class="w-40">
+                <label fd-form-label id="menu-fill-label">Fill mode</label>
+                <fd-select ariaLabelledBy="menu-fill-label" [(value)]="fillMode">
+                    <li fd-option [value]="null">none</li>
+                    <li fd-option value="at-least">at-least</li>
+                    <li fd-option value="equal">equal</li>
+                </fd-select>
+            </div>
+            <fd-checkbox label="fixedPosition" [(ngModel)]="fixedPosition" />
+        </div>
+        <div class="mb-6 flex justify-center px-12 py-8">
+            <button
+                fdButton
+                id="menu-placement-trigger"
+                label="Open menu"
+                class="min-w-50"
+                [fdMenuTrigger]="placementMenu"
+            ></button>
+            <fd-menu
+                #placementMenu
+                ariaLabel="Placed menu"
+                [placement]="placement()"
+                [fillControlMode]="fillMode()"
+                [fixedPosition]="fixedPosition()"
+            >
+                <li fd-menu-item>
+                    <a fd-menu-interactive><span fd-menu-title>Option 1</span></a>
+                </li>
+                <li fd-menu-item>
+                    <a fd-menu-interactive><span fd-menu-title>Option 2</span></a>
+                </li>
+                <li fd-menu-item>
+                    <a fd-menu-interactive><span fd-menu-title>Option 3</span></a>
+                </li>
+            </fd-menu>
+        </div>
+        <h4 fd-title headerSize="5" class="mb-2">Trigger modes</h4>
+        <p class="m-0 mb-2 ${TEXT}">The <code>triggers</code> input sets how the menu opens; the default is click.</p>
+        <div class="flex flex-wrap gap-4">
+            <button fdButton label="Click to open" [fdMenuTrigger]="clickMenu"></button>
+            <fd-menu #clickMenu ariaLabel="Click menu" [triggers]="['click']">
+                <li fd-menu-item>
+                    <a fd-menu-interactive><span fd-menu-title>Click menu option</span></a>
+                </li>
+            </fd-menu>
+            <button fdButton label="Hover to open" [fdMenuTrigger]="hoverMenu"></button>
+            <fd-menu #hoverMenu ariaLabel="Hover menu" [triggers]="hoverTriggers">
+                <li fd-menu-item>
+                    <a fd-menu-interactive><span fd-menu-title>Hover menu option</span></a>
+                </li>
+            </fd-menu>
+        </div>
+    `
+})
+class StoryMenuPlacement {
+    protected readonly placements: Placement[] = [
+        'bottom-start',
+        'bottom',
+        'bottom-end',
+        'top-start',
+        'top',
+        'top-end',
+        'left-start',
+        'left',
+        'left-end',
+        'right-start',
+        'right',
+        'right-end'
+    ];
+    protected readonly placement = signal<Placement>('bottom-start');
+    protected readonly fillMode = signal<PopoverFillMode | null>(null);
+    protected readonly fixedPosition = signal(false);
+    protected readonly hoverTriggers: TriggerConfig[] = [
+        { trigger: 'mouseenter', openAction: true, closeAction: false },
+        { trigger: 'mouseleave', openAction: false, closeAction: true }
+    ];
+}
+
 const meta: Meta<Menu> = {
     title: 'Components/Menu',
     component: Menu,
@@ -508,7 +672,10 @@ const meta: Meta<Menu> = {
                 StoryMenuDynamic,
                 StoryMenuExtended,
                 StoryMenuMobile,
-                StoryMenuProgrammatic
+                StoryMenuProgrammatic,
+                StoryMenuScrollbar,
+                StoryMenuDisabled,
+                StoryMenuPlacement
             ]
         })
     ],
@@ -550,6 +717,26 @@ export const Programmatic: Story = {
     render: () => ({ template: `<story-menu-programmatic />` })
 };
 
+export const Scrollbar: Story = {
+    name: 'Scrollbar',
+    render: () => ({ template: `<story-menu-scrollbar />` })
+};
+export const Disabled: Story = {
+    name: 'Disabled states',
+    render: () => ({ template: `<story-menu-disabled />` })
+};
+export const PlacementAndTriggers: Story = {
+    name: 'Placement and triggers',
+    render: () => ({ template: `<story-menu-placement />` })
+};
+
+/** Clicks a trigger and waits for its menu to open. */
+async function openMenu(trigger: HTMLElement): Promise<void> {
+    await userEvent.click(trigger);
+    await waitFor(() => expect(trigger.getAttribute('aria-expanded')).toBe('true'));
+    await waitFor(() => expect(document.querySelector('.cdk-overlay-container [role=menuitem]')).not.toBeNull());
+}
+
 export const OpenBasic: Story = {
     name: 'Open: menu',
     tags: ['!autodocs'],
@@ -579,4 +766,16 @@ export const OpenMobile: Story = {
     name: 'Open: mobile',
     tags: ['!autodocs'],
     render: () => ({ template: `<story-menu-mobile [autoOpen]="true" />` })
+};
+export const OpenScrollbar: Story = {
+    name: 'Open: scrollbar',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-menu-scrollbar />` }),
+    play: ({ canvasElement }) => openMenu(canvasElement.querySelector<HTMLElement>('[aria-haspopup=menu]')!)
+};
+export const OpenPlacement: Story = {
+    name: 'Open: placement',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-menu-placement />` }),
+    play: ({ canvasElement }) => openMenu(canvasElement.querySelector<HTMLElement>('#menu-placement-trigger')!)
 };
