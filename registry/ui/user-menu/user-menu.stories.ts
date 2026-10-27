@@ -1,4 +1,4 @@
-import { Component, afterNextRender, inject, input, signal, viewChild } from '@angular/core';
+import { Component, afterNextRender, computed, inject, input, signal, viewChild } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { Avatar } from '@/ui/avatar/avatar';
 import { Bar, BarRight } from '@/ui/bar/bar';
@@ -74,7 +74,15 @@ const PHOTO =
 
                 <fd-user-menu-body>
                     <div fd-user-menu-header>
-                        <fd-avatar circle size="l" label="Lisa Miller" zoomGlyph="edit" title="Edit avatar" />
+                        <!-- the photo, not initials: an edit button showing "LM" would have visible text missing from its name -->
+                        <fd-avatar
+                            circle
+                            size="l"
+                            zoomGlyph="edit"
+                            ariaLabel="Edit avatar"
+                            title="Edit avatar"
+                            [image]="photo"
+                        />
                         <div fd-user-menu-header-container>
                             <div fd-user-menu-user-name>{{ name() }}</div>
                             <div fd-user-menu-subline>lisa.miller&#64;test.com</div>
@@ -209,12 +217,12 @@ class StoryUserMenu {
         { name: 'John Doe', mail: 'john.doe@test.com' },
         { name: 'Jane Doe', mail: 'jane.doe@test.com' }
     ];
-    protected readonly items = signal<string[]>([]);
+    // derived from the input, so the first render already has the right number of items
+    protected readonly items = computed(() => Array.from({ length: this.count() }, (_, i) => `Menu Item ${i + 1}`));
     private readonly menu = viewChild.required<UserMenu>('menu');
     private readonly toasts = inject(MessageToastService);
 
     constructor() {
-        queueMicrotask(() => this.items.set(Array.from({ length: this.count() }, (_, i) => `Menu Item ${i + 1}`)));
         afterNextRender(() => this.autoOpen() && setTimeout(() => this.menu().open(), 50));
     }
 
