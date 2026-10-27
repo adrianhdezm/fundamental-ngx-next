@@ -536,6 +536,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "panel",
+      "type": "registry:ui",
+      "title": "Panel",
+      "description": "Expandable or fixed container with a title bar and content.",
+      "registryDependencies": ["utils", "theme", "button"],
+      "files": [
+        {
+          "path": "registry/ui/panel/panel.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
