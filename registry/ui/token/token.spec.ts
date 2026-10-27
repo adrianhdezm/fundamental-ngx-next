@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
@@ -43,6 +43,7 @@ class Host {
     `
 })
 class TokenHost {
+    readonly token = viewChild.required(Token);
     readonly disabled = signal(false);
     readonly readOnly = signal(false);
     readonly selected = signal(false);
@@ -94,6 +95,26 @@ describe('Token', () => {
         expect(host.clicks.slice(1).map((e) => (e as KeyboardEvent).key)).toEqual(['Enter', ' ']);
         await userEvent.keyboard('a');
         expect(host.clicks).toHaveLength(3);
+    });
+
+    it('emits onCloseClick from the close icon only, without selecting the token', async () => {
+        const { fixture, host, token, close } = await setupToken();
+        await userEvent.click(close()!);
+        await fixture.whenStable();
+        expect(host.closes).toHaveLength(1);
+        expect(host.closes[0]).toBeInstanceOf(MouseEvent);
+        // the click stops at the close icon
+        expect(host.clicks).toHaveLength(0);
+        expect(token.getAttribute('aria-selected')).toBe('false');
+
+        // without a click event (a programmatic call) nothing is emitted, as upstream
+        host.token().closeClickHandler();
+        expect(host.closes).toHaveLength(1);
+
+        // a click on the text is a token click, not a close click
+        await userEvent.click(token.firstElementChild as HTMLElement);
+        expect(host.closes).toHaveLength(1);
+        expect(host.clicks).toHaveLength(1);
     });
 });
 

@@ -147,8 +147,10 @@ export class Token {
         this.wrapper().focus();
     }
 
+    /** Handles a click on the close icon; without the click event nothing is emitted, as upstream. */
     closeClickHandler(event?: MouseEvent): void {
-        event?.stopPropagation();
+        if (!event) return;
+        event.stopPropagation();
         if (!this.disabled() && !this.readOnly()) this.onCloseClick.emit(event);
     }
 
