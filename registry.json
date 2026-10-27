@@ -1162,6 +1162,19 @@
       ]
     },
     {
+      "name": "micro-process-flow",
+      "type": "registry:ui",
+      "title": "Micro Process Flow",
+      "description": "A compact row of process steps in value-state colours, joined by connectors, with overflow links that show the hidden steps.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/micro-process-flow/micro-process-flow.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "multi-combobox",
       "type": "registry:ui",
       "title": "Multi Combobox",

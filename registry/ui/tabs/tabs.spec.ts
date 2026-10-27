@@ -2,10 +2,10 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import { TabItem, TabLink, TabList, TabNav, TabPanel, TabTag } from './tabs';
+import { TabItem, TabLink, TabList, TabNav, TabPanel } from './tabs';
 
 @Component({
-    imports: [TabList, TabPanel, TabNav, TabItem, TabLink, TabTag],
+    imports: [TabList, TabPanel, TabNav, TabItem, TabLink],
     template: `
         <div style="width: 800px">
             <fd-tab-list
