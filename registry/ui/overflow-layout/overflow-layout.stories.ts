@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
 import { InfoLabel } from '@/ui/info-label/info-label';
 import { OverflowExpand, OverflowItemRef, OverflowLayout, OverflowLayoutItem } from './overflow-layout';
@@ -104,4 +105,22 @@ export const AlwaysVisible: Story = {
                 </fd-overflow-layout>
             </div>`
     })
+};
+
+/** Clicks the "more" control of the first overflow layout and waits for its popover. */
+async function openMore(canvasElement: HTMLElement, control: string): Promise<void> {
+    const more = await waitFor(() => {
+        const el = canvasElement.querySelector<HTMLElement>(control);
+        expect(el).not.toBeNull();
+        return el!;
+    });
+    await userEvent.click(more);
+    await waitFor(() => expect(document.querySelector('.cdk-overlay-pane fd-popover-body')).not.toBeNull());
+}
+
+export const OpenMore: Story = {
+    name: 'Open: more popover',
+    tags: ['!autodocs'],
+    render: Default.render,
+    play: ({ canvasElement }) => openMore(canvasElement, 'fd-overflow-layout fd-popover-control button')
 };
