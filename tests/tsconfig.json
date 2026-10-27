@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["vitest/importMeta"],
+    "rootDir": ".."
+  },
+  "include": ["../registry/**/*.ts", "./*.ts"],
+  "exclude": ["../registry/**/*.stories.ts"],
+  "angularCompilerOptions": {
+    "extendedDiagnostics": {
+      "checks": {
+        "unusedStandaloneImports": "suppress"
+      }
+    }
+  }
+}

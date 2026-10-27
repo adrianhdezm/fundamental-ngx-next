@@ -7,3 +7,4 @@ storybook-static/
 coverage/
 debug-storybook.log
 public/r/
+.vitest/

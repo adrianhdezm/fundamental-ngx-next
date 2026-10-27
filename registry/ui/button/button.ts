@@ -1,3 +1,9 @@
+/*
+ * Port of @fundamental-ngx/core (button) with the visual design of fundamental-styles,
+ * Copyright (c) SAP SE or an SAP affiliate company and Fundamental Library contributors.
+ * Modified for fundamental-ngx-registry: rewritten with Angular signals, the Angular CDK and Tailwind CSS.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import {
     ChangeDetectionStrategy,
     Component,
@@ -155,7 +161,7 @@ let nextId = 0;
         '[attr.type]': 'isNativeButton ? type() : null',
         '[attr.disabled]': 'isNativeButton && disabledState() ? "" : null',
         '[attr.aria-disabled]': 'ariaDisabledValue()',
-        '[attr.tabindex]': '!isNativeButton && disabledState() ? -1 : null',
+        '[attr.tabindex]': '!isNativeButton && disabledState() ? -1 : (tabIndexValue() ?? null)',
         '[attr.aria-pressed]': 'toggledState() ? "true" : null',
         '[attr.aria-selected]': 'selectedState() ? "true" : null',
         '[attr.aria-label]': 'computedAriaLabel()',
@@ -243,6 +249,11 @@ export class Button implements OnInit {
     /** Ids of elements that describe the button. Replaces the generated descriptions. */
     readonly ariaDescribedBy = input<string | null | undefined>();
 
+    /** Tab index of the button, e.g. -1 to keep it out of the tab order. */
+    readonly tabIndexValue = input<number | null | undefined, unknown>(undefined, {
+        alias: 'tabindex',
+        transform: (v: unknown) => (v === null || v === undefined || v === '' ? undefined : Number(v))
+    });
     readonly userClass = input<ClassValue>('', { alias: 'class' });
 
     /** Internal state, writable by parents such as segmented buttons and toolbars. */
@@ -276,9 +287,9 @@ export class Button implements OnInit {
     protected readonly computedAriaLabel = computed(() => {
         if (this.ariaLabel()) return this.ariaLabel();
         if (this.nativeAriaLabel()) return this.nativeAriaLabel();
-        // icon-only special buttons fall back to label or glyph name
-        if (SPECIAL_TYPE_DESCRIPTIONS[this.variantState()]) {
-            return this.label() || this.glyph()?.replace(/-/g, ' ') || null;
+        // icon-only special buttons fall back to the glyph name
+        if (SPECIAL_TYPE_DESCRIPTIONS[this.variantState()] && !this.label()) {
+            return this.glyph()?.replace(/-/g, ' ') || null;
         }
         return null;
     });
@@ -304,6 +315,20 @@ export class Button implements OnInit {
         )
     );
 
+    constructor() {
+        // capture phase: runs before the (click) listeners of the element
+        this.elementRef.nativeElement.addEventListener(
+            'click',
+            (event) => {
+                if ((!this.isNativeButton && this.disabledState()) || this.ariaDisabled()) {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                }
+            },
+            { capture: true }
+        );
+    }
+
     ngOnInit(): void {
         const el = this.elementRef.nativeElement;
         this.nativeAriaLabel.set(el.getAttribute('aria-label'));
@@ -316,15 +341,13 @@ export class Button implements OnInit {
         }
     }
 
-    /** Safari does not focus buttons on click; focus them so the focus indicator shows consistently. */
+    /**
+     * Safari does not focus buttons on click; focus them so the focus indicator shows consistently.
+     * Buttons out of the tab order (e.g. input group buttons that keep the focus in their input) stay unfocused.
+     */
     protected onClick(event: Event): void {
-        if (!this.isNativeButton && this.disabledState()) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            return;
-        }
         const target = event.currentTarget as HTMLElement | null;
-        if (target && document.activeElement !== target) target.focus();
+        if (target && target.tabIndex >= 0 && document.activeElement !== target) target.focus();
     }
 
     setDisabled(value: boolean): void {
@@ -375,7 +398,7 @@ export class ButtonBadge {
             'z-[1] box-border inline-flex items-center justify-center whitespace-nowrap',
             'absolute -top-[0.3125rem] -end-[0.3125rem] h-4 px-[0.3125rem] rounded-lg',
             'border border-solid border-sap-content-badge-border-color bg-sap-content-badge-background',
-            'font-sap-font-family text-sap-font-small-size text-sap-content-badge-text-color leading-normal',
+            'font-sap-font-family text-sap-font-small-size text-sap-content-badge-text-color leading-[normal]',
             'compact:static compact:ms-1',
             this.attention() &&
                 'size-3 px-0 -top-[0.1875rem] -end-[0.1875rem] compact:absolute compact:ms-0 compact:size-2.5',

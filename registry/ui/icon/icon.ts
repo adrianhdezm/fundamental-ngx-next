@@ -1,3 +1,9 @@
+/*
+ * Port of @fundamental-ngx/core (icon) with the visual design of fundamental-styles,
+ * Copyright (c) SAP SE or an SAP affiliate company and Fundamental Library contributors.
+ * Modified for fundamental-ngx-registry: rewritten with Angular signals, the Angular CDK and Tailwind CSS.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import { ChangeDetectionStrategy, Component, computed, input, model } from '@angular/core';
 import { cn, cva, type ClassValue, type VariantProps } from '@/lib/utils';
 import { SAP_ICONS, SAP_ICONS_BUSINESS_SUITE, SAP_ICONS_TNT, type IconGlyph } from './icon-glyphs';

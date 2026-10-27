@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "name": "fundamental-ngx-next",
-  "homepage": "https://github.com/adrianhdezm/fundamental-ngx-next",
+  "name": "fundamental-ngx-registry",
+  "homepage": "https://github.com/adrianhdezm/fundamental-ngx-registry",
   "items": [
     {
       "name": "utils",
@@ -9,7 +9,26 @@
       "title": "cn() and variants",
       "description": "Class name merging (clsx + tailwind-merge, aware of the SAP token utilities) and cva variants.",
       "dependencies": ["clsx", "tailwind-merge", "class-variance-authority"],
-      "files": [{ "path": "registry/lib/utils.ts", "type": "registry:lib", "target": "src/lib/utils.ts" }]
+      "files": [
+        {
+          "path": "registry/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "src/lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "datetime",
+      "type": "registry:lib",
+      "title": "Datetime",
+      "description": "Date and time adapter (FdDate and an Intl based default), display and parse formats, and date pipes for the calendar, time and the pickers.",
+      "files": [
+        {
+          "path": "registry/lib/datetime.ts",
+          "type": "registry:lib",
+          "target": "src/lib/datetime.ts"
+        }
+      ]
     },
     {
       "name": "theme",
@@ -17,21 +36,60 @@
       "title": "SAP Horizon theme",
       "description": "SAP theme tokens for Tailwind v4: Horizon, Horizon Dark, Horizon HC Black and Horizon HC White, the 72 and SAP icon fonts, density and state variants.",
       "files": [
-        { "path": "registry/styles/fundamental.css", "type": "registry:file", "target": "src/styles/fundamental.css" },
-        { "path": "registry/styles/tokens.css", "type": "registry:file", "target": "src/styles/tokens.css" },
-        { "path": "registry/styles/fonts.css", "type": "registry:file", "target": "src/styles/fonts.css" },
-        { "path": "registry/styles/themes/sap_horizon.css", "type": "registry:file", "target": "src/styles/themes/sap_horizon.css" },
-        { "path": "registry/styles/themes/sap_horizon_dark.css", "type": "registry:file", "target": "src/styles/themes/sap_horizon_dark.css" },
-        { "path": "registry/styles/themes/sap_horizon_hcb.css", "type": "registry:file", "target": "src/styles/themes/sap_horizon_hcb.css" },
-        { "path": "registry/styles/themes/sap_horizon_hcw.css", "type": "registry:file", "target": "src/styles/themes/sap_horizon_hcw.css" }
-      ]
+        {
+          "path": "registry/styles/fundamental.css",
+          "type": "registry:file",
+          "target": "src/styles/fundamental.css"
+        },
+        {
+          "path": "registry/styles/tokens.css",
+          "type": "registry:file",
+          "target": "src/styles/tokens.css"
+        },
+        {
+          "path": "registry/styles/extensions.css",
+          "type": "registry:file",
+          "target": "src/styles/extensions.css"
+        },
+        {
+          "path": "registry/styles/fonts.css",
+          "type": "registry:file",
+          "target": "src/styles/fonts.css"
+        },
+        {
+          "path": "registry/styles/themes/sap_horizon.css",
+          "type": "registry:file",
+          "target": "src/styles/themes/sap_horizon.css"
+        },
+        {
+          "path": "registry/styles/themes/sap_horizon_dark.css",
+          "type": "registry:file",
+          "target": "src/styles/themes/sap_horizon_dark.css"
+        },
+        {
+          "path": "registry/styles/themes/sap_horizon_hcb.css",
+          "type": "registry:file",
+          "target": "src/styles/themes/sap_horizon_hcb.css"
+        },
+        {
+          "path": "registry/styles/themes/sap_horizon_hcw.css",
+          "type": "registry:file",
+          "target": "src/styles/themes/sap_horizon_hcw.css"
+        }
+      ],
+      "dependencies": ["@angular/cdk"]
     },
     {
       "name": "content-density",
       "type": "registry:ui",
       "title": "Content Density",
       "description": "Sets cozy, compact or condensed density on an element and its subtree.",
-      "files": [{ "path": "registry/ui/content-density/content-density.ts", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/ui/content-density/content-density.ts",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "icon",
@@ -40,8 +98,14 @@
       "description": "Icons from the SAP-icons, SAP-icons-TNT and Business Suite fonts.",
       "registryDependencies": ["utils", "theme"],
       "files": [
-        { "path": "registry/ui/icon/icon.ts", "type": "registry:ui" },
-        { "path": "registry/ui/icon/icon-glyphs.ts", "type": "registry:ui" }
+        {
+          "path": "registry/ui/icon/icon.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ui/icon/icon-glyphs.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -50,7 +114,1303 @@
       "title": "Button",
       "description": "Standard, emphasized, ghost, positive, negative, attention and transparent buttons, toggle and menu buttons, badges.",
       "registryDependencies": ["utils", "theme", "icon"],
-      "files": [{ "path": "registry/ui/button/button.ts", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/ui/button/button.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "link",
+      "type": "registry:ui",
+      "title": "Link",
+      "description": "Standard, emphasized, subtle, undecorated and inverted links, with icons.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/link/link.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "avatar",
+      "type": "registry:ui",
+      "title": "Avatar",
+      "description": "Image, initials or icon avatars in five sizes, with accent and indication colours, zoom icon and value states.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/avatar/avatar.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "title": "Input",
+      "description": "SAP field styling and value states for native input and textarea elements.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/input/input.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "popover",
+      "type": "registry:ui",
+      "title": "Popover",
+      "description": "Overlay content anchored to a trigger, built on the CDK overlay: placements, triggers, arrow, focus handling, fill modes and resizing.",
+      "dependencies": ["@angular/cdk", "rxjs"],
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/popover/popover.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ui/popover/popover-position.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "busy-indicator",
+      "type": "registry:ui",
+      "title": "Busy Indicator",
+      "description": "Three-dot loading indicator in three sizes; wraps and blocks content while loading.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/busy-indicator/busy-indicator.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "carousel",
+      "type": "registry:ui",
+      "title": "Carousel",
+      "description": "Slides shown one or several at a time with navigation buttons, page indicators, swiping and looping; a directive slides any element.",
+      "registryDependencies": ["utils", "theme", "button", "busy-indicator"],
+      "files": [
+        {
+          "path": "registry/ui/carousel/carousel.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "title": "Checkbox",
+      "description": "Checkbox with value states, read-only, display-only and tristate modes; a forms control.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/checkbox/checkbox.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "radio",
+      "type": "registry:ui",
+      "title": "Radio Button",
+      "description": "Radio buttons with value states, read-only and wrapping labels; a forms control.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/radio/radio.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "inline-help",
+      "type": "registry:ui",
+      "title": "Inline Help",
+      "description": "Hover and focus help popover for icons, fields and buttons.",
+      "registryDependencies": ["utils", "theme", "icon", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/inline-help/inline-help.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "form",
+      "type": "registry:ui",
+      "title": "Form",
+      "description": "Form header, fieldset, legend, groups, items, labels with inline help, value state messages and input message groups.",
+      "registryDependencies": ["utils", "theme", "icon", "popover", "inline-help"],
+      "files": [
+        {
+          "path": "registry/ui/form/form.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ui/form/form-message.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ui/form/form-input-message-group.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "type": "registry:ui",
+      "title": "Switch",
+      "description": "On/off switch with semantic and text variants; a forms control.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/switch/switch.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "title",
+      "type": "registry:ui",
+      "title": "Title",
+      "description": "Headings with the SAP header type scale, decoupled visual size, truncation and wrapping.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/title/title.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "text",
+      "type": "registry:ui",
+      "title": "Text",
+      "description": "Paragraph text with line limit, More/Less expansion, whitespace and hyphenation.",
+      "registryDependencies": ["utils", "theme", "link"],
+      "files": [
+        {
+          "path": "registry/ui/text/text.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "formatted-text",
+      "type": "registry:ui",
+      "title": "Formatted Text",
+      "description": "Renders a sanitised subset of HTML.",
+      "registryDependencies": ["theme"],
+      "files": [
+        {
+          "path": "registry/ui/formatted-text/formatted-text.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "info-label",
+      "type": "registry:ui",
+      "title": "Info Label",
+      "description": "Non-interactive coloured labels with text, icon or number.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/info-label/info-label.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "object-status",
+      "type": "registry:ui",
+      "title": "Object Status",
+      "description": "Status of an object as semantic or indication-coloured text and icon, optionally inverted or clickable.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/object-status/object-status.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "object-marker",
+      "type": "registry:ui",
+      "title": "Object Marker",
+      "description": "Technical object states such as draft, locked or favourite as icon and/or text; clickable markers are links.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/object-marker/object-marker.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "object-number",
+      "type": "registry:ui",
+      "title": "Object Number",
+      "description": "Formatted number with unit, coloured by value state; emphasized, large, inverted or interactive.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/object-number/object-number.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "object-identifier",
+      "type": "registry:ui",
+      "title": "Object Identifier",
+      "description": "Object title, optionally a link, with a description below.",
+      "registryDependencies": ["utils", "theme", "link"],
+      "files": [
+        {
+          "path": "registry/ui/object-identifier/object-identifier.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "object-attribute",
+      "type": "registry:ui",
+      "title": "Object Attribute",
+      "description": "Single-line object property, optionally with an action link.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/object-attribute/object-attribute.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "generic-tag",
+      "type": "registry:ui",
+      "title": "Generic Tag",
+      "description": "Key figure with name, value and optional status, as used in object page headers.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/generic-tag/generic-tag.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "status-indicator",
+      "type": "registry:ui",
+      "title": "Status Indicator",
+      "description": "SVG shapes filled to a percentage linearly, at an angle or radially, coloured by status.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/status-indicator/status-indicator.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "title": "Skeleton",
+      "description": "Shimmering loading placeholders: rectangle, circle, text lines or custom SVG shapes.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/skeleton/skeleton.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "message-strip",
+      "type": "registry:ui",
+      "title": "Message Strip",
+      "description": "Inline contextual messages by type or indication colour; dismissible, auto-dismissing, or shown as alerts at the screen edges.",
+      "registryDependencies": ["utils", "theme", "icon", "button"],
+      "files": [
+        {
+          "path": "registry/ui/message-strip/message-strip.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ui/message-strip/message-strip-alert.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ui/message-strip/index.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk", "rxjs"]
+    },
+    {
+      "name": "scrollbar",
+      "type": "registry:ui",
+      "title": "Scrollbar",
+      "description": "Scroll container with SAP-themed scrollbars, registered as a CDK scrollable.",
+      "registryDependencies": ["theme"],
+      "files": [
+        {
+          "path": "registry/ui/scrollbar/scrollbar.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk"]
+    },
+    {
+      "name": "bar",
+      "type": "registry:ui",
+      "title": "Bar",
+      "description": "Header, subheader and footer bars with left, middle and right areas, bar elements and bar buttons.",
+      "registryDependencies": ["utils", "theme", "button", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/bar/bar.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "toolbar",
+      "type": "registry:ui",
+      "title": "Toolbar",
+      "description": "Row of actions with title, spacers and separators; items that do not fit move into an overflow popover by priority and group.",
+      "registryDependencies": ["utils", "theme", "button", "popover", "title"],
+      "files": [
+        {
+          "path": "registry/ui/toolbar/toolbar.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk"]
+    },
+    {
+      "name": "segmented-button",
+      "type": "registry:ui",
+      "title": "Segmented Button",
+      "description": "Group of buttons with single or multiple selection, roving focus and forms support.",
+      "registryDependencies": ["utils", "theme", "button"],
+      "files": [
+        {
+          "path": "registry/ui/segmented-button/segmented-button.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk", "@angular/forms"]
+    },
+    {
+      "name": "action-bar",
+      "type": "registry:ui",
+      "title": "Action Bar",
+      "description": "Page header with back button, title, description and actions.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/action-bar/action-bar.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "layout-grid",
+      "type": "registry:ui",
+      "title": "Layout Grid",
+      "description": "Responsive 12-column grid with md/lg/xl spans, offsets, growing columns and gutters.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/layout-grid/layout-grid.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "list",
+      "type": "registry:ui",
+      "title": "List",
+      "description": "Lists with titles, secondary text, icons, bylines, sublines, links, selection, group headers, footers and keyboard navigation.",
+      "registryDependencies": ["utils", "theme", "icon", "checkbox", "radio"],
+      "files": [
+        {
+          "path": "registry/ui/list/list.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk"]
+    },
+    {
+      "name": "calendar",
+      "type": "registry:ui",
+      "title": "Calendar",
+      "description": "Picks a date, several dates, a range or several ranges, with month, year and years range views, special days and a legend, week numbers and disabled dates.",
+      "registryDependencies": ["utils", "theme", "datetime", "button"],
+      "files": [
+        {
+          "path": "registry/ui/calendar/calendar.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "card",
+      "type": "registry:ui",
+      "title": "Card",
+      "description": "Cards with header (title, subtitle, avatar, counter, KPI), content, footer actions, badges, media and banner layouts, loading state and card lists.",
+      "registryDependencies": ["utils", "theme", "object-status", "avatar"],
+      "files": [
+        {
+          "path": "registry/ui/card/card.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "panel",
+      "type": "registry:ui",
+      "title": "Panel",
+      "description": "Expandable or fixed container with a title bar and content.",
+      "registryDependencies": ["utils", "theme", "button"],
+      "files": [
+        {
+          "path": "registry/ui/panel/panel.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "layout-panel",
+      "type": "registry:ui",
+      "title": "Layout Panel",
+      "description": "Rounded content container with header, description, actions, filters, body and footer.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/layout-panel/layout-panel.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "infinite-scroll",
+      "type": "registry:ui",
+      "title": "Infinite Scroll",
+      "description": "Emits an event when a scroll container nears its end.",
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/ui/infinite-scroll/infinite-scroll.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["rxjs"]
+    },
+    {
+      "name": "scroll-spy",
+      "type": "registry:ui",
+      "title": "Scroll Spy",
+      "description": "Reports which tracked child of a scroll container is at the top.",
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/ui/scroll-spy/scroll-spy.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "avatar-group",
+      "type": "registry:ui",
+      "title": "Avatar Group",
+      "description": "Individual or overlapping avatar groups with details popovers and an overflow popover.",
+      "registryDependencies": ["utils", "theme", "avatar", "bar", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/avatar-group/avatar-group.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk"]
+    },
+    {
+      "name": "overflow-layout",
+      "type": "registry:ui",
+      "title": "Overflow Layout",
+      "description": "Single-row layout that moves items that do not fit into a \"N more\" popover.",
+      "registryDependencies": ["utils", "theme", "button", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/overflow-layout/overflow-layout.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk"]
+    },
+    {
+      "name": "tile",
+      "type": "registry:ui",
+      "title": "Tile",
+      "description": "Launch, KPI, feed, slide and line tiles with numeric content.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/tile/tile.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ui/tile/numeric-content.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "grid-list",
+      "type": "registry:ui",
+      "title": "Grid List",
+      "description": "Responsive grid of item cards with selection, delete and navigation modes.",
+      "registryDependencies": ["utils", "theme", "button", "checkbox", "radio", "icon", "object-status", "toolbar"],
+      "files": [
+        {
+          "path": "registry/ui/grid-list/grid-list.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/forms"]
+    },
+    {
+      "name": "timeline",
+      "type": "registry:ui",
+      "title": "Timeline",
+      "description": "Posts in chronological order along a vertical or horizontal line, on one or both sides.",
+      "registryDependencies": ["utils", "theme", "icon", "skeleton", "text"],
+      "files": [
+        {
+          "path": "registry/ui/timeline/timeline.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "facets",
+      "type": "registry:ui",
+      "title": "Facets",
+      "description": "Facets of an object page header: form, key-value, rating and image facets in a facet group.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/facets/facets.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "dynamic-side-content",
+      "type": "registry:ui",
+      "title": "Dynamic Side Content",
+      "description": "Main content with side content to the left, right, below or in an equal split.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/dynamic-side-content/dynamic-side-content.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "flexible-column-layout",
+      "type": "registry:ui",
+      "title": "Flexible Column Layout",
+      "description": "Up to three columns (list, detail, detail-detail) with expand/collapse separators and responsive layouts.",
+      "registryDependencies": ["utils", "theme", "button"],
+      "files": [
+        {
+          "path": "registry/ui/flexible-column-layout/flexible-column-layout.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "dynamic-page",
+      "type": "registry:ui",
+      "title": "Dynamic Page",
+      "description": "Page with a title area, a collapsible (pinnable) header, scrolling content and a footer.",
+      "registryDependencies": ["utils", "theme", "button", "breadcrumb", "tabs"],
+      "files": [
+        {
+          "path": "registry/ui/dynamic-page/dynamic-page.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "fixed-card-layout",
+      "type": "registry:ui",
+      "title": "Fixed Card Layout",
+      "description": "Cards in as many equal columns as fit, reorderable by drag and drop or keyboard.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/fixed-card-layout/fixed-card-layout.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk"]
+    },
+    {
+      "name": "resizable-card-layout",
+      "type": "registry:ui",
+      "title": "Resizable Card Layout",
+      "description": "Cards in 20rem columns that users resize by dragging; other cards move to make room.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/resizable-card-layout/resizable-card-layout.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk"]
+    },
+    {
+      "name": "dialog",
+      "type": "registry:ui",
+      "title": "Dialog",
+      "description": "Modal dialog opened by a service from a template, a component or an object: header, subheader, scrolling body and footer, focus trap, Escape and backdrop dismissal, draggable, resizable, full-screen, mobile, positioned, stacked, hidden and loading states.",
+      "dependencies": ["@angular/cdk", "rxjs"],
+      "registryDependencies": ["utils", "theme", "bar", "busy-indicator", "button", "icon", "title"],
+      "files": [
+        {
+          "path": "registry/ui/dialog/dialog.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "menu",
+      "type": "registry:ui",
+      "title": "Menu",
+      "description": "Actions in a popover opened by a trigger: icons, subtitles, shortcuts, separators, nested submenus, toggle and single-choice items, item inputs, keyboard navigation and a full-screen mobile mode.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "popover", "dialog", "bar", "button", "icon", "title"],
+      "files": [
+        {
+          "path": "registry/ui/menu/menu.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "split-button",
+      "type": "registry:ui",
+      "title": "Split Button",
+      "description": "A main action with an arrow that opens a menu of alternatives; the chosen alternative becomes the main action.",
+      "registryDependencies": ["utils", "theme", "button", "icon", "menu"],
+      "files": [
+        {
+          "path": "registry/ui/split-button/split-button.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "breadcrumb",
+      "type": "registry:ui",
+      "title": "Breadcrumb",
+      "description": "Trail of links to the current page with separator styles; items that do not fit collapse into an overflow menu.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "icon", "link", "menu", "overflow-layout"],
+      "files": [
+        {
+          "path": "registry/ui/breadcrumb/breadcrumb.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "message-box",
+      "type": "registry:ui",
+      "title": "Message Box",
+      "description": "Modal alert dialog for errors, warnings, successes, information and confirmations, opened by a service from a template, a component or a content object.",
+      "registryDependencies": ["utils", "theme", "dialog", "bar", "button", "icon", "title"],
+      "files": [
+        {
+          "path": "registry/ui/message-box/message-box.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "action-sheet",
+      "type": "registry:ui",
+      "title": "Action Sheet",
+      "description": "Actions for a control in a popover, or in mobile mode in a sheet at the bottom of the screen, with keyboard navigation.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "bar", "button", "icon", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/action-sheet/action-sheet.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "message-toast",
+      "type": "registry:ui",
+      "title": "Message Toast",
+      "description": "Short messages that disappear by themselves, opened by a service from a string, a component or a template, stacked at a screen position or next to an element.",
+      "dependencies": ["@angular/cdk", "rxjs"],
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/message-toast/message-toast.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "illustrated-message",
+      "type": "registry:ui",
+      "title": "Illustrated Message",
+      "description": "SAP illustration with a title, a text and actions for empty states and errors, in scene, dialog, spot, dot and text-only sizes or responsive to its width.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/illustrated-message/illustrated-message.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "message-page",
+      "type": "registry:ui",
+      "title": "Message Page",
+      "description": "Full-page message for no items, no search or filter results and errors, with an icon, title, subtitle and actions.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/message-page/message-page.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "notification",
+      "type": "registry:ui",
+      "title": "Notification",
+      "description": "Notifications with title, description, footnotes, status and actions; More/Less for clamped texts; lists, collapsible groups with keyboard navigation and banners opened by a service.",
+      "dependencies": ["@angular/cdk", "rxjs"],
+      "registryDependencies": ["utils", "theme", "icon", "link"],
+      "files": [
+        {
+          "path": "registry/ui/notification/notification.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "quick-view",
+      "type": "registry:ui",
+      "title": "Quick View",
+      "description": "Short overview of a person or object for popovers and dialogs: header, subheader with avatar, and groups of labelled values.",
+      "registryDependencies": ["utils", "theme", "bar", "form", "popover", "title"],
+      "files": [
+        {
+          "path": "registry/ui/quick-view/quick-view.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "product-switch",
+      "type": "registry:ui",
+      "title": "Product Switch",
+      "description": "Grid of the user's products in a popover, reorderable by drag and drop, with a list layout on small screens and keyboard navigation.",
+      "dependencies": ["@angular/cdk", "rxjs"],
+      "registryDependencies": ["utils", "theme", "avatar", "busy-indicator", "button", "icon", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/product-switch/product-switch.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "user-menu",
+      "type": "registry:ui",
+      "title": "User Menu",
+      "description": "The signed-in user's details and actions in a popover from an avatar, with submenus, a header bar for the scrolled-away name and a full-screen mobile mode.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "bar", "button", "dialog", "icon", "popover", "title"],
+      "files": [
+        {
+          "path": "registry/ui/user-menu/user-menu.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "shellbar",
+      "type": "registry:ui",
+      "title": "Shellbar",
+      "description": "Application top bar with branding, context area, search, actions, user menu and product switch; sizes follow its width and actions collapse into an overflow menu.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "action-sheet", "avatar", "button", "icon", "menu", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/shellbar/shellbar.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "nested-list",
+      "type": "registry:ui",
+      "title": "Nested List",
+      "description": "Navigation tree of links with group headers, expandable child lists, selection, arrow-key navigation and popovers for condensed mode.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "icon", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/nested-list/nested-list.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "side-navigation",
+      "type": "registry:ui",
+      "title": "Side Navigation",
+      "description": "Main and utility nested lists in a column, condensed to icons with popovers, from content or data.",
+      "registryDependencies": ["utils", "theme", "nested-list"],
+      "files": [
+        {
+          "path": "registry/ui/side-navigation/side-navigation.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "vertical-navigation",
+      "type": "registry:ui",
+      "title": "Vertical Navigation",
+      "description": "SAP Fiori side navigation with icons, second-level items, a current-page indicator and a condensed icon-only mode with panels.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/vertical-navigation/vertical-navigation.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "settings",
+      "type": "registry:ui",
+      "title": "Settings",
+      "description": "A list of settings next to the view of the selected one, with pushed detail views, a responsive single-column mode and a settings dialog size.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "bar", "button", "dialog", "list", "title"],
+      "files": [
+        {
+          "path": "registry/ui/settings/settings.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "feed-input",
+      "type": "registry:ui",
+      "title": "Feed Input",
+      "description": "Growing text area with the user's avatar and a send button enabled once there is text.",
+      "registryDependencies": ["utils", "theme", "button", "icon", "input"],
+      "files": [
+        {
+          "path": "registry/ui/feed-input/feed-input.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "feed-list",
+      "type": "registry:ui",
+      "title": "Feed List",
+      "description": "Posts and comments with an author link, a collapsible or rich text, an avatar, actions and bylines; a mobile layout puts the header above the text.",
+      "registryDependencies": ["utils", "theme", "formatted-text", "link"],
+      "files": [
+        {
+          "path": "registry/ui/feed-list/feed-list.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "file-uploader",
+      "type": "registry:ui",
+      "title": "File Uploader",
+      "description": "Field and Browse button for choosing files, with drag and drop, size and extension validation and Angular forms support.",
+      "dependencies": ["@angular/forms"],
+      "registryDependencies": ["utils", "theme", "button", "input"],
+      "files": [
+        {
+          "path": "registry/ui/file-uploader/file-uploader.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "upload-collection",
+      "type": "registry:ui",
+      "title": "Upload Collection",
+      "description": "List of uploaded files with names shortened in the middle, descriptions, statuses and in-place rename and delete.",
+      "dependencies": ["@angular/forms"],
+      "registryDependencies": ["utils", "theme", "button", "input", "list"],
+      "files": [
+        {
+          "path": "registry/ui/upload-collection/upload-collection.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "token",
+      "type": "registry:ui",
+      "title": "Token",
+      "description": "Removable tokens and a tokenizer field with keyboard selection and deletion and an overflow link with a popover.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "button", "icon", "input", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/token/token.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "input-group",
+      "type": "registry:ui",
+      "title": "Input Group",
+      "description": "A field with text, icon or button addons before or after its input; a form control when it renders its own input.",
+      "dependencies": ["@angular/forms"],
+      "registryDependencies": ["utils", "theme", "button", "icon", "input"],
+      "files": [
+        {
+          "path": "registry/ui/input-group/input-group.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "select",
+      "type": "registry:ui",
+      "title": "Select",
+      "description": "A field that opens a list of options with keyboard selection, value states, custom triggers and a mobile dialog mode.",
+      "dependencies": ["@angular/cdk", "@angular/forms"],
+      "registryDependencies": [
+        "utils",
+        "theme",
+        "bar",
+        "button",
+        "dialog",
+        "icon",
+        "input",
+        "list",
+        "popover",
+        "title"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/select/select.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "combobox",
+      "type": "registry:ui",
+      "title": "Combobox",
+      "description": "An input that suggests values while typing, with filtering, inline completion, highlighting, groups, item templates and a mobile dialog mode.",
+      "dependencies": ["@angular/forms"],
+      "registryDependencies": [
+        "utils",
+        "theme",
+        "bar",
+        "button",
+        "dialog",
+        "icon",
+        "input",
+        "input-group",
+        "list",
+        "popover",
+        "title"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/combobox/combobox.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "multi-input",
+      "type": "registry:ui",
+      "title": "Multi Input",
+      "description": "A tokenizer field with a filterable list of check box options, inline completion, new tokens and a mobile dialog with select all.",
+      "dependencies": ["@angular/cdk", "@angular/forms"],
+      "registryDependencies": [
+        "utils",
+        "theme",
+        "bar",
+        "button",
+        "dialog",
+        "icon",
+        "input",
+        "link",
+        "list",
+        "popover",
+        "title",
+        "token"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/multi-input/multi-input.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "micro-process-flow",
+      "type": "registry:ui",
+      "title": "Micro Process Flow",
+      "description": "A compact row of process steps in value-state colours, joined by connectors, with overflow links that show the hidden steps.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/micro-process-flow/micro-process-flow.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "multi-combobox",
+      "type": "registry:ui",
+      "title": "Multi Combobox",
+      "description": "Chooses several items from an array or observable with check box options, tokens, matching strategies, groups, secondary text, select all and a mobile dialog.",
+      "dependencies": ["@angular/cdk", "@angular/forms", "rxjs"],
+      "registryDependencies": [
+        "utils",
+        "theme",
+        "bar",
+        "button",
+        "dialog",
+        "icon",
+        "input",
+        "list",
+        "popover",
+        "title",
+        "token"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/multi-combobox/multi-combobox.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "slider",
+      "type": "registry:ui",
+      "title": "Slider",
+      "description": "Single and range sliders with steps, custom values, ticks and labels, vertical layout, value tooltips, pointer dragging and keyboard control.",
+      "dependencies": ["@angular/cdk", "@angular/forms"],
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/slider/slider.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "step-input",
+      "type": "registry:ui",
+      "title": "Step Input",
+      "description": "A number field with repeating step buttons, locale and currency formatting, units, limits, keyboard and wheel stepping and value states.",
+      "dependencies": ["@angular/cdk", "@angular/forms"],
+      "registryDependencies": ["utils", "theme", "button", "input", "input-group"],
+      "files": [
+        {
+          "path": "registry/ui/step-input/step-input.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "rating-indicator",
+      "type": "registry:ui",
+      "title": "Rating Indicator",
+      "description": "Star (or custom icon) ratings as a keyboard slider with halves, sizes, a display mode, averages of votes and a popover with the votes per rating.",
+      "dependencies": ["@angular/cdk", "@angular/forms"],
+      "registryDependencies": ["utils", "theme", "icon", "link", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/rating-indicator/rating-indicator.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "progress-indicator",
+      "type": "registry:ui",
+      "title": "Progress Indicator",
+      "description": "A progress bar with the value or a text above it, value state colours and icons, animation and a popover for truncated texts.",
+      "registryDependencies": ["utils", "theme", "button", "icon", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/progress-indicator/progress-indicator.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "pagination",
+      "type": "registry:ui",
+      "title": "Pagination",
+      "description": "Page navigation with page numbers and ellipses or a page input, items per page, a results text, keyboard navigation and a mobile layout.",
+      "dependencies": ["@angular/cdk", "rxjs"],
+      "registryDependencies": ["utils", "theme", "button", "input", "select"],
+      "files": [
+        {
+          "path": "registry/ui/pagination/pagination.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tabs",
+      "type": "registry:ui",
+      "title": "Tabs",
+      "description": "Tab lists with panels, counts, value states, icon-only, process and filter modes, an overflow menu, stacked content with scroll spy, and tab bars of links.",
+      "registryDependencies": ["utils", "theme", "icon", "menu", "overflow-layout", "scroll-spy"],
+      "files": [
+        {
+          "path": "registry/ui/tabs/tabs.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "wizard",
+      "type": "registry:ui",
+      "title": "Wizard",
+      "description": "Breaks a long task into steps: a progress bar of steps, the content of the visited steps with scroll spy, branching, a summary, and stacked steps on narrow screens.",
+      "registryDependencies": ["utils", "theme", "icon", "action-sheet"],
+      "files": [
+        {
+          "path": "registry/ui/wizard/wizard.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tree",
+      "type": "registry:ui",
+      "title": "Tree",
+      "description": "A hierarchy of expandable items, nested or from data with lazily loaded children, with selection as a form control, navigatable items, highlights and action buttons.",
+      "registryDependencies": ["utils", "theme", "icon", "checkbox", "radio", "skeleton"],
+      "files": [
+        {
+          "path": "registry/ui/tree/tree.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "time",
+      "type": "registry:ui",
+      "title": "Time",
+      "description": "Picks hours, minutes, seconds and the period in spinbutton columns, with a 12-hour clock, minute steps and spinner buttons.",
+      "registryDependencies": ["utils", "theme", "datetime", "button"],
+      "files": [
+        {
+          "path": "registry/ui/time/time.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "time-picker",
+      "type": "registry:ui",
+      "title": "Time Picker",
+      "description": "A time field with a button that opens the time columns, reading typed times, with validation states and messages.",
+      "registryDependencies": ["utils", "theme", "datetime", "button", "form", "input-group", "popover", "time"],
+      "files": [
+        {
+          "path": "registry/ui/time-picker/time-picker.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "date-picker",
+      "type": "registry:ui",
+      "title": "Date Picker",
+      "description": "A date field with a button that opens a calendar: single dates, ranges and multiple dates or ranges, reading typed dates, with validation states, messages and a mobile dialog.",
+      "registryDependencies": [
+        "utils",
+        "theme",
+        "datetime",
+        "bar",
+        "button",
+        "calendar",
+        "dialog",
+        "form",
+        "input-group",
+        "popover",
+        "title"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/date-picker/date-picker.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "datetime-picker",
+      "type": "registry:ui",
+      "title": "Datetime Picker",
+      "description": "A field with a button that opens a calendar and time columns, applying with OK or at once, reading typed values, with validation states, messages and a mobile dialog.",
+      "registryDependencies": [
+        "utils",
+        "theme",
+        "datetime",
+        "bar",
+        "button",
+        "calendar",
+        "dialog",
+        "form",
+        "input-group",
+        "popover",
+        "segmented-button",
+        "time",
+        "title"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/datetime-picker/datetime-picker.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,134 @@
+/*
+ * Theme values that fundamental-styles defines on top of the SAP theme tokens, for visuals
+ * that have no --sap* token. Components use them through the variable shorthand,
+ * e.g. border-(--fdPopover_Border_Color).
+ *
+ * Values from fundamental-styles, Copyright (c) SAP SE or an SAP affiliate company and
+ * Fundamental Library contributors. SPDX-License-Identifier: Apache-2.0
+ */
+:root,
+[data-sap-theme='sap_horizon'] {
+    --fdPopover_Border_Width: 0.0625rem;
+    --fdPopover_Border_Color: #acb8c1;
+    --fdModal_BackgroundColor: rgb(0 0 0 / 20%);
+    /* skeleton shimmer: middle stop of --sapContent_Placeholderloading_Gradient */
+    --fdSkeleton_Gradient_Middle_Color: #999;
+    /* tile badge border */
+    --fdBadge_Border_Color: transparent;
+
+    /* info label accents */
+    --fdInfoLabel_Background_1: var(--sapAvatar_1_Background);
+    --fdInfoLabel_Color_1: var(--sapAvatar_1_TextColor);
+    --fdInfoLabel_Background_2: var(--sapAvatar_2_Background);
+    --fdInfoLabel_Color_2: var(--sapAvatar_2_TextColor);
+    --fdInfoLabel_Background_3: var(--sapAvatar_3_Background);
+    --fdInfoLabel_Color_3: var(--sapAvatar_3_TextColor);
+    --fdInfoLabel_Background_4: var(--sapAvatar_4_Background);
+    --fdInfoLabel_Color_4: var(--sapAvatar_4_TextColor);
+    --fdInfoLabel_Background_5: var(--sapAvatar_5_Background);
+    --fdInfoLabel_Color_5: var(--sapAvatar_5_TextColor);
+    --fdInfoLabel_Background_6: var(--sapAvatar_6_Background);
+    --fdInfoLabel_Color_6: var(--sapAvatar_6_TextColor);
+    --fdInfoLabel_Background_7: var(--sapAvatar_7_Background);
+    --fdInfoLabel_Color_7: var(--sapAvatar_7_TextColor);
+    --fdInfoLabel_Background_8: var(--sapAvatar_8_Background);
+    --fdInfoLabel_Color_8: var(--sapAvatar_8_TextColor);
+    --fdInfoLabel_Background_9: var(--sapAvatar_9_Background);
+    --fdInfoLabel_Color_9: var(--sapAvatar_9_TextColor);
+    --fdInfoLabel_Background_10: var(--sapAvatar_10_Background);
+    --fdInfoLabel_Color_10: var(--sapAvatar_10_TextColor);
+}
+
+[data-sap-theme='sap_horizon_dark'] {
+    --fdPopover_Border_Width: 0.0625rem;
+    --fdPopover_Border_Color: #636669;
+    --fdModal_BackgroundColor: rgb(0 0 0 / 20%);
+    /* skeleton shimmer: middle stop of --sapContent_Placeholderloading_Gradient */
+    --fdSkeleton_Gradient_Middle_Color: #74879f;
+    /* tile badge border */
+    --fdBadge_Border_Color: var(--sapGroup_ContentBorderColor);
+
+    --fdInfoLabel_Background_1: var(--sapAvatar_1_Background);
+    --fdInfoLabel_Color_1: var(--sapAvatar_1_TextColor);
+    --fdInfoLabel_Background_2: var(--sapAvatar_2_Background);
+    --fdInfoLabel_Color_2: var(--sapAvatar_2_TextColor);
+    --fdInfoLabel_Background_3: var(--sapAvatar_3_Background);
+    --fdInfoLabel_Color_3: var(--sapAvatar_3_TextColor);
+    --fdInfoLabel_Background_4: var(--sapAvatar_4_Background);
+    --fdInfoLabel_Color_4: var(--sapAvatar_4_TextColor);
+    --fdInfoLabel_Background_5: var(--sapAvatar_5_Background);
+    --fdInfoLabel_Color_5: var(--sapAvatar_5_TextColor);
+    --fdInfoLabel_Background_6: var(--sapAvatar_6_Background);
+    --fdInfoLabel_Color_6: var(--sapAvatar_6_TextColor);
+    --fdInfoLabel_Background_7: var(--sapAvatar_7_Background);
+    --fdInfoLabel_Color_7: var(--sapAvatar_7_TextColor);
+    --fdInfoLabel_Background_8: var(--sapAvatar_8_Background);
+    --fdInfoLabel_Color_8: var(--sapAvatar_8_TextColor);
+    --fdInfoLabel_Background_9: var(--sapAvatar_9_Background);
+    --fdInfoLabel_Color_9: var(--sapAvatar_9_TextColor);
+    --fdInfoLabel_Background_10: var(--sapAvatar_10_Background);
+    --fdInfoLabel_Color_10: var(--sapAvatar_10_TextColor);
+}
+
+[data-sap-theme='sap_horizon_hcb'] {
+    --fdPopover_Border_Width: 0.1875rem;
+    --fdPopover_Border_Color: #fff;
+    --fdModal_BackgroundColor: rgb(0 0 0 / 30%);
+    /* skeleton shimmer: middle stop of --sapContent_Placeholderloading_Gradient */
+    --fdSkeleton_Gradient_Middle_Color: #999;
+    /* tile badge border */
+    --fdBadge_Border_Color: var(--sapGroup_ContentBorderColor);
+
+    /* info label accents: the high contrast themes use a coloured palette */
+    --fdInfoLabel_Background_1: #362401;
+    --fdInfoLabel_Color_1: #fda503;
+    --fdInfoLabel_Background_2: #550404;
+    --fdInfoLabel_Color_2: #fc9f9f;
+    --fdInfoLabel_Background_3: #520230;
+    --fdInfoLabel_Color_3: #f79dca;
+    --fdInfoLabel_Background_4: #480057;
+    --fdInfoLabel_Color_4: #f794ff;
+    --fdInfoLabel_Background_5: #240381;
+    --fdInfoLabel_Color_5: #bdadff;
+    --fdInfoLabel_Background_6: #002559;
+    --fdInfoLabel_Color_6: #83bcff;
+    --fdInfoLabel_Background_7: #012d28;
+    --fdInfoLabel_Color_7: #06cfaf;
+    --fdInfoLabel_Background_8: #0f2d17;
+    --fdInfoLabel_Color_8: #26d526;
+    --fdInfoLabel_Background_9: #032b37;
+    --fdInfoLabel_Color_9: #1bc8f2;
+    --fdInfoLabel_Background_10: #1c2834;
+    --fdInfoLabel_Color_10: #a9bacb;
+}
+
+[data-sap-theme='sap_horizon_hcw'] {
+    --fdPopover_Border_Width: 0.1875rem;
+    --fdPopover_Border_Color: #000;
+    --fdModal_BackgroundColor: rgb(255 255 255 / 80%);
+    /* skeleton shimmer: middle stop of --sapContent_Placeholderloading_Gradient */
+    --fdSkeleton_Gradient_Middle_Color: #585858;
+    /* tile badge border */
+    --fdBadge_Border_Color: var(--sapGroup_ContentBorderColor);
+
+    --fdInfoLabel_Background_1: #ffc218;
+    --fdInfoLabel_Color_1: #5f2900;
+    --fdInfoLabel_Background_2: #ffbaba;
+    --fdInfoLabel_Color_2: #770606;
+    --fdInfoLabel_Background_3: #feb7d9;
+    --fdInfoLabel_Color_3: #71093d;
+    --fdInfoLabel_Background_4: #ffb3f5;
+    --fdInfoLabel_Color_4: #67006f;
+    --fdInfoLabel_Background_5: #d6c2ff;
+    --fdInfoLabel_Color_5: #2500bc;
+    --fdInfoLabel_Background_6: #8fd4ff;
+    --fdInfoLabel_Color_6: #003776;
+    --fdInfoLabel_Background_7: #3ce3c5;
+    --fdInfoLabel_Color_7: #033f45;
+    --fdInfoLabel_Background_8: #9bdf47;
+    --fdInfoLabel_Color_8: #0c420c;
+    --fdInfoLabel_Background_9: #51ddf2;
+    --fdInfoLabel_Color_9: #003e52;
+    --fdInfoLabel_Background_10: #c5cdd3;
+    --fdInfoLabel_Color_10: #2c3a48;
+}

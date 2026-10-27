@@ -24,13 +24,21 @@ const compiler = await compile(
         async loadStylesheet(id, base) {
             const path = id.startsWith('tailwindcss/')
                 ? resolve(twDir, id.slice('tailwindcss/'.length))
-                : resolve(base, id);
+                : id.startsWith('.')
+                  ? resolve(base, id)
+                  : resolve(root, 'node_modules', id);
             return { path, base: dirname(path), content: readFileSync(path, 'utf8') };
         }
     }
 );
 
-const scanner = new Scanner({ sources: [{ base: resolve(root, 'registry'), pattern: '**/*.ts', negated: false }] });
+// spec files are not shipped, and their test code names attributes such as data-sap-theme
+const scanner = new Scanner({
+    sources: [
+        { base: resolve(root, 'registry'), pattern: '**/*.ts', negated: false },
+        { base: resolve(root, 'registry'), pattern: '**/*.spec.ts', negated: true }
+    ]
+});
 const candidates = scanner.scan().filter((c) => /sap|--sap/.test(c));
 
 /** CSS.escape for selectors, as Tailwind prints them. */

@@ -203,7 +203,7 @@ export const Badge: Story = {
                     }
                 </div>
                 <div class="flex flex-wrap items-center gap-4">
-                    <button fdButton glyph="bell" ariaLabel="Notifications, 999 new"><fd-button-badge content="999" /></button>
+                    <button fdButton glyph="bell" ariaLabel="999 notifications"><fd-button-badge content="999" /></button>
                     <button fdButton variant="transparent" glyph="message-popup" ariaLabel="Messages"><fd-button-badge attention /></button>
                 </div>
             </div>

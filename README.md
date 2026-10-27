@@ -1,8 +1,8 @@
-# fundamental-ngx-next
+# fundamental-ngx-registry
 
 SAP Fiori Horizon components for Angular, as copy-paste source files.
 
-- **Port of [`@fundamental-ngx/core`](https://sap.github.io/fundamental-ngx/#/core/home)**: same behaviour, ARIA and keyboard handling.
+- **Unofficial port of [`@fundamental-ngx/core`](https://sap.github.io/fundamental-ngx/#/core/home)** (Apache-2.0, see [License and attribution](#license-and-attribution)): same behaviour, ARIA and keyboard handling. Not ported: the legacy avatar group and the table.
 - **Styled with Tailwind CSS v4** on the SAP theme tokens from [`@sap-theming/theming-base-content`](https://github.com/SAP/theming-base-content). No fundamental-styles CSS at runtime.
 - **Behaviour from the Angular CDK** (a11y, overlay, bidi, ...).
 - **Modern Angular**: standalone, signals, `input()`/`model()`/`output()`, OnPush, zoneless.
@@ -25,18 +25,22 @@ scripts/
   generate-tokens.mjs     regenerates styles/ and the icon glyph map from theming-base-content
   build-registry.mjs      builds public/r/*.json and checks each component's imports
   check-styles.mjs        compiles every class and flags unknown SAP tokens / broken var() names
+  check-cn.mjs            cn() merge rules for SAP token utilities
 docs/                     Storybook introduction and foundations pages
 ```
 
 ## Commands
 
-Requires Node `>=22.22.3` (see `.nvmrc`) and pnpm.
+Requires Node `>=22.22.3` (see `.nvmrc`) and pnpm (settings in `pnpm-workspace.yaml`). The tests use the
+Playwright and Chromium of the dev dependencies (`pnpm exec playwright install chromium` once, if Chromium is missing).
 
 ```sh
 pnpm install
 pnpm storybook          # http://localhost:6006
 pnpm build-storybook    # dist/storybook, including the registry under /r
-pnpm check              # typecheck (strict templates) + style check + registry check
+pnpm check              # typecheck (strict templates), style, cn() and registry checks, tests, a11y
+pnpm test               # component tests in Chromium (Vitest browser mode); specs next to each component
+pnpm test:a11y          # every story rendered by Vitest and checked with axe, in Horizon and Horizon HC Black
 pnpm tokens             # regenerate the theme layer after bumping theming-base-content
 ```
 
@@ -78,11 +82,42 @@ import { Button } from '@/ui/button/button';
 
 ## Token utilities
 
-`--sapButton_Hover_Background` → `bg-sap-button-hover-background`, `--sapContent_Shadow1` → `shadow-sap-content-shadow1`,
-`--sapElement_Height` → `h-sap-element-height`. Rule: drop `sap`, split camelCase and `_`, kebab-case, prefix `sap-`.
-Tokens without a Tailwind namespace use the shorthand `opacity-(--sapContent_DisabledOpacity)`. In arbitrary
-`calc()` values write operators as `_-_` so Tailwind keeps the `_` in `--sap*_*` names; `pnpm check:styles` catches it.
+Every SAP theme token is available as a Tailwind utility. To get the class name, drop the `--sap` prefix, split the
+name at camelCase and `_`, write it in kebab-case and prefix it with `sap-`:
 
-## License
+| Token                          | Utility                          |
+| ------------------------------ | -------------------------------- |
+| `--sapButton_Hover_Background` | `bg-sap-button-hover-background` |
+| `--sapContent_Shadow1`         | `shadow-sap-content-shadow1`     |
+| `--sapElement_Height`          | `h-sap-element-height`           |
 
-Apache-2.0. SAP theme content and fonts come from `@sap-theming/theming-base-content` (Apache-2.0).
+Tokens without a Tailwind namespace use the variable shorthand, for example `opacity-(--sapContent_DisabledOpacity)`.
+
+In arbitrary values Tailwind may turn the `_` in `--sap*_*` names into spaces. To avoid that:
+
+- write calc operators as `_-_` and `_+_`;
+- multiply on the right: `calc(var(--sapX_Y)*2)`;
+- in multi-part values, alias the tokens into local variables first, e.g. `[--bw:var(--sapList_BorderWidth)]`, then
+  use `shadow-[0_var(--bw)_0_var(--c)]`.
+
+`pnpm check:styles` catches all of these.
+
+## License and attribution
+
+Apache-2.0, see [LICENSE](./LICENSE) and [NOTICE](./NOTICE).
+
+This is an unofficial derivative work of SAP's open source Fundamental Library, which is also licensed under
+Apache-2.0:
+
+- The components are **ports of [fundamental-ngx](https://github.com/SAP/fundamental-ngx)** (`@fundamental-ngx/core`):
+  behaviour, keyboard handling, ARIA and APIs come from it, rewritten with signals, the Angular CDK and Tailwind CSS.
+- Their **visual design follows [fundamental-styles](https://github.com/SAP/fundamental-styles)**, rebuilt as Tailwind
+  utilities; `registry/styles/extensions.css` holds theme values taken from it.
+- The **theme values, the "72" typeface and the SAP icon fonts** come from
+  [`@sap-theming/theming-base-content`](https://github.com/SAP/theming-base-content).
+
+Every component file starts with a header naming the code it is ported from, its copyright holders and the license, so
+the attribution travels with the file when you copy it into your app. Keep these headers, and keep the `LICENSE` and
+`NOTICE` information with any redistribution.
+
+SAP and SAP Fiori are trademarks of SAP SE. This project is not affiliated with, endorsed by or sponsored by SAP SE.

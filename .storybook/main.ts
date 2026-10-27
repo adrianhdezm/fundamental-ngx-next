@@ -1,5 +1,6 @@
 import type { StorybookConfig } from '@analogjs/storybook-angular';
 import tailwindcss from '@tailwindcss/vite';
+import remarkGfm from 'remark-gfm';
 import { fileURLToPath } from 'node:url';
 import { mergeConfig, type UserConfig } from 'vite';
 
@@ -7,7 +8,14 @@ const registry = (path: string) => fileURLToPath(new URL(`../registry/${path}`, 
 
 const config: StorybookConfig = {
     stories: ['../docs/**/*.mdx', '../docs/**/*.stories.ts', '../registry/**/*.mdx', '../registry/**/*.stories.ts'],
-    addons: ['@storybook/addon-docs', '@storybook/addon-a11y'],
+    addons: [
+        // GitHub-flavoured Markdown (tables) in the .mdx pages
+        {
+            name: '@storybook/addon-docs',
+            options: { mdxPluginOptions: { mdxCompileOptions: { remarkPlugins: [remarkGfm] } } }
+        },
+        '@storybook/addon-a11y'
+    ],
     framework: {
         name: '@analogjs/storybook-angular',
         options: {}
