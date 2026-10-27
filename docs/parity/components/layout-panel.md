@@ -1,16 +1,16 @@
 ## layout-panel
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/layout-panel) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/layout-panel)
-Registry: `registry/ui/layout-panel/` — 1 story, 5 tests.
+Registry: `registry/ui/layout-panel/` — 4 stories, 5 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example               | Registry story       | Status     | Notes                                                                                                                   |
-| ------------------------------ | -------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Basic Layout Panel Layout      | Default (panel 1)    | ✅ covered | Header, filters, body, footer                                                                                           |
-| Layout Panel Edge Bleed        | Default (panel 2)    | 🟡 partial | Bleed shown with an image; upstream bleeds a table, which is the real use case (cell padding aligning with panel edges) |
-| Layout Panel Transparent       | Default (panel 3)    | ✅ covered |                                                                                                                         |
-| Layout Panel Footer Variations | Default (panels 1-3) | ✅ covered | end, start and default (center) across the three panels                                                                 |
+| Upstream example               | Registry story                         | Status     | Notes                                                                                |
+| ------------------------------ | -------------------------------------- | ---------- | ------------------------------------------------------------------------------------ |
+| Basic Layout Panel Layout      | Default ("Basic")                      | ✅ covered | Header, filters, body, footer                                                        |
+| Layout Panel Edge Bleed        | EdgeBleed ("Edge bleed")               | ✅ covered | A plain `<table>` in a bled body (no table component in the registry), plus an image |
+| Layout Panel Transparent       | Transparent                            | ✅ covered |                                                                                      |
+| Layout Panel Footer Variations | FooterVariations ("Footer variations") | ✅ covered | start, end and default (center)                                                      |
 
 ### Tests vs. upstream specs
 
@@ -29,6 +29,5 @@ Registry-only coverage: slot ordering independent of projection order.
 
 ### Gaps to fill
 
-- **Stories:** split `Default` into one story per upstream example ("Basic", "Edge bleed" with a plain `<table>` in a bled body, "Transparent", "Footer variations").
 - **Tests:** none.
 - **Effort:** S — story restructuring only.
