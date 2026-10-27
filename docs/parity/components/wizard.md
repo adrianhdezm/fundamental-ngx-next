@@ -1,20 +1,20 @@
 ## wizard
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/wizard) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/wizard)
-Registry: `registry/ui/wizard/` — 5 stories, 9 tests.
+Registry: `registry/ui/wizard/` — 10 stories, 9 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                     | Registry story                                      | Status     | Notes                                                                                                                         |
-| ------------------------------------ | --------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Default Wizard                       | Default                                             | ✅ covered | Shown inline with `contentHeight`; upstream opens it full screen                                                              |
-| Customizable Wizard                  | CurrentStepOnly ("Current step only")               | 🟡 partial | `appendToWizard=false` covered; no `contentBackground="solid"`, mixed content/progress-bar sizes or compact next-step buttons |
-| Mobile Wizard                        | Narrow ("Stacked steps and a footer")               | 🟡 partial | Narrow stacked steps with a footer bar; no `floating-footer` bar or `fd-wizard-next-step [floating]`                          |
-| Branching Wizard                     | Branching ("Branching steps and a visible summary") | ✅ covered |                                                                                                                               |
-| Dialog Wizard                        | —                                                   | ❌ missing | Wizard in a dialog (`appendToWizard=false`, `displaySummaryStep`); needs an "Open: dialog" story                              |
-| Wizard with steps in ngFor           | Narrow                                              | ✅ covered | Steps built with `@for`                                                                                                       |
-| Visible summary step in progress bar | Branching                                           | ✅ covered | `displaySummaryStep`                                                                                                          |
-| Loading                              | —                                                   | ❌ missing | Skeleton placeholders in steps and content                                                                                    |
+| Upstream example                     | Registry story                                                            | Status     | Notes                                                                                                                                                           |
+| ------------------------------------ | ------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Default Wizard                       | Default                                                                   | ✅ covered | Shown inline with `contentHeight`; upstream opens it full screen                                                                                                |
+| Customizable Wizard                  | Customizable; CurrentStepOnly ("Current step only")                       | ✅ covered | `appendToWizard=false`, solid content background on the first step, sm progress bar with md content, compact next-step buttons, footer bar                      |
+| Mobile Wizard                        | Mobile ("Mobile, floating footer"); Narrow ("Stacked steps and a footer") | ✅ covered | Small wizard with a `floating-footer` bar and `fd-wizard-next-step floating`; narrow stacked steps with a footer bar                                            |
+| Branching Wizard                     | Branching ("Branching steps and a visible summary")                       | ✅ covered |                                                                                                                                                                 |
+| Dialog Wizard                        | InDialog ("In a dialog"); Open: dialog                                    | ✅ covered | Wizard in a dialog (`appendToWizard=false`, `displaySummaryStep`), Previous/Next/Review/Finish/Cancel in the dialog footer; the Open story opens it in `play()` |
+| Wizard with steps in ngFor           | Narrow                                                                    | ✅ covered | Steps built with `@for`                                                                                                                                         |
+| Visible summary step in progress bar | Branching                                                                 | ✅ covered | `displaySummaryStep`                                                                                                                                            |
+| Loading                              | Loading                                                                   | ✅ covered | Skeleton indicators and content, footer bar                                                                                                                     |
 
 The stacked-steps indicator opens an action sheet; "Open: stacked steps" opens it in `play()`.
 
@@ -35,6 +35,5 @@ Registry-only coverage: list/region/nav roles and aria-current, `stepClickValida
 
 ### Gaps to fill
 
-- **Stories:** "Customizable" — solid content background, sm/md sizes, compact next-step buttons; "Mobile" — floating-footer bar with a floating next-step button; "Open: dialog" — `play` opens a dialog with a wizard and a visible summary step; "Loading" — skeleton step labels and content.
 - **Tests:** "the step indicator shows its glyph"; "stacked steps get their labels back when the wizard grows"; "displaySummaryStep keeps the summary in the progress bar"; "branching step draws the branching connector"; "floating next step stays above the footer"; "arrow keys between steps are mirrored in RTL".
 - **Effort:** M, five stories (two with overlays) and six tests.
