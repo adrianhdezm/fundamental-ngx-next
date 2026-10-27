@@ -1,5 +1,6 @@
 import { Component, input, signal } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import type { ButtonVariant } from '@/ui/button/button';
 import { Icon } from '@/ui/icon/icon';
 import { Menu, MenuAddon, MenuInteractive, MenuItem, MenuTitle } from '@/ui/menu/menu';
@@ -138,4 +139,15 @@ export const Behaviors: Story = {
 export const Template: Story = {
     name: 'Template title and custom arrow',
     render: () => ({ template: `<story-split-button [kind]="'template'" />` })
+};
+export const OpenMenu: Story = {
+    name: 'Open: menu',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-split-button />` }),
+    play: async ({ canvasElement }) => {
+        const arrow = canvasElement.querySelector<HTMLElement>('fd-split-button button[aria-haspopup=menu]')!;
+        await userEvent.click(arrow);
+        await waitFor(() => expect(arrow.getAttribute('aria-expanded')).toBe('true'));
+        await waitFor(() => expect(document.querySelector('.cdk-overlay-container [role=menuitem]')).not.toBeNull());
+    }
 };
