@@ -19,6 +19,45 @@ class Host {
     readonly state = signal<ProgressIndicatorState | null>(null);
 }
 
+@Component({
+    imports: [ProgressIndicator],
+    template: `
+        <div style="width: 400px">
+            <span id="pi-label">Import progress</span>
+            <fd-progress-indicator
+                ariaLabelledBy="pi-label"
+                [valueMin]="min()"
+                [valueMax]="max()"
+                [valueNow]="value()"
+                [unit]="unit()"
+                [animate]="animate()"
+            />
+        </div>
+    `
+})
+class RangeHost {
+    readonly min = signal(1);
+    readonly max = signal(5);
+    readonly value = signal(3);
+    readonly unit = signal('%');
+    readonly animate = signal(false);
+}
+
+async function setupRange() {
+    const fixture = TestBed.createComponent(RangeHost);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    const bar = root.querySelector<HTMLElement>('[role=progressbar]')!;
+    return {
+        fixture,
+        host: fixture.componentInstance,
+        root,
+        bar,
+        fill: () => bar.querySelector<HTMLElement>('[style*="width"]')
+    };
+}
+
 const wait = (ms = 50) => new Promise((r) => setTimeout(r, ms));
 
 async function setup() {
@@ -53,6 +92,7 @@ describe('ProgressIndicator', () => {
         await fixture.whenStable();
         expect(bar.getAttribute('aria-valuetext')).toBe('80 of 100 MB');
         expect(root.textContent).toContain('80 of 100 MB');
+        expect(root.querySelector<HTMLElement>('[role=progressbar] [style*="width"]')?.style.width).toBe('100%');
         host.value.set(0);
         await fixture.whenStable();
         expect(root.querySelector('[role=progressbar] [style*="width"]')).toBeNull();
@@ -80,5 +120,50 @@ describe('ProgressIndicator', () => {
         expect(document.querySelector('.cdk-overlay-container')?.textContent).toContain('customer master data');
         const dialog = document.querySelector<HTMLElement>('.cdk-overlay-container [role=dialog]')!;
         expect(dialog.getAttribute('aria-label')).toBe('Importing 35 of 100 records from the customer master data');
+    });
+
+    it('computes the width relative to valueMin and valueMax', async () => {
+        const { fixture, host, bar, fill } = await setupRange();
+        expect(bar.getAttribute('aria-valuemin')).toBe('1');
+        expect(bar.getAttribute('aria-valuemax')).toBe('5');
+        expect(fill()?.style.width).toBe('50%');
+        host.value.set(2);
+        await fixture.whenStable();
+        expect(fill()?.style.width).toBe('25%');
+        host.value.set(9);
+        await fixture.whenStable();
+        expect(fill()?.style.width).toBe('100%');
+        // the fill reaches the end of the track
+        expect(Math.abs(fill()!.getBoundingClientRect().right - bar.getBoundingClientRect().right)).toBeLessThanOrEqual(
+            1
+        );
+    });
+
+    it('appends the unit to the default value text', async () => {
+        const { fixture, host, bar, root } = await setupRange();
+        host.min.set(0);
+        host.max.set(100);
+        host.value.set(25);
+        host.unit.set('MB');
+        await fixture.whenStable();
+        expect(bar.getAttribute('aria-valuetext')).toBe('25MB');
+        expect(root.textContent).toContain('25MB');
+    });
+
+    it('names the bar with ariaLabelledBy', async () => {
+        const { bar } = await setupRange();
+        expect(bar.getAttribute('aria-labelledby')).toBe('pi-label');
+        expect(bar.hasAttribute('aria-label')).toBe(false);
+        expect(document.getElementById('pi-label')?.textContent).toBe('Import progress');
+    });
+
+    it('animate adds a width transition', async () => {
+        const { fixture, host, fill } = await setupRange();
+        expect(getComputedStyle(fill()!).transitionProperty).not.toContain('width');
+        host.animate.set(true);
+        await fixture.whenStable();
+        const style = getComputedStyle(fill()!);
+        expect(style.transitionProperty).toContain('width');
+        expect(style.transitionDuration).toBe('0.5s');
     });
 });

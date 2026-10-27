@@ -1,7 +1,7 @@
 ## progress-indicator
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/progress-indicator) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/progress-indicator)
-Registry: `registry/ui/progress-indicator/` — 6 stories, 4 tests.
+Registry: `registry/ui/progress-indicator/` — 6 stories, 8 tests.
 
 ### Stories vs. upstream examples
 
@@ -14,15 +14,16 @@ Registry: `registry/ui/progress-indicator/` — 6 stories, 4 tests.
 
 ### Tests vs. upstream specs
 
-| Upstream behaviour                              | Registry test                    | Status     | Notes                                             |
-| ----------------------------------------------- | -------------------------------- | ---------- | ------------------------------------------------- |
-| Should create                                   | —                                | ➖ n/a     |                                                   |
-| Calculates the progress bar width from valueNow | is a progress bar with its value | ✅ covered | Also checks aria-valuenow/min/max/text and label. |
+| Upstream behaviour                                                                  | Registry test                                                                                                                                                                | Status     | Notes                                             |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------- |
+| Should create                                                                       | —                                                                                                                                                                            | ➖ n/a     |                                                   |
+| Calculates the progress bar width from valueNow                                     | is a progress bar with its value                                                                                                                                             | ✅ covered | Also checks aria-valuenow/min/max/text and label. |
+| Width relative to valueMin/valueMax, clamped to 100%, unit, ariaLabelledBy, animate | computes the width relative to valueMin and valueMax; shows a text and clamps the bar; appends the unit…; names the bar with ariaLabelledBy; animate adds a width transition | ✅ covered | Registry-only inputs, no upstream spec.           |
 
 Registry-only coverage: ARIA progressbar attributes, custom value text, zero-width at 0, state icon, truncated text popover on click.
 
 ### Gaps to fill
 
 - **Stories:** none.
-- **Tests:** "computes the width relative to valueMin and valueMax (e.g. 3 of 1..5 = 50%)"; "appends the unit to the default value text"; "clamps the width to 100% when valueNow exceeds valueMax" (current test sets 150 but never asserts the width); "names the bar with ariaLabelledBy"; "animate adds a width transition".
+- **Tests:** none.
 - **Effort:** S — one play-story and a few small assertions on an existing host.
