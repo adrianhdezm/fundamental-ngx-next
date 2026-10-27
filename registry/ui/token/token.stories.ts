@@ -22,6 +22,20 @@ const FRUITS = ['Apple', 'Banana', 'Cherry', 'Dragon fruit', 'Elderberry', 'Fig'
 class StoryTokens {}
 
 @Component({
+    selector: 'story-compact-tokens',
+    imports: [Token, ContentDensityDirective],
+    template: `
+        <div fdContentDensity="compact" class="flex flex-wrap items-center gap-2" role="listbox" aria-label="Filters">
+            <fd-token>Bibendum</fd-token>
+            <fd-token>Lorem</fd-token>
+            <fd-token [selected]="true">Dolor</fd-token>
+            <fd-token readOnly>Filter</fd-token>
+        </div>
+    `
+})
+class StoryCompactTokens {}
+
+@Component({
     selector: 'story-tokenizer',
     imports: [Token, Tokenizer, TokenizerInput, ContentDensityDirective],
     template: `
@@ -66,7 +80,7 @@ class StoryTokenizer {
 const meta: Meta<Tokenizer> = {
     title: 'Components/Token',
     component: Tokenizer,
-    decorators: [moduleMetadata({ imports: [StoryTokens, StoryTokenizer] })],
+    decorators: [moduleMetadata({ imports: [StoryTokens, StoryCompactTokens, StoryTokenizer] })],
     parameters: {
         docs: {
             description: {
@@ -81,6 +95,10 @@ export default meta;
 type Story = StoryObj<Tokenizer>;
 
 export const Tokens: Story = { render: () => ({ template: `<story-tokens />` }) };
+export const CompactTokens: Story = {
+    name: 'Compact tokens',
+    render: () => ({ template: `<story-compact-tokens />` })
+};
 export const TokenizerStory: Story = { name: 'Tokenizer', render: () => ({ template: `<story-tokenizer />` }) };
 export const Overflow: Story = { render: () => ({ template: `<story-tokenizer width="20rem" [count]="10" />` }) };
 export const Compact: Story = { render: () => ({ template: `<story-tokenizer [compact]="true" [glyph]="true" />` }) };
