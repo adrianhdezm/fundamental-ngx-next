@@ -1,5 +1,6 @@
-import { Component, afterNextRender, computed, inject, input, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, input, signal, viewChild } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, screen, userEvent, waitFor, within } from 'storybook/test';
 import { Avatar } from '@/ui/avatar/avatar';
 import { Bar, BarRight } from '@/ui/bar/bar';
 import { Button } from '@/ui/button/button';
@@ -208,7 +209,6 @@ const PHOTO =
 class StoryUserMenu {
     readonly mobile = input(false);
     readonly count = input(20);
-    readonly autoOpen = input(false);
     readonly name = input('Lisa Miller');
     protected readonly photo = PHOTO;
     protected readonly expanded = signal(true);
@@ -222,15 +222,17 @@ class StoryUserMenu {
     private readonly menu = viewChild.required<UserMenu>('menu');
     private readonly toasts = inject(MessageToastService);
 
-    constructor() {
-        afterNextRender(() => this.autoOpen() && setTimeout(() => this.menu().open(), 50));
-    }
-
     protected picked(action: string): void {
         this.toasts.open(`${action} action performed`, { duration: 5000 });
         this.menu().close();
     }
 }
+
+/** Opens the menu from the avatar and waits for its items. */
+const openMenu: Story['play'] = async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Lisa Miller' }));
+    await waitFor(() => expect(document.querySelector('[role=menuitem]')).not.toBeNull());
+};
 
 const meta: Meta<UserMenu> = {
     title: 'Components/User Menu',
@@ -257,17 +259,31 @@ export const Mobile: Story = { render: () => ({ template: `<story-user-menu [mob
 export const OpenDesktop: Story = {
     name: 'Open: desktop',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-user-menu [autoOpen]="true" [count]="2" />` })
+    render: () => ({ template: `<story-user-menu [count]="2" />` }),
+    play: openMenu
 };
 export const OpenLong: Story = {
     name: 'Open: long name, scrolling',
     tags: ['!autodocs'],
     render: () => ({
-        template: `<story-user-menu [autoOpen]="true" name="Maximilian Alexander Featherstonehaugh-Montgomery the Third" />`
-    })
+        template: `<story-user-menu name="Maximilian Alexander Featherstonehaugh-Montgomery the Third" />`
+    }),
+    play: openMenu
+};
+export const OpenSubmenu: Story = {
+    name: 'Open: submenu',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-user-menu [count]="2" />` }),
+    play: async (context) => {
+        await openMenu(context);
+        await waitFor(() => expect(document.activeElement?.textContent).toContain('Settings'));
+        await userEvent.keyboard('{ArrowDown}{ArrowRight}');
+        await screen.findByText('Sub-menu Item Subtitle');
+    }
 };
 export const OpenMobile: Story = {
     name: 'Open: mobile',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-user-menu [autoOpen]="true" [mobile]="true" [count]="2" />` })
+    render: () => ({ template: `<story-user-menu [mobile]="true" [count]="2" />` }),
+    play: openMenu
 };

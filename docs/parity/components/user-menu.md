@@ -1,14 +1,14 @@
 ## user-menu
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/user-menu) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/user-menu)
-Registry: `registry/ui/user-menu/` — 5 stories, 7 tests.
+Registry: `registry/ui/user-menu/` — 6 stories, 7 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example       | Registry story                                                                  | Status     | Notes                                                                                        |
-| ---------------------- | ------------------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------- |
-| User Menu Default Mode | Default, OpenDesktop ("Open: desktop"), OpenLong ("Open: long name, scrolling") | ✅ covered | Avatar control, header content area, panel, message strip, list, sublists with icons, footer |
-| User Menu Mobile Mode  | Mobile, OpenMobile ("Open: mobile")                                             | ✅ covered |                                                                                              |
+| Upstream example       | Registry story                                                                                                 | Status     | Notes                                                                                                                                                                                                                                                           |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| User Menu Default Mode | Default, OpenDesktop ("Open: desktop"), OpenLong ("Open: long name, scrolling"), OpenSubmenu ("Open: submenu") | ✅ covered | Avatar control, header content area, panel, message strip, list, sublists with icons, footer. The header avatar shows the photo instead of upstream's initials (an edit button showing "LM" fails axe label-content-name-mismatch). Open stories open in `play` |
+| User Menu Mobile Mode  | Mobile, OpenMobile ("Open: mobile")                                                                            | ✅ covered |                                                                                                                                                                                                                                                                 |
 
 ### Tests vs. upstream specs
 
