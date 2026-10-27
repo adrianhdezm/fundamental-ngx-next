@@ -674,6 +674,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "dynamic-side-content",
+      "type": "registry:ui",
+      "title": "Dynamic Side Content",
+      "description": "Main content with side content to the left, right, below or in an equal split.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/dynamic-side-content/dynamic-side-content.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
