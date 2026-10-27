@@ -1,12 +1,46 @@
 import { JsonPipe } from '@angular/common';
 import { FormControl as NgFormControl, FormGroup as NgFormGroup, ReactiveFormsModule } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { ContentDensityDirective } from '@/ui/content-density/content-density';
 import { Fieldset, FormHeader, FormItem, FormLabel } from '@/ui/form/form';
 import { FormInputMessageGroup } from '@/ui/form/form-input-message-group';
 import { FormMessage } from '@/ui/form/form-message';
 import { Link } from '@/ui/link/link';
 import { FormControl } from './input';
+
+/** Fields with value state messages, shared by the story and its open variant. */
+const VALUE_STATE_MESSAGES = `
+            <div class="flex max-w-md flex-col gap-4">
+                <div fdFormItem>
+                    <label fdFormLabel for="input-success">Email Address</label>
+                    <fd-form-input-message-group>
+                        <input fdFormControl id="input-success" placeholder="your.name&#64;company.com" state="success" />
+                        <fd-form-message type="success">Email format is valid and the domain is verified. You will receive notifications at this address.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="input-error">VAT Number - Message appears on hover</label>
+                    <fd-form-input-message-group [triggers]="['mouseenter', 'mouseleave']">
+                        <input fdFormControl id="input-error" placeholder="DE123456789" state="error" />
+                        <fd-form-message type="error">Invalid VAT number format. Must start with <b>country code</b> (2 letters) followed by <b>9-12 digits</b>. See <a fdLink href="#">validation rules</a>.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="input-warning">Purchase Order Amount</label>
+                    <fd-form-input-message-group>
+                        <input fdFormControl id="input-warning" placeholder="0.00" state="warning" />
+                        <fd-form-message type="warning">The amount exceeds your approval limit and needs a second approval.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="input-info">Cost Center</label>
+                    <fd-form-input-message-group>
+                        <input fdFormControl id="input-info" placeholder="CC-1000" state="information" />
+                        <fd-form-message type="information">The cost center is taken from your user profile.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+            </div>`;
 
 const meta: Meta<FormControl> = {
     title: 'Components/Input',
@@ -118,39 +152,7 @@ export const ValueStateMessages: Story = {
             }
         }
     },
-    render: () => ({
-        template: `
-            <div class="flex max-w-md flex-col gap-4">
-                <div fdFormItem>
-                    <label fdFormLabel for="input-success">Email Address</label>
-                    <fd-form-input-message-group>
-                        <input fdFormControl id="input-success" placeholder="your.name&#64;company.com" state="success" />
-                        <fd-form-message type="success">Email format is valid and the domain is verified. You will receive notifications at this address.</fd-form-message>
-                    </fd-form-input-message-group>
-                </div>
-                <div fdFormItem>
-                    <label fdFormLabel for="input-error">VAT Number - Message appears on hover</label>
-                    <fd-form-input-message-group [triggers]="['mouseenter', 'mouseleave']">
-                        <input fdFormControl id="input-error" placeholder="DE123456789" state="error" />
-                        <fd-form-message type="error">Invalid VAT number format. Must start with <b>country code</b> (2 letters) followed by <b>9-12 digits</b>. See <a fdLink href="#">validation rules</a>.</fd-form-message>
-                    </fd-form-input-message-group>
-                </div>
-                <div fdFormItem>
-                    <label fdFormLabel for="input-warning">Purchase Order Amount</label>
-                    <fd-form-input-message-group>
-                        <input fdFormControl id="input-warning" placeholder="0.00" state="warning" />
-                        <fd-form-message type="warning">The amount exceeds your approval limit and needs a second approval.</fd-form-message>
-                    </fd-form-input-message-group>
-                </div>
-                <div fdFormItem>
-                    <label fdFormLabel for="input-info">Cost Center</label>
-                    <fd-form-input-message-group>
-                        <input fdFormControl id="input-info" placeholder="CC-1000" state="information" />
-                        <fd-form-message type="information">The cost center is taken from your user profile.</fd-form-message>
-                    </fd-form-input-message-group>
-                </div>
-            </div>`
-    })
+    render: () => ({ template: VALUE_STATE_MESSAGES })
 };
 
 export const InlineHelp: Story = {
@@ -225,4 +227,20 @@ export const Textarea: Story = {
                 </div>
             </div>`
     })
+};
+
+/** Points at the error field (its message opens on hover) so axe checks the open message popover with rich content. */
+export const OpenValueStateMessage: Story = {
+    name: 'Open: value state message',
+    tags: ['!autodocs'],
+    render: () => ({ template: VALUE_STATE_MESSAGES }),
+    play: async ({ canvasElement }) => {
+        const input = canvasElement.querySelector<HTMLInputElement>('#input-error')!;
+        await userEvent.click(input);
+        await waitFor(() =>
+            expect(document.querySelector('.cdk-overlay-container fd-form-message')?.textContent).toContain(
+                'Invalid VAT number format'
+            )
+        );
+    }
 };
