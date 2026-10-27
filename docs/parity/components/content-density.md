@@ -1,24 +1,24 @@
 ## content-density
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/content-density) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/content-density)
-Registry: `registry/ui/content-density/` — 0 stories, 6 tests.
+Registry: `registry/ui/content-density/` — 3 stories, 6 tests.
 
 Our port is a single attribute directive that writes `data-density`; components react through the Tailwind `compact:`/`condensed:` variants. All services, storages, observers and provider config are deliberately dropped; the Storybook toolbar density switcher sets `data-density` on the document element.
 
 ### Stories vs. upstream examples
 
-| Upstream example                  | Registry story | Status     | Notes                                                                               |
-| --------------------------------- | -------------- | ---------- | ----------------------------------------------------------------------------------- |
-| Content Density Modes             | —              | ❌ missing | No story shows cozy / compact / condensed side by side                              |
-| ContentDensityStorage             | —              | ➖ n/a     | Storage providers dropped (the toolbar switcher replaces it)                        |
-| GlobalContentDensityService       | —              | ➖ n/a     | Service dropped; `data-density` on `<html>` is the global setting                   |
-| ContentDensityObserver            | —              | ➖ n/a     | Observer dropped; density is pure CSS                                               |
-| Directives                        | —              | ❌ missing | `fdContentDensity`, `fdCompact`, `fdCozy`, `fdCondensed` have no story              |
-| Inheritance and Priority          | —              | ❌ missing | Nearest-ancestor inheritance and a cozy island inside compact are tested, not shown |
-| Toggle Directive Behavior         | —              | ❌ missing | `[fdCompact]="flag"` toggling back to the inherited density                         |
-| Advanced Configuration            | —              | ➖ n/a     | debug / modifiers / alwaysAddModifiers config dropped                               |
-| UI5 Web Components Integration    | —              | ➖ n/a     | No UI5 wrappers in the registry                                                     |
-| Deprecated APIs (Migration Guide) | —              | ➖ n/a     | Prose only                                                                          |
+| Upstream example                  | Registry story                            | Status     | Notes                                                                                         |
+| --------------------------------- | ----------------------------------------- | ---------- | --------------------------------------------------------------------------------------------- |
+| Content Density Modes             | Modes ("Content density modes")           | ✅ covered | Buttons and inputs in cozy, compact and condensed sections                                    |
+| ContentDensityStorage             | —                                         | ➖ n/a     | Storage providers dropped (the toolbar switcher replaces it)                                  |
+| GlobalContentDensityService       | —                                         | ➖ n/a     | Service dropped; `data-density` on `<html>` is the global setting                             |
+| ContentDensityObserver            | —                                         | ➖ n/a     | Observer dropped; density is pure CSS                                                         |
+| Directives                        | Directives ("Directives and inheritance") | ✅ covered | `fdContentDensity`, `fdCompact`, `fdCozy`                                                     |
+| Inheritance and Priority          | Directives ("Directives and inheritance") | ✅ covered | Nearest-ancestor inheritance, a cozy island inside compact; no restricting parent (see tests) |
+| Toggle Directive Behavior         | Toggle ("Toggle directive")               | ✅ covered | A switch bound to `[fdCompact]`                                                               |
+| Advanced Configuration            | —                                         | ➖ n/a     | debug / modifiers / alwaysAddModifiers config dropped                                         |
+| UI5 Web Components Integration    | —                                         | ➖ n/a     | No UI5 wrappers in the registry                                                               |
+| Deprecated APIs (Migration Guide) | —                                         | ➖ n/a     | Prose only                                                                                    |
 
 ### Tests vs. upstream specs
 
@@ -42,6 +42,5 @@ Registry-only coverage: measures actual rendered heights of a button under each 
 
 ### Gaps to fill
 
-- **Stories:** "Modes" — three buttons/inputs in cozy, compact and condensed containers; "Directives and inheritance" — compact section with a nested `fdCozy` island and an `fdContentDensity="condensed"` list; "Toggle" — a switch bound to `[fdCompact]` showing the field resize and fall back to the toolbar density.
 - **Tests:** "fdCompact set back to false removes data-density so the inherited density applies"; optionally "ignores values that are not a density" (needs a source decision).
 - **Effort:** S, one docs-style story file and one test.
