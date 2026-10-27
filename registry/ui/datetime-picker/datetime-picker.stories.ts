@@ -2,7 +2,14 @@ import { Component, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { expect, userEvent, waitFor } from 'storybook/test';
-import { DatetimeAdapter, FdDate, provideDateTimeFormats } from '@/lib/datetime';
+import {
+    DATE_TIME_FORMATS,
+    DatetimeAdapter,
+    FD_DATETIME_FORMATS,
+    FdDate,
+    provideDateTimeFormats,
+    type DateTimeFormats
+} from '@/lib/datetime';
 import { Button } from '@/ui/button/button';
 import { type SpecialDayRule } from '@/ui/calendar/calendar';
 import { FormItem, FormLabel } from '@/ui/form/form';
@@ -78,6 +85,9 @@ class StoryDatetimePickerBasic {
     template: `
         <h3 fdTitle headerSize="5" class="${heading}">Special days and a legend</h3>
         <fd-datetime-picker [(date)]="date" [specialDaysRules]="rules" showCalendarLegend />
+
+        <h3 fdTitle headerSize="5" class="${heading}">Legend in a column</h3>
+        <fd-datetime-picker [(date)]="date" [specialDaysRules]="rules" showCalendarLegend legendCol />
     `
 })
 class StoryDatetimePickerSpecial {
@@ -86,6 +96,50 @@ class StoryDatetimePickerSpecial {
         { specialDayNumber: 5, legendText: 'Team meeting', rule: (d) => d.getDayOfWeek() === 3 },
         { specialDayNumber: 6, legendText: 'Release', appointment: true, rule: (d) => d.day === 15 }
     ];
+}
+
+/** A short month and a 24-hour clock for every picker below that has no format of its own. */
+const CUSTOM_FORMATS: DateTimeFormats = {
+    ...FD_DATETIME_FORMATS,
+    display: {
+        ...FD_DATETIME_FORMATS.display,
+        dateTimeInput: {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        }
+    }
+};
+
+@Component({
+    selector: 'story-datetime-picker-formats',
+    imports: [DatetimePicker, Title],
+    providers: [{ provide: DATE_TIME_FORMATS, useValue: CUSTOM_FORMATS }],
+    template: `
+        <h3 fdTitle headerSize="5" class="${heading}">Format provided with DATE_TIME_FORMATS</h3>
+        <fd-datetime-picker [(date)]="date" placeholder="MMM D, YYYY, HH:mm" />
+
+        <h3 fdTitle headerSize="5" class="${heading}">A format of the picker (customDateTimeFormat)</h3>
+        <fd-datetime-picker [(date)]="date" [customDateTimeFormat]="basicFormat" class="w-80" />
+
+        <h3 fdTitle headerSize="5" class="${heading}">With the period of the day</h3>
+        <fd-datetime-picker [(date)]="date" [customDateTimeFormat]="dayPeriodFormat" class="w-96" />
+        <p class="${value}">Value: {{ date()?.toString() ?? 'none' }}</p>
+    `
+})
+class StoryDatetimePickerFormats {
+    protected readonly basicFormat = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    };
+    protected readonly dayPeriodFormat = { ...this.basicFormat, dayPeriod: true };
+    protected readonly date = signal<FdDate | null | undefined>(new FdDate(2024, 3, 9, 14, 30, 0));
 }
 
 @Component({
@@ -187,7 +241,8 @@ const meta: Meta<DatetimePicker<FdDate>> = {
                 StoryDatetimePickerSpecial,
                 StoryDatetimePickerForm,
                 StoryDatetimePickerLocale,
-                StoryDatetimePickerMobile
+                StoryDatetimePickerMobile,
+                StoryDatetimePickerFormats
             ]
         })
     ],
@@ -209,6 +264,7 @@ export const SpecialDays: Story = { render: () => ({ template: `<story-datetime-
 export const Forms: Story = { render: () => ({ template: `<story-datetime-picker-form />` }) };
 export const Locale: Story = { render: () => ({ template: `<story-datetime-picker-locale />` }) };
 export const Mobile: Story = { render: () => ({ template: `<story-datetime-picker-mobile />` }) };
+export const Formatting: Story = { render: () => ({ template: `<story-datetime-picker-formats />` }) };
 
 /** Opens the picker with its button (or its field, in mobile mode) and waits for the calendar and the time. */
 async function openPicker(canvasElement: HTMLElement, target: 'button' | 'input' = 'button'): Promise<void> {
