@@ -252,6 +252,28 @@ describe('Checkbox', () => {
         expect(borders.size).toBe(5);
     });
 
+    it('clearing the state removes the state colour and aria-invalid', async () => {
+        const { host, input, box, stable } = await setup();
+        const defaultBorder = getComputedStyle(box).borderColor;
+        host.state.set('error');
+        await stable();
+        expect(input.getAttribute('aria-invalid')).toBe('true');
+        expect(getComputedStyle(box).borderColor).not.toBe(defaultBorder);
+
+        host.state.set(null);
+        await stable();
+        expect(input.hasAttribute('aria-invalid')).toBe(false);
+        expect(getComputedStyle(box).borderColor).toBe(defaultBorder);
+
+        host.state.set('warning');
+        await stable();
+        expect(getComputedStyle(box).borderColor).not.toBe(defaultBorder);
+        host.state.set('default');
+        await stable();
+        expect(input.hasAttribute('aria-invalid')).toBe(false);
+        expect(getComputedStyle(box).borderColor).toBe(defaultBorder);
+    });
+
     it('readonly keeps the value, stays focusable and sets aria-readonly', async () => {
         const { host, input, label, stable } = await setup((h) => {
             h.readonly.set(true);
