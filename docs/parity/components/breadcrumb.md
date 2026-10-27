@@ -1,16 +1,16 @@
 ## breadcrumb
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/breadcrumb) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/breadcrumb)
-Registry: `registry/ui/breadcrumb/` — 3 stories, 3 tests.
+Registry: `registry/ui/breadcrumb/` — 4 stories, 3 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example            | Registry story                  | Status     | Notes                                                                                                   |
-| --------------------------- | ------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------- |
-| An example using routerLink | —                               | 🟡 partial | Our stories only use `href`; no story shows `routerLink` links (needs `provideRouter` in the decorator) |
-| An example using href       | Default ("Breadcrumb")          | ✅ covered | Also shows a home icon, the current page and a click-only link                                          |
-| Custom Separator Style      | Separators ("Separator styles") | ✅ covered | All five styles                                                                                         |
-| (collapsed items menu)      | Overflow ("Collapsed items")    | ✅ covered | Not an upstream section; no "Open: …" story opens the collapsed-items menu                              |
+| Upstream example            | Registry story                                        | Status     | Notes                                                                                                   |
+| --------------------------- | ----------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------- |
+| An example using routerLink | —                                                     | 🟡 partial | Our stories only use `href`; no story shows `routerLink` links (needs `provideRouter` in the decorator) |
+| An example using href       | Default ("Breadcrumb")                                | ✅ covered | Also shows a home icon, the current page and a click-only link                                          |
+| Custom Separator Style      | Separators ("Separator styles")                       | ✅ covered | All five styles                                                                                         |
+| (collapsed items menu)      | Overflow ("Collapsed items"), "Open: collapsed items" | ✅ covered | Not an upstream section; the Open story opens the collapsed-items menu for the a11y run                 |
 
 ### Tests vs. upstream specs
 
@@ -28,6 +28,6 @@ Registry-only coverage: `role=navigation` with label and list semantics, no sepa
 
 ### Gaps to fill
 
-- **Stories:** "Router links" (trail with `routerLink` items, `provideRouter([])` in the decorator); "Open: collapsed items" (narrow trail whose `play` clicks the "More" button).
+- **Stories:** "Router links" (trail with `routerLink` items, `provideRouter([])` in the decorator) — blocked: router in stories (README "Not yet ported").
 - **Tests:** "renders the separator of each separatorStyle and updates when it changes"; "restores collapsed items when the container grows"; "ArrowRight from the last link focuses the current page and ArrowLeft returns"; "ArrowLeft on the first link keeps the focus"; "ArrowDown and ArrowUp move like ArrowRight and ArrowLeft"; "arrow keys are mirrored in RTL" (registry-only behaviour, untested).
 - **Effort:** S, short keyboard and layout tests and two stories.
