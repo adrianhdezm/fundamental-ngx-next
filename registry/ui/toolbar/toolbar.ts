@@ -396,7 +396,7 @@ export class Toolbar {
         const type = this.fdType();
         const titled = !!this.title() || !!this.projectedTitle();
         return cn(
-            'm-0 box-border flex h-(--tb-h) min-h-(--tb-h) items-center gap-2 py-0 ps-(--tb-ps) pe-2 [&>*]:shrink-0',
+            'm-0 box-border flex h-(--tb-h) min-h-(--tb-h) items-center gap-2 py-0 ps-(--tb-ps) pe-2 [&>:not([role=heading])]:shrink-0',
             'border-b border-solid border-sap-group-title-border-color font-sap-font-family text-sap-font-size',
             '[--tb-h:2.75rem] compact:[--tb-h:2rem] [--tb-sep-h:2rem] compact:[--tb-sep-h:1.5rem] [--tb-ps:0.5rem]',
             type === 'transparent' ? 'bg-transparent' : 'bg-sap-toolbar-background',

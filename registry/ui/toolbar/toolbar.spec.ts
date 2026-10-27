@@ -39,6 +39,20 @@ class OverflowHost {
 }
 
 @Component({
+    imports: [Toolbar, ToolbarItem],
+    template: `
+        <fd-toolbar shouldOverflow [title]="title()" style="width: 600px">
+            <button fd-toolbar-item id="a" style="width: 100px">A</button>
+            <button fd-toolbar-item id="b" style="width: 100px">B</button>
+            <button fd-toolbar-item id="c" style="width: 100px">C</button>
+        </fd-toolbar>
+    `
+})
+class TitleHost {
+    readonly title = signal('Short');
+}
+
+@Component({
     imports: [Toolbar, ToolbarSpacer, ToolbarSeparator, ToolbarLabel],
     template: `
         <fd-toolbar [title]="title()" [headingLevel]="3" [ariaOrientation]="orientation()" style="width: 600px">
@@ -214,6 +228,21 @@ describe('Toolbar', () => {
         // the low priority item overflows first
         expect(inRow()).toEqual(['a', 'c', 'd', 'e']);
         expect(inPanel()).toEqual(['b', 'g', 'f']);
+    });
+
+    it('the title truncates with an ellipsis and keeps the full text in title', async () => {
+        const { host, root, stable } = await render(TitleHost);
+        const long = 'A very long toolbar title that does not fit into the toolbar at all, even without items';
+        host.title.set(long);
+        await stable();
+        await stable();
+        const toolbar = root.querySelector<HTMLElement>('fd-toolbar')!;
+        const heading = toolbar.querySelector<HTMLElement>('[role=heading]')!;
+        expect(getComputedStyle(heading).textOverflow).toBe('ellipsis');
+        expect(heading.scrollWidth).toBeGreaterThan(heading.clientWidth);
+        expect(heading.getBoundingClientRect().right).toBeLessThanOrEqual(toolbar.getBoundingClientRect().right);
+        expect(heading.title).toBe(long);
+        expect(heading.textContent).toBe(long);
     });
 
     it('spacer, separator, label; title renders a heading', async () => {
