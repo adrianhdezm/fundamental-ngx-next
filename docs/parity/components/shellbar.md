@@ -1,7 +1,7 @@
 ## shellbar
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/shellbar) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/shellbar)
-Registry: `registry/ui/shellbar/` — 11 stories, 7 tests.
+Registry: `registry/ui/shellbar/` — 11 stories, 8 tests.
 
 ### Stories vs. upstream examples
 
@@ -25,10 +25,10 @@ Registry: `registry/ui/shellbar/` — 11 stories, 7 tests.
 | Should create (shellbar, actions, action, logo, title, subtitle, product menu, user menu, side-nav directive) | —             | ➖ n/a |                                                            |
 | Applies modifier classes (shellbar, actions)                                                                  | —             | ➖ n/a | Class-name checks; size is tested via `data-size` instead. |
 
-Registry-only coverage: size from width, search placement and opening per size, action names with notification counts and callbacks, keyboard-reachable interactive branding, actions overflow menu, small-screen search takeover, context-area hide priority.
+Registry-only coverage: size from width, search placement and opening per size, action names with notification counts and callbacks, keyboard-reachable interactive branding, actions overflow menu, small-screen search takeover, context-area hide priority, `contentItemVisibilityChange` with the hidden items and an empty list once they fit again.
 
 ### Gaps to fill
 
 - **Stories:** `Open: Overflow menu` once the action sheet passes `aria-hidden-focus` when open. Complex search results only after porting suggestions.
-- **Tests:** "a toggled action exposes aria-pressed"; "groupFlex lets a group shrink so the others grow"; "the product menu opens and runs the callback of a selected item"; "the user menu built from [user] and [userMenu] opens and runs callbacks"; "the navigation and back buttons emit their events"; "contentItemVisibilityChange emits the hidden items and restores them when space returns".
+- **Tests:** "a toggled action exposes aria-pressed"; "groupFlex lets a group shrink so the others grow"; "the product menu opens and runs the callback of a selected item"; "the user menu built from [user] and [userMenu] opens and runs callbacks"; "the navigation and back buttons emit their events".
 - **Effort:** M — several composite stories and overlay tests; complex search would be L (feature missing).

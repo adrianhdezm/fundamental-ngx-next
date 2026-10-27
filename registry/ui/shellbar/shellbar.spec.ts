@@ -27,12 +27,18 @@ import {
     ],
     template: `
         <div [style.width.px]="width()">
-            <fd-shellbar [size]="size()" showNavigationButton (navigationButtonClicked)="clicked.set('navigation')">
+            <fd-shellbar
+                [size]="size()"
+                showNavigationButton
+                showBackButton
+                (navigationButtonClicked)="clicked.set('navigation')"
+                (backButtonClicked)="clicked.set('back')"
+            >
                 <fd-shellbar-branding interactiveBranding ariaLabel="Home" (click)="clicked.set('home')">
                     <fd-shellbar-title>Corporate Portal</fd-shellbar-title>
                 </fd-shellbar-branding>
                 @if (context()) {
-                    <fd-shellbar-context-area (contentItemVisibilityChange)="hidden.set($event.length)">
+                    <fd-shellbar-context-area (contentItemVisibilityChange)="hidden.set($event)">
                         <span class="inline-block w-40" fdShellbarHidePriority="1">First</span>
                         <span class="inline-block w-40" fdShellbarHidePriority="2">Second</span>
                     </fd-shellbar-context-area>
@@ -45,7 +51,7 @@ import {
                         [notificationCount]="3"
                         [callback]="notify"
                     />
-                    <fd-shellbar-action glyph="feedback" label="Feedback" />
+                    <fd-shellbar-action glyph="feedback" label="Feedback" [toggled]="toggled()" [callback]="toggle" />
                     <fd-shellbar-action glyph="sys-help" label="Help" />
                 </fd-shellbar-actions>
             </fd-shellbar>
@@ -58,8 +64,10 @@ class Host {
     readonly context = signal(false);
     readonly clicked = signal('');
     readonly searched = signal<string | null>(null);
-    readonly hidden = signal(0);
+    readonly hidden = signal<HTMLElement[]>([]);
+    readonly toggled = signal(false);
     readonly notify = () => this.clicked.set('notifications');
+    readonly toggle = () => this.toggled.update((v) => !v);
 }
 
 const wait = (ms = 100) => new Promise((r) => setTimeout(r, ms));
@@ -149,6 +157,20 @@ describe('Shellbar', () => {
     it('hides context area items by priority when space runs out', async () => {
         const { host } = await setup(460, true);
         await wait();
-        expect(host.hidden()).toBeGreaterThan(0);
+        expect(host.hidden().length).toBeGreaterThan(0);
+    });
+
+    it('contentItemVisibilityChange emits the hidden items and restores them when space returns', async () => {
+        const { host, fixture } = await setup(460, true);
+        await wait();
+        const hidden = host.hidden();
+        // the item with the highest priority number hides first
+        expect(hidden.map((el) => el.textContent)).toEqual(hidden.length === 1 ? ['Second'] : ['Second', 'First']);
+        expect(hidden.every((el) => el.offsetParent === null)).toBe(true);
+        host.width.set(1300);
+        await fixture.whenStable();
+        await wait(200);
+        expect(host.hidden()).toEqual([]);
+        expect(hidden.every((el) => el.offsetParent !== null)).toBe(true);
     });
 });
