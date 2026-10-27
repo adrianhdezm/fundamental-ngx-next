@@ -7,6 +7,7 @@ import {
     ReactiveFormsModule
 } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, waitFor } from 'storybook/test';
 import { Slider, type SliderCustomValue, type SliderValue } from './slider';
 
 const text = 'm-0 font-sap-font-family text-sap-font-size text-sap-text-color';
@@ -217,3 +218,25 @@ export const TicksAndLabels: Story = {
 export const Range: Story = { render: () => ({ template: `<story-slider-range />` }) };
 export const Vertical: Story = { render: () => ({ template: `<story-slider-vertical />` }) };
 export const Form: Story = { render: () => ({ template: `<story-slider-form />` }) };
+
+export const OpenEditableTooltip: Story = {
+    name: 'Open: Editable tooltip',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { value: 60, range: [20, 70] },
+        template: `
+            <div class="flex max-w-xl flex-col gap-12 pt-12">
+                <fd-slider ariaLabel="Value" tooltipMode="editable" [(value)]="value" />
+                <fd-slider ariaLabel="Range" mode="range" showTicks tooltipMode="editable" [step]="5" [(value)]="range" />
+            </div>`
+    }),
+    play: async ({ canvasElement }) => {
+        let handle: HTMLElement | null = null;
+        await waitFor(() => {
+            handle = canvasElement.querySelector<HTMLElement>('fd-slider [role=slider]');
+            expect(handle).not.toBeNull();
+        });
+        handle!.focus();
+        await waitFor(() => expect(canvasElement.querySelector('fd-slider input')).not.toBeNull());
+    }
+};
