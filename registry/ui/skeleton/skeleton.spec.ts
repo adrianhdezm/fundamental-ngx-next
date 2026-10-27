@@ -20,6 +20,11 @@ import { Skeleton, type SkeletonType } from './skeleton';
             <svg:circle cx="25" cy="25" r="25" />
             <svg:rect x="60" y="0" width="100" height="16" rx="4" />
         </fd-skeleton>
+        <div style="width: 300px">
+            <fd-skeleton id="bare" />
+            <fd-skeleton id="text-default" type="text" />
+            <fd-skeleton id="text-string" type="text" textLines="2" />
+        </div>
     `
 })
 class Host {
@@ -123,6 +128,28 @@ describe('Skeleton', () => {
         const { el, mask } = parts('main');
         expect(mask.querySelectorAll('rect')).toHaveLength(0);
         expect(size(el)).toEqual([200, 8]);
+    });
+
+    it('uses type null, 3 text lines and no size by default', async () => {
+        const { parts } = await setup();
+        const bare = parts('bare');
+        expect(bare.mask.children).toHaveLength(0);
+        expect(bare.el.style.width).toBe('');
+        expect(bare.el.style.height).toBe('');
+        const text = parts('text-default');
+        expect([...text.mask.querySelectorAll('rect')].map((l) => l.getAttribute('width'))).toEqual([
+            '100%',
+            '100%',
+            '60%'
+        ]);
+        expect(size(text.el)).toEqual([300, 60]);
+    });
+
+    it('coerces a string textLines attribute', async () => {
+        const { parts } = await setup();
+        const { el, mask } = parts('text-string');
+        expect([...mask.querySelectorAll('rect')].map((l) => l.getAttribute('width'))).toEqual(['100%', '60%']);
+        expect(size(el)).toEqual([300, 40]);
     });
 
     it('text without a width fills its container', async () => {
