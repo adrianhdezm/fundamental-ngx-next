@@ -74,8 +74,9 @@ export class UploadCollection {
     selector: '[fd-upload-collection-item], [fdUploadCollectionItem]',
     exportAs: 'fdUploadCollectionItem',
     host: {
-        // the content keeps its place next to the thumbnail when the buttons wrap
-        class: 'flex-nowrap [[data-small]_&]:flex-wrap [&>[fd-list-content]]:min-w-0 [&>[fd-list-content]]:basis-0 [&>[fd-list-content]]:grow'
+        // the content keeps its place next to the thumbnail when the buttons wrap; in the small layout its
+        // basis is its own width, so the buttons wrap below it even without a thumbnail
+        class: 'flex-nowrap [[data-small]_&]:flex-wrap [&>[fd-list-content]]:min-w-0 [&>[fd-list-content]]:basis-0 [[data-small]_&]:[&>[fd-list-content]]:basis-auto [&>[fd-list-content]]:grow'
     }
 })
 export class UploadCollectionItem {

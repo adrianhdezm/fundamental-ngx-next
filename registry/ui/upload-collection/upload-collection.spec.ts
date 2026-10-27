@@ -1,7 +1,9 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
+import { FormsModule } from '@angular/forms';
 import { userEvent } from 'vitest/browser';
+import { Checkbox } from '@/ui/checkbox/checkbox';
 import { ListContent, ListItem, ListTitle } from '@/ui/list/list';
 import {
     UploadCollection,
@@ -68,6 +70,64 @@ const button = (name: string, index = 0) =>
     [...document.querySelectorAll<HTMLButtonElement>('fd-upload-collection-button-group button')].filter(
         (b) => (b.getAttribute('aria-label') ?? b.textContent!.trim()) === name
     )[index];
+
+@Component({
+    imports: [
+        UploadCollection,
+        UploadCollectionItem,
+        UploadCollectionButtonGroup,
+        UploadCollectionFormItem,
+        UploadCollectionTitle,
+        UploadCollectionTitleContainer,
+        ListItem,
+        ListContent,
+        ListTitle,
+        Checkbox,
+        FormsModule
+    ],
+    template: `
+        <div style="width: 500px">
+            <fd-upload-collection [small]="small()" [selection]="selection()">
+                <li fd-list-item fd-upload-collection-item ariaRole="listitem" fileName="Report" extension="pdf">
+                    @if (selection()) {
+                        <fd-checkbox [(ngModel)]="checked" ariaLabel="Select Report.pdf" />
+                    }
+                    <div fd-list-content>
+                        <div fd-upload-collection-title-container>
+                            <span fd-list-title fd-upload-collection-title></span>
+                            <fd-upload-collection-form-item [(ngModel)]="draft" />
+                        </div>
+                    </div>
+                    <fd-upload-collection-button-group
+                        [allowFileNameEdit]="allowEdit()"
+                        [allowFileDeletion]="allowDelete()"
+                        [disableFileNameEdit]="disableEdit()"
+                        [disableFileDeletion]="disableDelete()"
+                    />
+                </li>
+            </fd-upload-collection>
+        </div>
+    `
+})
+class ConfigHost {
+    readonly small = signal(false);
+    readonly selection = signal(false);
+    readonly allowEdit = signal(true);
+    readonly allowDelete = signal(true);
+    readonly disableEdit = signal(false);
+    readonly disableDelete = signal(false);
+    checked = false;
+    draft = '';
+}
+
+async function setupConfig(init: (host: ConfigHost) => void = () => {}) {
+    const fixture = TestBed.createComponent(ConfigHost);
+    init(fixture.componentInstance);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    await wait();
+    return { fixture, host: fixture.componentInstance, root: fixture.nativeElement as HTMLElement };
+}
 
 async function setup(width = 800) {
     const fixture = TestBed.createComponent(Host);
@@ -149,5 +209,22 @@ describe('UploadCollection', () => {
         expect(root.querySelector('[fd-upload-collection-title] b')).toBeNull();
         expect(titles()[0]).toBe('<b>bold</b>.pdf');
         expect((window as { __ucXss?: boolean }).__ucXss).toBeUndefined();
+    });
+
+    describe('buttons, layout and selection', () => {
+        it('wraps the buttons below the file in small mode', async () => {
+            const { fixture, host, root } = await setupConfig();
+            const group = root.querySelector<HTMLElement>('fd-upload-collection-button-group')!;
+            const content = root.querySelector<HTMLElement>('[fd-list-content]')!;
+            expect(group.getBoundingClientRect().top).toBeLessThan(content.getBoundingClientRect().bottom);
+            host.small.set(true);
+            await fixture.whenStable();
+            expect(root.querySelector('fd-upload-collection')!.hasAttribute('data-small')).toBe(true);
+            expect(group.getBoundingClientRect().top).toBeGreaterThanOrEqual(content.getBoundingClientRect().bottom);
+            expect(group.getBoundingClientRect().width).toBeGreaterThan(400);
+            // the file keeps its line, even without a thumbnail
+            expect(content.getBoundingClientRect().width).toBeGreaterThan(400);
+            fixture.destroy();
+        });
     });
 });
