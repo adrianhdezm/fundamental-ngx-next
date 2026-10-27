@@ -1,7 +1,7 @@
 ## dialog
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/dialog) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/dialog)
-Registry: `registry/ui/dialog/` — 22 stories, 7 tests.
+Registry: `registry/ui/dialog/` — 22 stories, 8 tests.
 
 ### Stories vs. upstream examples
 
@@ -27,33 +27,33 @@ The "Open: …" stories open their dialog in `play` (they used an `autoOpen` inp
 
 ### Tests vs. upstream specs
 
-| Upstream behaviour                                                        | Registry test                                                  | Status     | Notes                                                                         |
-| ------------------------------------------------------------------------- | -------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------- |
-| Body shows the loading state                                              | hides, shows a loader and toggles full screen…                 | ✅ covered | Checks `role=progressbar`                                                     |
-| Body/header/footer CSS classes, button classes                            | —                                                              | ➖ n/a     | Class-only                                                                    |
-| `should create` (all parts), create without Router                        | —                                                              | ➖ n/a     |                                                                               |
-| Container animation lifecycle (void/visible/hidden, `_endClose$`)         | —                                                              | ➖ n/a     | Animation internals; removal after close is covered                           |
-| Opens from a template                                                     | is a labelled modal…                                           | ✅ covered |                                                                               |
-| Opens from a component                                                    | —                                                              | ❌ missing | Only stories use a component-based dialog                                     |
-| Object dialog: footer present/absent, callbacks                           | builds a dialog from an object with its footer buttons         | 🟡 partial | Footer present + callbacks; no-footer case untested                           |
-| Custom header and footer templates                                        | is a labelled modal…; dismisses on Escape…                     | ✅ covered | Host uses custom header/footer                                                |
-| `dismissAll`                                                              | — (used in afterEach)                                          | 🟡 partial | Never asserted                                                                |
-| Ref lifecycle: status after close/dismiss, result signal, overlay cleanup | is a labelled modal…; dismisses on Escape…                     | 🟡 partial | `dismissed` status and removal checked; `closed` status and result signal not |
-| Hide dialog                                                               | hides, shows a loader…                                         | ✅ covered |                                                                               |
-| Closes on Escape                                                          | dismisses on Escape unless escKeyCloseable is false            | ✅ covered |                                                                               |
-| Closes on backdrop click                                                  | dismisses on a backdrop click only when backdropClickCloseable | ✅ covered |                                                                               |
-| Custom position                                                           | —                                                              | ❌ missing | `position` config                                                             |
-| Custom size (width/height/min/max)                                        | —                                                              | ❌ missing |                                                                               |
-| Custom classes (panel/backdrop)                                           | —                                                              | ❌ missing | `backdropClass` shown in a story only                                         |
-| Mobile mode, with and without stretch (header mobile layout)              | —                                                              | ❌ missing |                                                                               |
-| Draggable                                                                 | —                                                              | ❌ missing | `cdkDrag` via the header handle                                               |
-| Resizable                                                                 | —                                                              | ❌ missing | Resize handle and `aria-description="Resizable"`                              |
-| Custom attributes (ariaLabel, ariaDescribedBy, role)                      | —                                                              | ❌ missing | Only aria-labelledby/aria-modal tested                                        |
-| Closes on router navigation start                                         | —                                                              | ❌ missing | `closeOnNavigation` exists in config                                          |
+| Upstream behaviour                                                        | Registry test                                                     | Status     | Notes                                                                                    |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------- |
+| Body shows the loading state                                              | hides, shows a loader and toggles full screen…                    | ✅ covered | Checks `role=progressbar`                                                                |
+| Body/header/footer CSS classes, button classes                            | —                                                                 | ➖ n/a     | Class-only                                                                               |
+| `should create` (all parts), create without Router                        | —                                                                 | ➖ n/a     |                                                                                          |
+| Container animation lifecycle (void/visible/hidden, `_endClose$`)         | —                                                                 | ➖ n/a     | Animation internals; removal after close is covered                                      |
+| Opens from a template                                                     | is a labelled modal…                                              | ✅ covered |                                                                                          |
+| Opens from a component                                                    | —                                                                 | ❌ missing | Only stories use a component-based dialog                                                |
+| Object dialog: footer present/absent, callbacks                           | builds a dialog from an object with its footer buttons            | 🟡 partial | Footer present + callbacks; no-footer case untested                                      |
+| Custom header and footer templates                                        | is a labelled modal…; dismisses on Escape…                        | ✅ covered | Host uses custom header/footer                                                           |
+| `dismissAll`                                                              | — (used in afterEach)                                             | 🟡 partial | Never asserted                                                                           |
+| Ref lifecycle: status after close/dismiss, result signal, overlay cleanup | is a labelled modal…; dismisses on Escape…                        | 🟡 partial | `dismissed` status and removal checked; `closed` status and result signal not            |
+| Hide dialog                                                               | hides, shows a loader…                                            | ✅ covered |                                                                                          |
+| Closes on Escape                                                          | dismisses on Escape unless escKeyCloseable is false               | ✅ covered |                                                                                          |
+| Closes on backdrop click                                                  | dismisses on a backdrop click only when backdropClickCloseable    | ✅ covered |                                                                                          |
+| Custom position                                                           | —                                                                 | ❌ missing | `position` config                                                                        |
+| Custom size (width/height/min/max)                                        | —                                                                 | ❌ missing |                                                                                          |
+| Custom classes (panel/backdrop)                                           | —                                                                 | ❌ missing | `backdropClass` shown in a story only                                                    |
+| Mobile mode, with and without stretch (header mobile layout)              | mobile mode fills the viewport, mobileOuterSpacing keeps a margin | ✅ covered | `mobileOuterSpacing` had no effect (the full-size minimums won over its maximums); fixed |
+| Draggable                                                                 | —                                                                 | ❌ missing | `cdkDrag` via the header handle                                                          |
+| Resizable                                                                 | —                                                                 | ❌ missing | Resize handle and `aria-description="Resizable"`                                         |
+| Custom attributes (ariaLabel, ariaDescribedBy, role)                      | —                                                                 | ❌ missing | Only aria-labelledby/aria-modal tested                                                   |
+| Closes on router navigation start                                         | —                                                                 | ❌ missing | `closeOnNavigation` exists in config                                                     |
 
 Registry-only coverage: focus trap (Tab cycling), focus returns to the trigger, stacked dialogs dim the page once, full-screen width, object dialog focuses the approve button.
 
 ### Gaps to fill
 
-- **Tests:** "opens a component and injects its DialogRef and data"; "object dialog without buttons renders no footer"; "dismissAll closes every open dialog"; "close() sets status closed and exposes the result"; "places the dialog at the configured position"; "applies width, height and min/max sizes"; "applies dialogPanelClass and backdropClass"; "mobile mode fills the viewport, mobileOuterSpacing keeps a margin"; "drags by the header when draggable"; "resizes with the handle when resizable and announces it"; "applies ariaLabel and ariaDescribedBy from the config"; "dismisses on router navigation when closeOnNavigation".
+- **Tests:** "opens a component and injects its DialogRef and data"; "object dialog without buttons renders no footer"; "dismissAll closes every open dialog"; "close() sets status closed and exposes the result"; "places the dialog at the configured position"; "applies width, height and min/max sizes"; "applies dialogPanelClass and backdropClass"; "drags by the header when draggable"; "resizes with the handle when resizable and announces it"; "applies ariaLabel and ariaDescribedBy from the config"; "dismisses on router navigation when closeOnNavigation".
 - **Effort:** M, about 12 straightforward config tests plus three stories.

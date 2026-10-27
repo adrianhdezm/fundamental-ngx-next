@@ -64,6 +64,8 @@ function outcome(ref: DialogRef): Promise<{ closed?: unknown; dismissed?: unknow
 const windows = () => [...document.querySelectorAll<HTMLElement>('[role=dialog]')];
 const settle = () => new Promise((r) => setTimeout(r, 150));
 
+const near = (actual: number, expected: number) => expect(Math.abs(actual - expected)).toBeLessThanOrEqual(1);
+
 describe('Dialog', () => {
     afterEach(() => TestBed.inject(DialogService).dismissAll());
 
@@ -166,5 +168,25 @@ describe('Dialog', () => {
         const result = outcome(ref);
         await userEvent.click(win.querySelector<HTMLElement>('button[fd-dialog-close-button]')!);
         expect(await result).toEqual({ dismissed: 'x' });
+    });
+
+    it('mobile mode fills the viewport, mobileOuterSpacing keeps a margin', async () => {
+        const { open } = await setup();
+        await open({ mobile: true, width: '300px' });
+        const viewport = document.querySelector('fd-dialog')!.getBoundingClientRect();
+        let rect = windows()[0].getBoundingClientRect();
+        expect(rect.width).toBe(viewport.width);
+        expect(rect.height).toBe(viewport.height);
+        TestBed.inject(DialogService).dismissAll();
+        await settle();
+
+        // 5% of the width and 3% of the height on each side, with rounded corners
+        await open({ mobile: true, mobileOuterSpacing: true });
+        rect = windows()[0].getBoundingClientRect();
+        near(rect.width, viewport.width * 0.9);
+        near(rect.height, viewport.height * 0.94);
+        near(rect.left, viewport.width * 0.05);
+        near(rect.top, viewport.height * 0.03);
+        expect(getComputedStyle(windows()[0]).borderTopLeftRadius).not.toBe('0px');
     });
 });
