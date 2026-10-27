@@ -1,25 +1,25 @@
 ## tabs
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/tabs) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/tabs)
-Registry: `registry/ui/tabs/` — 6 stories, 6 tests.
+Registry: `registry/ui/tabs/` — 9 stories, 6 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                                        | Registry story                 | Status     | Notes                                                                           |
-| ------------------------------------------------------- | ------------------------------ | ---------- | ------------------------------------------------------------------------------- |
-| Simple Tabs (titles, semantic, title templates)         | `Basic`                        | ✅ covered | Adds a disabled tab.                                                            |
-| Form element inside tab content                         | —                              | ❌ missing | Nothing shows focusable form content in a panel (`focusFirstFocusableElement`). |
-| Tabs with Counter                                       | `Basic`, `Modes`               | ✅ covered | Counts on title and template tabs; semantic counts in filter mode.              |
-| Icon-Only Mode                                          | `Modes`                        | ✅ covered |                                                                                 |
-| Process Mode                                            | `Modes`                        | ✅ covered |                                                                                 |
-| Filter Mode                                             | `Modes`                        | ✅ covered |                                                                                 |
-| Programmatic Selection                                  | `Behaviour`                    | ✅ covered | `selectTab('story-tab-2')`.                                                     |
-| Adding and Removing Tabs                                | `Behaviour`                    | ✅ covered |                                                                                 |
-| Collapsible Overflow (More menu; maxVisibleTabs)        | `Behaviour`, "Open: More menu" | ✅ covered | The Open story opens the More menu for the a11y run                             |
-| Stacked Content                                         | `Stacked`                      | ✅ covered |                                                                                 |
-| Collapsible Tab                                         | `Behaviour`                    | ✅ covered | `collapsibleTabs` with `maxVisibleTabs=3`.                                      |
-| Default Tab (`defaultTab`, `selectDefaultOnTabsChange`) | —                              | ❌ missing | Both inputs exist in `tabs.ts`.                                                 |
-| Playground Area                                         | —                              | ❌ missing | No `Playground` story (mode, compact, titles, glyphs, counts).                  |
+| Upstream example                                        | Registry story                 | Status     | Notes                                                                                        |
+| ------------------------------------------------------- | ------------------------------ | ---------- | -------------------------------------------------------------------------------------------- |
+| Simple Tabs (titles, semantic, title templates)         | `Basic`                        | ✅ covered | Adds a disabled tab.                                                                         |
+| Form element inside tab content                         | `Form content`                 | ✅ covered | A button and an input group with a label in the panels                                       |
+| Tabs with Counter                                       | `Basic`, `Modes`               | ✅ covered | Counts on title and template tabs; semantic counts in filter mode.                           |
+| Icon-Only Mode                                          | `Modes`                        | ✅ covered |                                                                                              |
+| Process Mode                                            | `Modes`                        | ✅ covered |                                                                                              |
+| Filter Mode                                             | `Modes`                        | ✅ covered |                                                                                              |
+| Programmatic Selection                                  | `Behaviour`                    | ✅ covered | `selectTab('story-tab-2')`.                                                                  |
+| Adding and Removing Tabs                                | `Behaviour`                    | ✅ covered |                                                                                              |
+| Collapsible Overflow (More menu; maxVisibleTabs)        | `Behaviour`, "Open: More menu" | ✅ covered | The Open story opens the More menu for the a11y run                                          |
+| Stacked Content                                         | `Stacked`                      | ✅ covered |                                                                                              |
+| Collapsible Tab                                         | `Behaviour`                    | ✅ covered | `collapsibleTabs` with `maxVisibleTabs=3`.                                                   |
+| Default Tab (`defaultTab`, `selectDefaultOnTabsChange`) | `Default tab`                  | ✅ covered | `defaultTab` on the third tab; a Hide/Show first tab button with `selectDefaultOnTabsChange` |
+| Playground Area                                         | `Playground`                   | ✅ covered | Mode, size, compact, and the title, icon and count of each tab                               |
 
 ### Tests vs. upstream specs
 
@@ -41,6 +41,6 @@ Registry-only coverage: one tab stop with arrow wrap and disabled tabs skipped, 
 
 ### Gaps to fill
 
-- **Stories:** `Playground` (mode, size, compact, tab titles/glyphs/counts); `DefaultTab` (`defaultTab="three"` and `selectDefaultOnTabsChange` with a Hide first tab button); `FormContent` (input group and button inside panels).
+- **Stories:** none.
 - **Tests:** "selectTab() selects a tab by id and emits selectedTabChange"; "adding and removing tabs keeps the selected tab selected"; "removing the selected tab selects the default tab with selectDefaultOnTabsChange"; "defaultTab selects that tab first"; "stackContent shows every panel and marks the tab of the panel in view"; "the More menu opens with the keyboard and returns focus to the More button on Escape"; "compact density makes the tabs smaller"; "TabNav updates the tab stop when links are added"; "selecting a tab focuses the first focusable element in its panel"; "Home moves to the first enabled tab".
 - **Effort:** M, a second host for dynamic and stacked tabs plus four stories.
