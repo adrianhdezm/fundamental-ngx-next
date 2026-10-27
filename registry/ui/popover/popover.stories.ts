@@ -1,5 +1,6 @@
 import { signal } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Avatar } from '@/ui/avatar/avatar';
 import { Bar, BarElement, BarLeft, BarRight, ButtonBar } from '@/ui/bar/bar';
 import { Button } from '@/ui/button/button';
@@ -67,7 +68,7 @@ export const Simple: Story = {
     render: () => ({
         template: `
             <div class="flex flex-wrap items-start gap-6">
-                <fd-popover>
+                <fd-popover bodyAriaLabel="Group">
                     <fd-popover-control>
                         <fd-avatar size="s" circle ariaLabel="Photo" image="assets/person.svg" />
                     </fd-popover-control>
@@ -76,7 +77,7 @@ export const Simple: Story = {
                     </fd-popover-body>
                 </fd-popover>
 
-                <fd-popover placement="bottom">
+                <fd-popover placement="bottom" bodyAriaLabel="Header">
                     <fd-popover-control>
                         <fd-avatar size="m" glyph="money-bills" ariaLabel="Money bills" [colorAccent]="3" />
                     </fd-popover-control>
@@ -86,7 +87,7 @@ export const Simple: Story = {
                     </fd-popover-body>
                 </fd-popover>
 
-                <fd-popover>
+                <fd-popover bodyAriaLabel="Title">
                     <fd-popover-control>
                         <button fdButton label="Sample"></button>
                     </fd-popover-control>
@@ -104,7 +105,7 @@ export const Simple: Story = {
                     </fd-popover-body>
                 </fd-popover>
 
-                <fd-popover placement="bottom" fixedPosition [noArrow]="false">
+                <fd-popover placement="bottom" fixedPosition [noArrow]="false" bodyAriaLabel="Fixed position">
                     <fd-popover-control><button fdButton label="Fixed Position"></button></fd-popover-control>
                     <fd-popover-body><div class="p-4">This popover keeps its placement even when it does not fit.</div></fd-popover-body>
                 </fd-popover>
@@ -336,11 +337,11 @@ export const Nested: Story = {
     name: 'Popover inside popover',
     render: () => ({
         template: `
-            <fd-popover>
+            <fd-popover bodyAriaLabel="First level">
                 <fd-popover-control><button fdButton label="Open first"></button></fd-popover-control>
                 <fd-popover-body>
                     <div class="p-4">
-                        <fd-popover placement="right-start">
+                        <fd-popover placement="right-start" bodyAriaLabel="Second level">
                             <fd-popover-control><button fdButton label="Open second"></button></fd-popover-control>
                             <fd-popover-body><div class="p-4">Second level</div></fd-popover-body>
                         </fd-popover>
@@ -400,4 +401,39 @@ export const Text: Story = {
             </fd-popover>
         `
     })
+};
+
+/** Clicks a popover control and waits until that many popover bodies are open. */
+async function openPopover(control: HTMLElement, open = 1): Promise<void> {
+    await userEvent.click(control);
+    await waitFor(() => expect(document.querySelectorAll('.cdk-overlay-pane fd-popover-body').length).toBe(open));
+}
+const controls = (root: ParentNode) => [...root.querySelectorAll<HTMLElement>('fd-popover-control > *')];
+
+export const OpenSimple: Story = {
+    name: 'Open: simple',
+    tags: ['!autodocs'],
+    render: Simple.render,
+    play: ({ canvasElement }) => openPopover(controls(canvasElement)[0])
+};
+export const OpenHeaderFooter: Story = {
+    name: 'Open: header and footer',
+    tags: ['!autodocs'],
+    render: Simple.render,
+    play: ({ canvasElement }) => openPopover(controls(canvasElement)[2])
+};
+export const OpenNonDialog: Story = {
+    name: 'Open: body roles',
+    tags: ['!autodocs'],
+    render: NonDialog.render,
+    play: ({ canvasElement }) => openPopover(controls(canvasElement)[0])
+};
+export const OpenNested: Story = {
+    name: 'Open: popover inside popover',
+    tags: ['!autodocs'],
+    render: Nested.render,
+    play: async ({ canvasElement }) => {
+        await openPopover(controls(canvasElement)[0]);
+        await openPopover(controls(document.querySelector('.cdk-overlay-pane')!)[0], 2);
+    }
 };
