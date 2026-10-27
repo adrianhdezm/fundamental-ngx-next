@@ -1,7 +1,7 @@
 ## card
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/card) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/card)
-Registry: `registry/ui/card/` — 15 stories, 14 tests.
+Registry: `registry/ui/card/` — 15 stories, 16 tests.
 
 ### Stories vs. upstream examples
 
@@ -27,22 +27,22 @@ Registry: `registry/ui/card/` — 15 stories, 14 tests.
 
 ### Tests vs. upstream specs
 
-| Upstream behaviour                                                        | Registry test                                                         | Status     | Notes                                                |
-| ------------------------------------------------------------------------- | --------------------------------------------------------------------- | ---------- | ---------------------------------------------------- |
-| Card type modifier, updates with `cardType`                               | card role description and hint are exposed on the host                | ✅ covered | Checked via the role description per type            |
-| Interactive modifier (on/off)                                             | role button makes the whole card focusable …; card list: arrow keys … | ✅ covered |                                                      |
-| Renders title and content                                                 | header, content and footer render in order …                          | ✅ covered |                                                      |
-| Role description: translated with card type, custom                       | card role description and hint …                                      | ✅ covered |                                                      |
-| Aria description: default, custom                                         | card role description and hint …                                      | ✅ covered |                                                      |
-| `aria-describedby`: badges, subtitle, second subtitle, counter, extra ids | the card is labelled by its title and described by …                  | 🟡 partial | Second subtitle id is in the source but not asserted |
-| Host classes of content, header, title, subtitles, KPI parts, loader      | —                                                                     | ➖ n/a     | Class only                                           |
-| Counter status modifier                                                   | counter color follows its status                                      | ✅ covered |                                                      |
-| `should create` (all parts)                                               | —                                                                     | ➖ n/a     |                                                      |
+| Upstream behaviour                                                        | Registry test                                                                                       | Status     | Notes                                     |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ---------- | ----------------------------------------- |
+| Card type modifier, updates with `cardType`                               | card role description and hint are exposed on the host                                              | ✅ covered | Checked via the role description per type |
+| Interactive modifier (on/off)                                             | role button makes the whole card focusable …; card list: arrow keys …                               | ✅ covered |                                           |
+| Renders title and content                                                 | header, content and footer render in order …                                                        | ✅ covered |                                           |
+| Role description: translated with card type, custom                       | card role description and hint …                                                                    | ✅ covered |                                           |
+| Aria description: default, custom                                         | card role description and hint …                                                                    | ✅ covered |                                           |
+| `aria-describedby`: badges, subtitle, second subtitle, counter, extra ids | the card is labelled by its title and described by …; aria-describedby includes the second subtitle | ✅ covered |                                           |
+| Host classes of content, header, title, subtitles, KPI parts, loader      | —                                                                                                   | ➖ n/a     | Class only                                |
+| Counter status modifier                                                   | counter color follows its status                                                                    | ✅ covered |                                           |
+| `should create` (all parts)                                               | —                                                                                                   | ➖ n/a     |                                           |
 
-Registry-only coverage: badges (two at most, corner placement), interactive main header keyboard, selected-card border, KPI LTR in RTL, loader hiding content from AT, media/banner sizes and colours, card-list arrow/Home/End navigation, corner rounding.
+Registry-only coverage: badges (two at most, corner placement), interactive main header keyboard, selected-card border, KPI LTR in RTL, loader hiding content from AT, media/banner sizes and colours, card-list arrow/Home/End navigation, corner rounding, extended header layout (end column, bottom/top alignment).
 
 ### Gaps to fill
 
 - **Stories:** done. Bar chart list is blocked on porting `fd-card-bar`.
-- **Tests:** "aria-describedby includes the second subtitle"; optional: "extended header columns align to the end and the header can sit at the bottom".
-- **Effort:** M, mostly composition stories; tests are almost at parity.
+- **Tests:** done.
+- **Effort:** none left (the bar chart list is blocked).
