@@ -658,5 +658,11 @@ describe('Popover', () => {
             await stable();
             expect(body()).toBeNull();
         });
+
+        it('isOpen true on creation opens the popover', async () => {
+            const { host, body } = await setupOptions({ open: true });
+            expect(body()).not.toBeNull();
+            expect(host.open()).toBe(true);
+        });
     });
 });

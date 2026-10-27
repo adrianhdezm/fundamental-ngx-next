@@ -930,7 +930,12 @@ export class Popover {
         effect(() => {
             const t = this.trigger();
             const el = t ? (t instanceof ElementRef ? t.nativeElement : t) : this.origin()?.nativeElement;
-            if (el) this.service.initialise(el, { template: this.bodyTemplate(), vcr: this.vcr });
+            if (!el) return;
+            this.service.initialise(el, { template: this.bodyTemplate(), vcr: this.vcr });
+            // isOpen set before the trigger existed (e.g. on creation) opens now
+            untracked(() => {
+                if (this.isOpen() && !this.service.isOpen()) this.service.open();
+            });
         });
         // isOpen model <-> service
         let previous = false;
@@ -943,9 +948,13 @@ export class Popover {
                 if (!open && this.service.isOpen()) this.service.close();
             });
         });
+        // only changes of the service state reach the model, so an isOpen that could not open yet is kept
+        let serviceOpen = false;
         effect(() => {
             const open = this.service.isOpen();
             untracked(() => {
+                if (open === serviceOpen) return;
+                serviceOpen = open;
                 if (open !== this.isOpen()) {
                     if (open) this.beforeOpen.emit();
                     previous = open;
