@@ -19,6 +19,8 @@ import {
                 (layoutChange)="changes.push($event)"
                 [backgroundDesign]="design()"
                 collapseTitleEndBtn="Collapse end"
+                [expandTitleStartBtn]="expandStart()"
+                [collapseTitleStartBtn]="collapseStart()"
             >
                 <ng-template #startColumn><p>Start</p></ng-template>
                 <ng-template #midColumn><p>Mid</p></ng-template>
@@ -31,6 +33,8 @@ class Host {
     readonly width = signal(1400);
     readonly layout = signal<FlexibleColumnLayout>('OneColumnStartFullScreen');
     readonly design = signal<'solid' | 'translucent' | 'transparent'>('solid');
+    readonly expandStart = signal<string | undefined>(undefined);
+    readonly collapseStart = signal<string | undefined>(undefined);
     readonly changes: FlexibleColumnLayout[] = [];
 }
 
@@ -146,6 +150,32 @@ describe('FlexibleColumnLayout', () => {
         await stable();
         expect(host.layout()).toBe('TwoColumnsMidExpanded');
         expect(host.changes).toEqual(['TwoColumnsStartExpanded', 'TwoColumnsMidExpanded']);
+    });
+
+    it('the start separator switches ThreeColumnsMidExpanded to ThreeColumnsEndMinimized', async () => {
+        const { host, stable, buttons, columns } = await setup('ThreeColumnsMidExpanded');
+        await userEvent.click(buttons()[0]);
+        await stable();
+        expect(host.layout()).toBe('ThreeColumnsEndMinimized');
+        expect(host.changes).toEqual(['ThreeColumnsEndMinimized']);
+        expect(columns().map((c) => c.style.width)).toEqual(['33%', '67%', '0%']);
+    });
+
+    it('expandTitleStartBtn and collapseTitleStartBtn label the start separator button', async () => {
+        const { host, stable, buttons } = await setup('TwoColumnsStartExpanded');
+        host.expandStart.set('Expand start');
+        host.collapseStart.set('Collapse start');
+        await stable();
+        expect(buttons()[0].getAttribute('aria-label')).toBe('Collapse start');
+        expect(buttons()[0].title).toBe('Collapse start');
+
+        host.layout.set('ThreeColumnsMidExpanded');
+        await stable();
+        const [start, end] = buttons();
+        expect(start.getAttribute('aria-label')).toBe('Expand start');
+        expect(start.title).toBe('Expand start');
+        // the end separator keeps its own label
+        expect(end.getAttribute('aria-label')).toBe('Collapse end');
     });
 
     it('the separator buttons are keyboard operable', async () => {
