@@ -3,6 +3,7 @@ import { Component, signal } from '@angular/core';
 import { FormControl as NgFormControl, FormGroup as NgFormGroup, ReactiveFormsModule } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { delay, of } from 'rxjs';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
 import { FormItem, FormLabel } from '@/ui/form/form';
 import { ListByline, ListContent, ListTitle } from '@/ui/list/list';
@@ -363,3 +364,49 @@ export const Layout: Story = {
 export const States: Story = { render: () => ({ template: `<story-multi-combobox-states />` }) };
 export const Forms: Story = { render: () => ({ template: `<story-multi-combobox-forms />` }) };
 export const Mobile: Story = { render: () => ({ template: `<story-multi-combobox-mobile />` }) };
+
+/** Clicks the addon button of the multi-combobox with the input id and waits for the list (or dialog). */
+async function openMultiCombobox(canvasElement: HTMLElement, inputId: string, popup: string): Promise<void> {
+    const combobox = canvasElement.querySelector<HTMLElement>(`fd-multi-combobox:has(#${inputId})`)!;
+    await userEvent.click(combobox.querySelector<HTMLElement>('button[aria-haspopup]')!);
+    await waitFor(() => expect(document.querySelector(popup)).not.toBeNull());
+    await waitFor(() => expect(combobox.querySelector('#' + inputId)!.getAttribute('aria-expanded')).toBe('true'));
+}
+
+export const OpenSelectAll: Story = {
+    name: 'Open: select all',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-multi-combobox-data />` }),
+    play: ({ canvasElement }) => openMultiCombobox(canvasElement, 'mcb-1', '[role=listbox] [role=option]')
+};
+export const OpenGroups: Story = {
+    name: 'Open: groups',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-multi-combobox-layout />` }),
+    play: ({ canvasElement }) => openMultiCombobox(canvasElement, 'mcb-group', '[role=listbox] [role=group]')
+};
+export const OpenColumns: Story = {
+    name: 'Open: two columns',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-multi-combobox-layout />` }),
+    play: ({ canvasElement }) => openMultiCombobox(canvasElement, 'mcb-columns', '[role=listbox] [role=option]')
+};
+export const OpenTemplate: Story = {
+    name: 'Open: custom item template',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-multi-combobox-layout />` }),
+    play: ({ canvasElement }) => openMultiCombobox(canvasElement, 'mcb-byline', '[role=listbox] [fdListByline]')
+};
+export const OpenState: Story = {
+    name: 'Open: state message',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-multi-combobox-states />` }),
+    play: ({ canvasElement }) => openMultiCombobox(canvasElement, 'mcb-state-error', '[role=listbox] [role=option]')
+};
+export const OpenMobile: Story = {
+    name: 'Open: mobile',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-multi-combobox-mobile />` }),
+    play: ({ canvasElement }) =>
+        openMultiCombobox(canvasElement, 'mcb-mobile', '[role=dialog] [role=listbox] [role=option]')
+};
