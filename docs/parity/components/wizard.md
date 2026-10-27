@@ -1,7 +1,7 @@
 ## wizard
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/wizard) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/wizard)
-Registry: `registry/ui/wizard/` — 10 stories, 9 tests.
+Registry: `registry/ui/wizard/` — 10 stories, 15 tests.
 
 ### Stories vs. upstream examples
 
@@ -20,20 +20,19 @@ The stacked-steps indicator opens an action sheet; "Open: stacked steps" opens i
 
 ### Tests vs. upstream specs
 
-| Upstream behaviour                                                                 | Registry test                                                                                             | Status     | Notes                                                       |
-| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ---------- | ----------------------------------------------------------- |
-| `should create` (wizard, content, navigation, next step, step, indicator, service) | —                                                                                                         | ➖ n/a     |                                                             |
-| Step indicator renders the glyph                                                   | —                                                                                                         | ❌ missing | `glyph` input exists; no test of the icon                   |
-| Step key press / click emits `stepClicked` when visited                            | goes back to a visited step when it is clicked; moves the focus between visited steps with the arrow keys | ✅ covered | Click and Enter                                             |
-| Resize smaller/bigger                                                              | stacks steps that do not fit and lists them in the indicator                                              | 🟡 partial | Stacking when narrow covered; un-stacking when it grows not |
-| `setContentTemplates` (step ids, visited, final step)                              | —                                                                                                         | ➖ n/a     | Internal setup; visited outcome covered by the click tests  |
-| Status change focuses the first tabbable element of the new step                   | appends the content of the steps as they become current                                                   | ✅ covered |                                                             |
-| Scroll spy updates statuses                                                        | makes the step whose content scrolls to the top current                                                   | ✅ covered |                                                             |
-| Progress bar hidden at summary, shown otherwise                                    | replaces the steps by the summary                                                                         | ✅ covered |                                                             |
+| Upstream behaviour                                                                 | Registry test                                                                                             | Status     | Notes                                                      |
+| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------- |
+| `should create` (wizard, content, navigation, next step, step, indicator, service) | —                                                                                                         | ➖ n/a     |                                                            |
+| Step indicator renders the glyph                                                   | shows the glyph of a step indicator                                                                       | ✅ covered |                                                            |
+| Step key press / click emits `stepClicked` when visited                            | goes back to a visited step when it is clicked; moves the focus between visited steps with the arrow keys | ✅ covered | Click and Enter                                            |
+| Resize smaller/bigger                                                              | stacks steps that do not fit…; gives stacked steps their labels back when the wizard grows                | ✅ covered |                                                            |
+| `setContentTemplates` (step ids, visited, final step)                              | —                                                                                                         | ➖ n/a     | Internal setup; visited outcome covered by the click tests |
+| Status change focuses the first tabbable element of the new step                   | appends the content of the steps as they become current                                                   | ✅ covered |                                                            |
+| Scroll spy updates statuses                                                        | makes the step whose content scrolls to the top current                                                   | ✅ covered |                                                            |
+| Progress bar hidden at summary, shown otherwise                                    | replaces the steps by the summary                                                                         | ✅ covered |                                                            |
 
-Registry-only coverage: list/region/nav roles and aria-current, `stepClickValidator`, roving focus with arrows between visited steps, `appendToWizard=false`, stacked-step indicator action sheet.
+Registry-only coverage: list/region/nav roles and aria-current, `stepClickValidator`, roving focus with arrows between visited steps, `appendToWizard=false`, stacked-step indicator action sheet, `displaySummaryStep` keeping the summary in the progress bar, the dashed connector of a branching step, a floating next step above the floating footer, arrow keys mirrored in RTL.
 
 ### Gaps to fill
 
-- **Tests:** "the step indicator shows its glyph"; "stacked steps get their labels back when the wizard grows"; "displaySummaryStep keeps the summary in the progress bar"; "branching step draws the branching connector"; "floating next step stays above the footer"; "arrow keys between steps are mirrored in RTL".
-- **Effort:** M, five stories (two with overlays) and six tests.
+- None left.
