@@ -267,3 +267,33 @@ export const MessageStates: Story = {
             </div>`
     })
 };
+
+/** Waits until the message popover holds the given text. */
+async function waitForMessage(text: string): Promise<void> {
+    await waitFor(() =>
+        expect(document.querySelector('.cdk-overlay-container fd-form-message')?.textContent).toContain(text)
+    );
+}
+
+/** Focuses the first field so axe checks the open message popover. */
+export const OpenMessageGroup: Story = {
+    name: 'Open: message group',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-form-message-group />` }),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(canvasElement.querySelector<HTMLInputElement>('#mg-1')!);
+        await waitForMessage('monthly statement');
+    }
+};
+
+/** Opens the controlled message with rich content from its input-group button. */
+export const OpenRichMessage: Story = {
+    name: 'Open: rich message',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-form-message-group />` }),
+    play: async ({ canvasElement }) => {
+        const group = canvasElement.querySelector<HTMLInputElement>('#mg-6')!.closest('fd-input-group')!;
+        await userEvent.click(group.querySelector<HTMLButtonElement>('button')!);
+        await waitForMessage('Budget Approved');
+    }
+};
