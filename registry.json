@@ -549,6 +549,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "layout-panel",
+      "type": "registry:ui",
+      "title": "Layout Panel",
+      "description": "Rounded content container with header, description, actions, filters, body and footer.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/layout-panel/layout-panel.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
