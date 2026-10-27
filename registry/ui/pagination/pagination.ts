@@ -35,6 +35,14 @@ const MORE = -1;
 /** Pages kept at each end and on each side of the current page. */
 const CORNER_PAGES = 1;
 const SIDE_PAGES = 2;
+/** Items per page when `itemsPerPage` is not a number. */
+const DEFAULT_ITEMS_PER_PAGE = 10;
+
+/** Items per page as upstream coerces them: a number, rounded down, at least 1, or 10 when not a number. */
+function normalisePageSize(value: unknown): number {
+    const size = typeof value === 'string' && value.trim() === '' ? NaN : Number(value);
+    return Math.max(1, Math.floor(Number.isFinite(size) ? size : DEFAULT_ITEMS_PER_PAGE));
+}
 
 /** The pages to show: all of them, or the ends and the neighbours of the current page with ellipses. */
 export function paginationPages(totalPages: number, currentPage: number): number[] {
@@ -254,7 +262,7 @@ let nextId = 0;
             <fd-select
                 [ariaLabelledBy]="compact() ? null : id + '-per-page'"
                 [ariaLabel]="compact() ? itemsPerPageLabel() : null"
-                [value]="itemsPerPage()"
+                [value]="pageSize()"
                 (valueChange)="onPerPage($any($event))"
             >
                 @for (option of options; track option) {
@@ -268,8 +276,8 @@ export class Pagination {
     readonly totalItems = input(0, { transform: numberAttribute });
     /** The current page (from 1); two-way bindable. */
     readonly currentPage = model(1);
-    /** Items per page; two-way bindable. */
-    readonly itemsPerPage = model(10);
+    /** Items per page; two-way bindable. Rounded down and at least 1; 10 when it is not a number. */
+    readonly itemsPerPage = model(DEFAULT_ITEMS_PER_PAGE);
     /** Choices of a select for the items per page. */
     readonly itemsPerPageOptions = input<number[]>([]);
     /** Template of the items per page control; context: `onSelect(size)` and `pageOptions`. */
@@ -318,9 +326,9 @@ export class Pagination {
     /** The control that is the tab stop. */
     private readonly tabStop = signal<string | null>(null);
 
-    protected readonly totalPages = computed(() =>
-        this.itemsPerPage() > 0 ? Math.max(1, Math.ceil(this.totalItems() / this.itemsPerPage())) : 1
-    );
+    /** `itemsPerPage`, normalised. */
+    protected readonly pageSize = computed(() => normalisePageSize(this.itemsPerPage()));
+    protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.totalItems() / this.pageSize())));
     protected readonly page = computed(() =>
         Math.min(Math.max(1, Math.floor(this.currentPage()) || 1), this.totalPages())
     );
@@ -339,11 +347,11 @@ export class Pagination {
                     .filter((v) => v > 0)
             )
         ];
-        if (!options.includes(this.itemsPerPage())) options.push(this.itemsPerPage());
+        if (!options.includes(this.pageSize())) options.push(this.pageSize());
         return options.sort((a, b) => a - b);
     });
     readonly showing = computed<PaginationShowing>(() => {
-        const size = this.itemsPerPage();
+        const size = this.pageSize();
         return {
             from: Math.min((this.page() - 1) * size + 1, this.totalItems()),
             to: Math.min(this.page() * size, this.totalItems()),
@@ -370,7 +378,7 @@ export class Pagination {
     }
 
     protected readonly onPerPage = (size: number): void => {
-        if (!size || size === this.itemsPerPage()) return;
+        if (!size || size === this.pageSize()) return;
         this.itemsPerPage.set(size);
         const last = Math.max(1, Math.ceil(this.totalItems() / size));
         if (this.currentPage() > last) {

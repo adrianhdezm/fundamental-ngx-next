@@ -120,4 +120,30 @@ describe('Pagination', () => {
         expect(host.page()).toBe(1);
         await wait();
     });
+
+    it('rounds itemsPerPage down, keeps it at least 1 and falls back to 10 when it is not a number', async () => {
+        const { fixture, host, root } = await setup({ total: 50 });
+        const pageCount = () => {
+            const of = root.querySelector('[id$="-page-of"]')?.textContent?.trim();
+            return of ? of.replace('of ', '') : `${root.querySelectorAll('nav button[aria-label^="Page "]').length}`;
+        };
+        host.size.set(5.5);
+        await fixture.whenStable();
+        expect(pageCount()).toBe('10');
+        host.size.set(NaN);
+        await fixture.whenStable();
+        expect(pageCount()).toBe('5');
+        host.size.set('25' as unknown as number);
+        await fixture.whenStable();
+        expect(pageCount()).toBe('2');
+        host.size.set(0);
+        await fixture.whenStable();
+        expect(pageCount()).toBe('50');
+        host.size.set(-1);
+        await fixture.whenStable();
+        expect(pageCount()).toBe('50');
+        host.size.set(7.9);
+        await fixture.whenStable();
+        expect(document.querySelector('fd-select [role=combobox]')?.textContent).toContain('7');
+    });
 });
