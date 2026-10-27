@@ -8,8 +8,7 @@ import {
     contentChild,
     effect,
     inject,
-    input,
-    viewChild
+    input
 } from '@angular/core';
 import { cn, type ClassValue } from '@/lib/utils';
 
@@ -26,7 +25,7 @@ const DOT =
 
 /**
  * Busy indicator: three pulsing dots that show that content is loading. Wrapping content
- * covers it with a translucent layer and keeps keyboard focus on the indicator while loading.
+ * covers it with a translucent layer and makes it inert (not focusable or clickable) while loading.
  *
  * ```html
  * <fd-busy-indicator loading ariaLabel="Loading" />
@@ -47,11 +46,10 @@ const DOT =
         '[attr.aria-valuetext]': 'loading() ? ariaValueText() || "Busy" : null',
         '[attr.aria-valuemin]': '0',
         '[attr.aria-valuemax]': '100',
-        '[attr.title]': 'loading() ? title() || "Please wait" : null',
-        '(keydown.tab)': 'onTab($event)'
+        '[attr.title]': 'loading() ? title() || "Please wait" : null'
     },
     template: `
-        <ng-content />
+        <span class="contents" [attr.inert]="loading() ? '' : null"><ng-content /></span>
         @if (loading()) {
             <div data-busy-dots [class]="dotsClass()">
                 <div class="${DOT}"></div>
@@ -60,14 +58,13 @@ const DOT =
             </div>
             @if (label()) {
                 <span
-                    class="block text-center font-sap-font-family text-sap-font-size text-sap-page-footer-text-color [*+[data-busy-dots]+&]:absolute [*+[data-busy-dots]+&]:start-1/2 [*+[data-busy-dots]+&]:top-1/2 [*+[data-busy-dots]+&]:z-[11] [*+[data-busy-dots]+&]:translate-y-1/2 [*+[data-busy-dots]+&]:-translate-x-1/2 [*+[data-busy-dots]+&]:whitespace-nowrap rtl:[*+[data-busy-dots]+&]:translate-x-1/2"
+                    class="block text-center font-sap-font-family text-sap-font-size text-sap-page-footer-text-color [:not(:empty)+[data-busy-dots]+&]:absolute [:not(:empty)+[data-busy-dots]+&]:start-1/2 [:not(:empty)+[data-busy-dots]+&]:top-1/2 [:not(:empty)+[data-busy-dots]+&]:z-[11] [:not(:empty)+[data-busy-dots]+&]:translate-y-1/2 [:not(:empty)+[data-busy-dots]+&]:-translate-x-1/2 [:not(:empty)+[data-busy-dots]+&]:whitespace-nowrap rtl:[:not(:empty)+[data-busy-dots]+&]:translate-x-1/2"
                     >{{ label() }}</span
                 >
             }
             <div
-                class="absolute inset-0 z-10 bg-sap-base-color opacity-72 [[data-busy-dots]:first-child~&]:bg-transparent"
+                class="absolute inset-0 z-10 bg-sap-base-color opacity-72 [:empty+[data-busy-dots]~&]:bg-transparent"
             ></div>
-            <div #focusTrap tabindex="0" aria-hidden="true" (focusin)="onTrapFocus($event)"></div>
         }
     `
 })
@@ -92,7 +89,6 @@ export class BusyIndicator {
     readonly userClass = input<ClassValue>('', { alias: 'class' });
 
     private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
-    private readonly focusTrap = viewChild<ElementRef<HTMLElement>>('focusTrap');
 
     protected readonly computedClass = computed(() =>
         cn(
@@ -109,7 +105,7 @@ export class BusyIndicator {
             this.contrast()
                 ? 'text-sap-content-contrast-icon-color hc:text-sap-content-busy-color'
                 : 'text-sap-content-busy-color',
-            '[*+&]:absolute [*+&]:start-1/2 [*+&]:top-1/2 [*+&]:-translate-1/2 [*+&]:whitespace-nowrap rtl:[*+&]:translate-x-1/2',
+            '[:not(:empty)+&]:absolute [:not(:empty)+&]:start-1/2 [:not(:empty)+&]:top-1/2 [:not(:empty)+&]:-translate-1/2 [:not(:empty)+&]:whitespace-nowrap rtl:[:not(:empty)+&]:translate-x-1/2',
             DOTS[this.size()]
         )
     );
@@ -127,19 +123,6 @@ export class BusyIndicator {
             el.addEventListener('wheel', listener, { passive: false });
             onCleanup(() => el.removeEventListener('wheel', listener));
         });
-    }
-
-    /** Tab from the indicator jumps past the blocked content. */
-    protected onTab(event: Event): void {
-        if (this.loading() && !(event as KeyboardEvent).shiftKey) this.focusTrap()?.nativeElement.focus();
-    }
-
-    /** Focus entering the blocked content from outside lands on the indicator. */
-    protected onTrapFocus(event: FocusEvent): void {
-        if (this.loading() && event.relatedTarget !== this.elementRef.nativeElement) {
-            event.stopPropagation();
-            this.elementRef.nativeElement.focus();
-        }
     }
 }
 

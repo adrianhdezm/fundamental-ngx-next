@@ -52,7 +52,7 @@ export const VisualModifiers: Story = {
 export const Inverted: Story = {
     render: () => ({
         template: `
-            <div class="rounded-sap-field-border-corner-radius bg-sap-shell-color p-4">
+            <div class="rounded-sap-field-border-corner-radius bg-sap-block-layer-background p-4">
                 <a fdLink href="#" inverted>Inverted Link</a>
             </div>
         `

@@ -84,7 +84,6 @@ let nextId = 0;
             [attr.aria-disabled]="disabledState() || null"
             [attr.aria-checked]="checked()"
             [attr.aria-required]="required() || null"
-            [attr.aria-readonly]="readOnly() || null"
             [attr.aria-invalid]="state() === 'error' || null"
             [attr.aria-description]="readOnly() ? readOnlyDescription() : null"
             (change)="select()"

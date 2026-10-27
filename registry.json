@@ -250,6 +250,7 @@
       "registryDependencies": [
         "utils",
         "theme",
+        "icon",
         "popover"
       ],
       "files": [
@@ -282,6 +283,23 @@
         },
         {
           "path": "registry/ui/form/form-input-message-group.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "type": "registry:ui",
+      "title": "Switch",
+      "description": "On/off switch with semantic and text variants; a forms control.",
+      "registryDependencies": [
+        "utils",
+        "theme",
+        "icon"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/switch/switch.ts",
           "type": "registry:ui"
         }
       ]

@@ -13,6 +13,7 @@ import {
     type OnDestroy
 } from '@angular/core';
 import { cn } from '@/lib/utils';
+import { Icon } from '@/ui/icon/icon';
 import { FD_POPOVER, PopoverService, type Placement, type TriggerConfig } from '@/ui/popover/popover';
 
 const DEFAULT_TRIGGERS: TriggerConfig[] = [
@@ -80,6 +81,9 @@ export class InlineHelp implements OnDestroy {
     private readonly resolvedContent = computed(() => this.contentAlias() ?? this.content());
 
     constructor() {
+        // an icon trigger is focusable, so it must stay visible to assistive technology
+        const icon = inject(Icon, { self: true, optional: true });
+        if (icon && icon.ariaHidden() == null) icon.ariaHidden.set(false);
         this.popover.initialise(this.elementRef);
         effect(() => {
             this.popover.refreshConfiguration({

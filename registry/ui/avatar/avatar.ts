@@ -112,7 +112,7 @@ let nextId = 0;
         '[style.background-image]': 'bgImage()',
         '[attr.tabindex]': 'tabindex()',
         '[attr.id]': 'id()',
-        '[attr.aria-label]': 'ariaLabel() || null',
+        '[attr.aria-label]': 'accessibleName()',
         '[attr.aria-labelledby]': 'ariaLabelledby() || null',
         '[attr.role]': 'role()',
         '(click)': 'onClick($event)',
@@ -187,6 +187,8 @@ export class Avatar {
     protected readonly bgImage = signal<string | null>(null);
     private readonly imageLoaded = signal(false);
     private readonly fallbackInitials = signal<string | null>(null);
+    /** Text the fallback initials came from (projected content or alt). */
+    private readonly fallbackName = signal<string | null>(null);
     private readonly forceDefault = signal(false);
     private readonly randomAccent = signal<ColorAccent>(randomColorAccent());
     private loadToken = 0;
@@ -198,6 +200,11 @@ export class Avatar {
 
     protected readonly showDefault = computed(
         () => this.forceDefault() || (!this.initials() && !this.imageLoaded() && !this.glyph() && !this.image())
+    );
+
+    /** Explicit label, else the name behind the initials, else the alt text. */
+    protected readonly accessibleName = computed(
+        () => this.ariaLabel() || this.label() || this.fallbackName() || this.hostAlt || null
     );
 
     protected readonly tabindex = computed(() => this.hostTabindex ?? (this.clickable() ? 0 : null));
@@ -266,6 +273,7 @@ export class Avatar {
             this.imageLoaded.set(false);
             this.forceDefault.set(false);
             this.fallbackInitials.set(null);
+            this.fallbackName.set(null);
             this.bgImage.set(null);
             if (image) this.load(image, () => this.onImageError());
         });
@@ -312,7 +320,10 @@ export class Avatar {
 
     private useInitials(text: string | null | undefined): boolean {
         const initials = avatarInitials(text?.trim());
-        if (initials) this.fallbackInitials.set(initials);
+        if (initials) {
+            this.fallbackInitials.set(initials);
+            this.fallbackName.set(text!.trim());
+        }
         return !!initials;
     }
 }

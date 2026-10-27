@@ -276,9 +276,9 @@ export class Button implements OnInit {
     protected readonly computedAriaLabel = computed(() => {
         if (this.ariaLabel()) return this.ariaLabel();
         if (this.nativeAriaLabel()) return this.nativeAriaLabel();
-        // icon-only special buttons fall back to label or glyph name
-        if (SPECIAL_TYPE_DESCRIPTIONS[this.variantState()]) {
-            return this.label() || this.glyph()?.replace(/-/g, ' ') || null;
+        // icon-only special buttons fall back to the glyph name
+        if (SPECIAL_TYPE_DESCRIPTIONS[this.variantState()] && !this.label()) {
+            return this.glyph()?.replace(/-/g, ' ') || null;
         }
         return null;
     });

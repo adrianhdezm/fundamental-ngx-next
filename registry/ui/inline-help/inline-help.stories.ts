@@ -28,15 +28,15 @@ export const Default: Story = {
     render: () => ({
         template: `
             <div class="flex flex-col">
-                <div class="${item}"><span>Default</span><fd-icon glyph="question-mark" fdInlineHelp="Inline Help Tooltip" tabindex="0" /></div>
-                <div class="${item}"><span>Left Position</span><fd-icon glyph="question-mark" fdInlineHelp="Inline Help Tooltip" placement="left" tabindex="0" /></div>
-                <div class="${item}"><span>Right Position</span><fd-icon glyph="question-mark" fdInlineHelp="Inline Help Tooltip" placement="right" tabindex="0" /></div>
-                <div class="${item}"><span>Top Position</span><fd-icon glyph="question-mark" fdInlineHelp="Inline Help Tooltip" placement="top" tabindex="0" /></div>
-                <div class="${item}"><span>Bottom Position</span><fd-icon glyph="question-mark" placement="bottom" tabindex="0"
+                <div class="${item}"><span>Default</span><fd-icon glyph="question-mark" fdInlineHelp="Inline Help Tooltip" tabindex="0" ariaLabel="Help" /></div>
+                <div class="${item}"><span>Left Position</span><fd-icon glyph="question-mark" fdInlineHelp="Inline Help Tooltip" placement="left" tabindex="0" ariaLabel="Help" /></div>
+                <div class="${item}"><span>Right Position</span><fd-icon glyph="question-mark" fdInlineHelp="Inline Help Tooltip" placement="right" tabindex="0" ariaLabel="Help" /></div>
+                <div class="${item}"><span>Top Position</span><fd-icon glyph="question-mark" fdInlineHelp="Inline Help Tooltip" placement="top" tabindex="0" ariaLabel="Help" /></div>
+                <div class="${item}"><span>Bottom Position</span><fd-icon glyph="question-mark" placement="bottom" tabindex="0" ariaLabel="Help"
                     fdInlineHelp="Inline Help Tooltip Lorem ipsum, dolor sit amet consectetur adipisicing elit. Officia vitae ipsum facilis quasi similique! Aperiam incidunt perspiciatis quam architecto." /></div>
-                <div class="${item} max-w-sm"><input fdFormControl fdInlineHelp="Inline Help Tooltip" placement="right" placeholder="Inline help inside input" /></div>
-                <div class="${item}"><span>Disabled</span><fd-icon glyph="question-mark" fdInlineHelp="Inline Help Tooltip" disabled tabindex="0" /></div>
-                <div class="${item}"><span>Close on Escape</span><fd-icon glyph="question-mark" fdInlineHelp="Inline Help Tooltip" closeOnEscapeKey tabindex="0" /></div>
+                <div class="${item} max-w-sm"><input fdFormControl fdInlineHelp="Inline Help Tooltip" placement="right" placeholder="Inline help inside input" aria-label="Field with inline help" /></div>
+                <div class="${item}"><span>Disabled</span><fd-icon glyph="question-mark" fdInlineHelp="Inline Help Tooltip" disabled tabindex="0" ariaLabel="Help" /></div>
+                <div class="${item}"><span>Close on Escape</span><fd-icon glyph="question-mark" fdInlineHelp="Inline Help Tooltip" closeOnEscapeKey tabindex="0" ariaLabel="Help" /></div>
             </div>`
     })
 };
@@ -47,7 +47,7 @@ export const Template: Story = {
         template: `
             <ng-template #help><span>Help with <b>bold</b> text and a list:<ul class="list-disc ps-4"><li>First</li><li>Second</li></ul></span></ng-template>
             <span>Rich help</span>
-            <fd-icon glyph="question-mark" [fdInlineHelp]="help" tabindex="0" class="ms-2" />`
+            <fd-icon glyph="question-mark" [fdInlineHelp]="help" tabindex="0" ariaLabel="Help" class="ms-2" />`
     })
 };
 

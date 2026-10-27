@@ -16,7 +16,8 @@
     "check:styles": "node scripts/check-styles.mjs",
     "registry:check": "node scripts/build-registry.mjs --check",
     "check": "pnpm typecheck && pnpm check:styles && pnpm check:cn && pnpm registry:check",
-    "check:cn": "node scripts/check-cn.mjs"
+    "check:cn": "node scripts/check-cn.mjs",
+    "check:a11y": "node scripts/check-a11y.mjs"
   },
   "dependencies": {
     "@angular/animations": "^22.2.3",
@@ -45,6 +46,7 @@
     "@tailwindcss/oxide": "4.3.3",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^26.6.5",
+    "axe-core": "4.14.0",
     "prettier": "^3.6.2",
     "storybook": "^10.6.4",
     "tailwindcss": "^4.3.3",
