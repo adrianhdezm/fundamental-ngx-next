@@ -5,10 +5,10 @@ Registry: `registry/ui/message-toast/` — 1 story, 3 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example       | Registry story | Status     | Notes                                                                                                                                         |
-| ---------------------- | -------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Message Toast          | Default        | 🟡 partial | String, component, template, animated, hide all — but toasts are overlays and there is no "Open: …" story, so the a11y run never sees a toast |
-| Message Toast Position | Default        | 🟡 partial | Six placements, custom position and bound-to-element buttons; no Open: story                                                                  |
+| Upstream example       | Registry story            | Status     | Notes                                                                                                                        |
+| ---------------------- | ------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Message Toast          | Default, OpenMessageToast | ✅ covered | String, component, template, animated, hide all; "Open: message toast" opens string, component and template toasts in `play` |
+| Message Toast Position | Default, OpenPositions    | ✅ covered | Six placements, custom position and bound-to-element buttons; "Open: positions" opens one toast at each                      |
 
 ### Tests vs. upstream specs
 
@@ -30,6 +30,5 @@ Registry-only coverage: hover persistence (mousePersist), stacking order per pos
 
 ### Gaps to fill
 
-- **Stories:** "Open: message toast" (play() opens a string toast with `duration: 0`); "Open: positions" (one toast per placement).
 - **Tests:** "opens a toast from a template with its data"; "afterOpened emits once the toast is shown"; "ref.dismiss() closes the toast and emits afterDismissed"; "a custom top/left position places the toast there"; "boundTo places the toast next to the element"; "maxWidth limits the toast width".
 - **Effort:** S — service tests on the existing harness plus two Open: stories.
