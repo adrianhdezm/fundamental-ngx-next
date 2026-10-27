@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Pagination } from './pagination';
 
 const small = 'm-0 font-sap-font-family text-sap-font-small-size text-sap-content-label-color';
@@ -89,3 +90,14 @@ export const Playground: Story = {
     })
 };
 export const Examples: Story = { render: () => ({ template: `<story-pagination-examples />` }) };
+export const OpenItemsPerPage: Story = {
+    name: 'Open: items per page',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-pagination-examples />` }),
+    play: async ({ canvasElement }) => {
+        const combobox = canvasElement.querySelector<HTMLElement>('fd-select [role=combobox]')!;
+        await userEvent.click(combobox);
+        await waitFor(() => expect(document.querySelector('[role=listbox] [role=option]')).not.toBeNull());
+        await waitFor(() => expect(combobox.getAttribute('aria-expanded')).toBe('true'));
+    }
+};
