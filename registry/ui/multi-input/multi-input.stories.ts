@@ -1,5 +1,5 @@
-import { JsonPipe } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { AsyncPipe, JsonPipe } from '@angular/common';
+import { Component, computed, signal } from '@angular/core';
 import {
     FormControl as NgFormControl,
     FormGroup as NgFormGroup,
@@ -7,10 +7,13 @@ import {
     ReactiveFormsModule
 } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { delay, of, startWith, Subject, switchMap, type Observable } from 'rxjs';
 import { expect, userEvent, waitFor } from 'storybook/test';
+import { Button } from '@/ui/button/button';
 import { ContentDensityDirective } from '@/ui/content-density/content-density';
 import { FormItem, FormLabel } from '@/ui/form/form';
 import { ListByline, ListContent, ListIcon, ListTitle } from '@/ui/list/list';
+import { SegmentedButton } from '@/ui/segmented-button/segmented-button';
 import { MultiInput } from './multi-input';
 
 const FRUITS = ['Apple', 'Banana', 'Pineapple', 'Tomato', 'Kiwi', 'Strawberry', 'Blueberry', 'Orange'];
@@ -291,6 +294,249 @@ class StoryMultiInputMobile {
     protected readonly selected = signal<string[]>(['Kiwi']);
 }
 
+interface OptionItem {
+    label: string;
+    value: string;
+}
+
+const OPTION_ITEMS: OptionItem[] = [
+    { label: 'Apple', value: 'apple_value' },
+    { label: 'Banana', value: 'banana_value' },
+    { label: 'Pineapple', value: 'pineapple_value' },
+    { label: 'Tomato', value: 'tomato_value' },
+    { label: 'Kiwi', value: 'kiwi_value' },
+    { label: 'Strawberry', value: 'strawberry_value' },
+    { label: 'Blueberry', value: 'blueberry_value' },
+    { label: 'Orange', value: 'orange_value' }
+];
+
+const ASYNC_ITEMS: OptionItem[] = [
+    'Apple',
+    'Watermelon',
+    'Orange',
+    'Pear',
+    'Cherry',
+    'Strawberry',
+    'Nectarine',
+    'Grape',
+    'Mango',
+    'Blueberry',
+    'Pomegranate',
+    'Carambola',
+    'Plum',
+    'Banana',
+    'Raspberry',
+    'Mandarin',
+    'Jackfruit',
+    'Papaya',
+    'Kiwi',
+    'Pineapple',
+    'Lime',
+    'Lemon',
+    'Apricot',
+    'Grapefruit',
+    'Melon',
+    'Coconut',
+    'Avocado',
+    'Peach'
+].map((label) => ({ label, value: `${label.toLowerCase()}_value` }));
+
+@Component({
+    selector: 'story-multi-input-filter',
+    imports: [MultiInput, FormItem, FormLabel, FormsModule, JsonPipe],
+    template: `
+        <div fdFormItem class="max-w-lg">
+            <label fdFormLabel for="mi-filter">Case-sensitive filter</label>
+            <fd-multi-input
+                inputId="mi-filter"
+                placeholder="Search here..."
+                [dropdownValues]="fruits"
+                [filterFn]="customFilter"
+                [(ngModel)]="selected"
+            />
+            <small class="${text}"
+                >Only "Apple" matches "A"; "a" matches nothing. Selected: {{ selected() | json }}</small
+            >
+        </div>
+    `
+})
+class StoryMultiInputFilter {
+    protected readonly fruits = ['Apple', 'Banana', 'Pineapple', 'Tomato'];
+    protected readonly selected = signal<string[]>([]);
+    /** Matches the start of the text, case-sensitively (the default filter ignores case). */
+    protected readonly customFilter = (items: string[], term: string) =>
+        term ? items.filter((item) => item.startsWith(term)) : items;
+}
+
+@Component({
+    selector: 'story-multi-input-async',
+    imports: [MultiInput, FormItem, FormLabel, FormsModule, JsonPipe, AsyncPipe],
+    template: `
+        <div fdFormItem class="max-w-lg">
+            <label fdFormLabel for="mi-async">Fruits from a server</label>
+            <fd-multi-input
+                inputId="mi-async"
+                placeholder="Search here..."
+                [dropdownValues]="(values$ | async) || []"
+                [displayFn]="display"
+                [valueFn]="value"
+                [(ngModel)]="selected"
+                (searchTermChange)="search$.next($event)"
+            />
+            <small class="${text}">
+                Each search term loads at most five matches after a delay. Selected: {{ selected() | json }}
+            </small>
+        </div>
+    `
+})
+class StoryMultiInputAsync {
+    protected readonly search$ = new Subject<string>();
+    protected readonly values$: Observable<OptionItem[]> = this.search$.pipe(
+        startWith(''),
+        switchMap((term) => this.request(term))
+    );
+    protected readonly selected = signal<string[]>([]);
+    protected readonly display = (item: OptionItem) => item.label;
+    protected readonly value = (item: OptionItem) => item.value;
+
+    /** Emulates a server request. */
+    private request(term: string): Observable<OptionItem[]> {
+        const query = term.trim().toLowerCase();
+        return of(ASYNC_ITEMS.filter((item) => item.value.startsWith(query)).slice(0, 5)).pipe(delay(500));
+    }
+}
+
+@Component({
+    selector: 'story-multi-input-option-items',
+    imports: [MultiInput, FormItem, FormLabel, FormsModule, JsonPipe],
+    template: `
+        <div fdFormItem class="max-w-lg">
+            <label fdFormLabel for="mi-option-items">Option items</label>
+            <fd-multi-input
+                inputId="mi-option-items"
+                placeholder="Search here..."
+                [dropdownValues]="items"
+                [(ngModel)]="selected"
+            />
+            <small class="${text}">
+                Items with <code>label</code> and <code>value</code> need no display or value function. Selected:
+                {{ selected() | json }}
+            </small>
+        </div>
+    `
+})
+class StoryMultiInputOptionItems {
+    protected readonly items = OPTION_ITEMS;
+    protected readonly selected = signal<string[]>(OPTION_ITEMS.slice(0, 7).map((item) => item.value));
+}
+
+@Component({
+    selector: 'story-multi-input-dropdown-width',
+    imports: [MultiInput, FormItem, FormLabel, FormsModule, JsonPipe, ListContent, ListTitle, ListByline],
+    template: `
+        <div class="flex flex-col gap-6">
+            <div fdFormItem>
+                <label fdFormLabel for="mi-width-1">Default: the list grows with the content</label>
+                <fd-multi-input
+                    inputId="mi-width-1"
+                    class="w-[200px]"
+                    placeholder="Search here..."
+                    [dropdownValues]="long"
+                    [(ngModel)]="one"
+                />
+                <small class="${text}">Selected: {{ one() | json }}</small>
+            </div>
+            <div fdFormItem>
+                <label fdFormLabel for="mi-width-2">Strict: at most 300px, titles wrap</label>
+                <fd-multi-input
+                    inputId="mi-width-2"
+                    class="w-[300px]"
+                    byline
+                    placeholder="Search here..."
+                    [bodyMaxWidth]="300"
+                    [dropdownValues]="wrapping"
+                    [itemTemplate]="bylineTpl"
+                    [(ngModel)]="two"
+                />
+                <ng-template #bylineTpl let-item>
+                    <div fdListContent>
+                        <span fdListTitle wrap>{{ item }}</span>
+                        <span fdListByline>Some description</span>
+                    </div>
+                </ng-template>
+                <small class="${text}">Selected: {{ two() | json }}</small>
+            </div>
+            <div fdFormItem>
+                <label fdFormLabel for="mi-width-3">Dynamic: as wide as the field</label>
+                <fd-multi-input
+                    inputId="mi-width-3"
+                    class="w-[250px]"
+                    bodyMaxWidth="container"
+                    placeholder="Search here..."
+                    [dropdownValues]="long"
+                    [(ngModel)]="three"
+                />
+                <small class="${text}">Selected: {{ three() | json }}</small>
+            </div>
+        </div>
+    `
+})
+class StoryMultiInputDropdownWidth {
+    protected readonly long = [
+        'SomeLongTextToShowThatWidthWillGrowWithTheContent',
+        'Banana',
+        'Pineapple',
+        'Tomato',
+        'Kiwi',
+        'Strawberry',
+        'Blueberry',
+        'Orange'
+    ];
+    protected readonly wrapping = ['Some long option to show title wrapping', ...this.long.slice(1)];
+    protected readonly one = signal<string[]>(['SomeLongTextToShowThatWidthWillGrowWithTheContent', 'Banana']);
+    protected readonly two = signal<string[]>(['Some long option to show title wrapping', 'Banana']);
+    protected readonly three = signal<string[]>(['Kiwi']);
+}
+
+@Component({
+    selector: 'story-multi-input-many-tokens',
+    imports: [MultiInput, FormItem, FormLabel, FormsModule, Button, SegmentedButton],
+    template: `
+        <div class="flex max-w-lg flex-col gap-4">
+            <fd-segmented-button ariaLabel="Number of tokens" [ngModel]="count()" (ngModelChange)="setCount($event)">
+                @for (n of counts; track n) {
+                    <button fdButton [label]="'' + n" [value]="n"></button>
+                }
+            </fd-segmented-button>
+            <div fdFormItem>
+                <label fdFormLabel for="mi-many">{{ count() }} selected options</label>
+                <fd-multi-input
+                    inputId="mi-many"
+                    placeholder="Type to search"
+                    [maxVisibleTokens]="12"
+                    [dropdownValues]="options()"
+                    [(ngModel)]="selected"
+                />
+                <small class="${text}">
+                    Without the focus only 12 tokens render and the rest count in the "n more" link; the focus renders
+                    all of them.
+                </small>
+            </div>
+        </div>
+    `
+})
+class StoryMultiInputManyTokens {
+    protected readonly counts = [10, 100, 200, 1000];
+    protected readonly count = signal(1000);
+    protected readonly options = computed(() => Array.from({ length: this.count() }, (_, i) => `Option ${i + 1}`));
+    protected readonly selected = signal<string[]>(this.options());
+
+    protected setCount(count: number): void {
+        this.count.set(count);
+        this.selected.set(this.options());
+    }
+}
+
 const meta: Meta<MultiInput> = {
     title: 'Components/Multi Input',
     component: MultiInput,
@@ -301,7 +547,12 @@ const meta: Meta<MultiInput> = {
                 StoryMultiInputDefault,
                 StoryMultiInputItems,
                 StoryMultiInputForms,
-                StoryMultiInputMobile
+                StoryMultiInputMobile,
+                StoryMultiInputFilter,
+                StoryMultiInputAsync,
+                StoryMultiInputOptionItems,
+                StoryMultiInputDropdownWidth,
+                StoryMultiInputManyTokens
             ]
         })
     ],
@@ -345,6 +596,26 @@ export const Items: Story = {
 };
 export const Forms: Story = { render: () => ({ template: `<story-multi-input-forms />` }) };
 export const Mobile: Story = { render: () => ({ template: `<story-multi-input-mobile />` }) };
+export const CustomFilter: Story = {
+    name: 'Custom filter',
+    render: () => ({ template: `<story-multi-input-filter />` })
+};
+export const AsyncValues: Story = {
+    name: 'Async values',
+    render: () => ({ template: `<story-multi-input-async />` })
+};
+export const OptionItems: Story = {
+    name: 'Option items',
+    render: () => ({ template: `<story-multi-input-option-items />` })
+};
+export const DropdownWidth: Story = {
+    name: 'Dropdown width',
+    render: () => ({ template: `<story-multi-input-dropdown-width />` })
+};
+export const ManyTokens: Story = {
+    name: 'Many tokens',
+    render: () => ({ template: `<story-multi-input-many-tokens />` })
+};
 
 /** Clicks the addon button of the multi input whose field has the given id and waits for its popup. */
 async function openMultiInput(canvasElement: HTMLElement, inputId: string, popup: string): Promise<void> {
