@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
 import { Icon } from '@/ui/icon/icon';
 import { AutoDismissMessageStrip, MessageStrip, MessageStripIcon } from './message-strip';
@@ -173,4 +174,16 @@ export const AutoDismiss: Story = {
 
 export const Alerts: Story = {
     render: () => ({ template: `<story-alerts />` })
+};
+
+export const OpenAlerts: Story = {
+    name: 'Open: alerts',
+    tags: ['!autodocs'],
+    render: Alerts.render,
+    play: async ({ canvasElement }) => {
+        // one alert per position: text, template and component alerts at the top and the bottom
+        const buttons = [...canvasElement.querySelectorAll<HTMLElement>('button')].slice(0, 6);
+        for (const button of buttons) await userEvent.click(button);
+        await waitFor(() => expect(document.querySelectorAll('fd-message-strip-alert')).toHaveLength(6));
+    }
 };
