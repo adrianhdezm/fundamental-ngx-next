@@ -76,6 +76,21 @@ export const LIST_DROPDOWN_ITEM = [
     'aria-disabled:cursor-not-allowed aria-disabled:opacity-(--sapContent_DisabledOpacity) aria-disabled:hover:[--li-bg:var(--sapList_Background)] aria-disabled:active:[--li-bg:var(--sapList_Background)]'
 ];
 
+/** The SAP icon font check mark of a check box. */
+export const LIST_CHECK_GLYPH = '\ue05b';
+
+/**
+ * A check box drawn in a multi-select dropdown option (the option carries the selection; the box is
+ * hidden from assistive technology). Set `data-glyph` to `LIST_CHECK_GLYPH` when checked and add
+ * `data-indeterminate` for a partial selection.
+ */
+export const LIST_DROPDOWN_CHECK = [
+    'relative m-0 me-1 box-border inline-flex size-[1.375rem] min-w-[1.375rem] shrink-0 items-center justify-center compact:size-4 compact:min-w-4',
+    'rounded-sap-field-border-corner-radius border-width-sap-field-border-width [border-style:var(--sapField_Selector_BorderStyle)] border-sap-field-border-color bg-sap-field-background',
+    'font-sap-content-icon-font-family text-sap-font-size leading-[normal] text-sap-content-selected-foreground-color before:content-[attr(data-glyph)]',
+    "data-[indeterminate]:after:absolute data-[indeterminate]:after:size-3 data-[indeterminate]:after:bg-sap-content-selected-foreground-color data-[indeterminate]:after:content-[''] compact:data-[indeterminate]:after:size-2"
+].join(' ');
+
 /** Hover and pressed states of interactive items and links (through the --li-* colours). */
 const INTERACTIVE_STATES = [
     'cursor-pointer enabled-hover:[--li-bg:var(--sapList_Hover_Background)]',

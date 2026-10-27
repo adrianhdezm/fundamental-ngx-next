@@ -1147,6 +1147,32 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "multi-combobox",
+      "type": "registry:ui",
+      "title": "Multi Combobox",
+      "description": "Chooses several items from an array or observable with check box options, tokens, matching strategies, groups, secondary text, select all and a mobile dialog.",
+      "dependencies": ["@angular/cdk", "@angular/forms", "rxjs"],
+      "registryDependencies": [
+        "utils",
+        "theme",
+        "bar",
+        "button",
+        "dialog",
+        "icon",
+        "input",
+        "list",
+        "popover",
+        "title",
+        "token"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/multi-combobox/multi-combobox.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

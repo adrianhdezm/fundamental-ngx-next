@@ -45,7 +45,7 @@ import {
 import { type IconFont } from '@/ui/icon/icon';
 import { type FormState } from '@/ui/input/input';
 import { Link } from '@/ui/link/link';
-import { LIST_DROPDOWN_ITEM } from '@/ui/list/list';
+import { LIST_CHECK_GLYPH, LIST_DROPDOWN_CHECK, LIST_DROPDOWN_ITEM } from '@/ui/list/list';
 import { Popover, PopoverBody, PopoverControl, type PopoverFillMode } from '@/ui/popover/popover';
 import { Title } from '@/ui/title/title';
 import { Token, Tokenizer, TokenizerInput } from '@/ui/token/token';
@@ -394,7 +394,7 @@ export class MultiInput<T = unknown, V = unknown> implements ControlValueAccesso
 
     protected readonly id = `fd-multi-input-${nextId++}`;
     protected readonly listId = `${this.id}-list`;
-    protected readonly checkGlyph = CHECK_GLYPH;
+    protected readonly checkGlyph = LIST_CHECK_GLYPH;
 
     readonly searchTerm = signal('');
     protected readonly disabledState = linkedSignal(() => this.disabled());
@@ -797,11 +797,7 @@ export class MultiInput<T = unknown, V = unknown> implements ControlValueAccesso
         ref.afterClosed.subscribe({ next: done, error: done });
     }
 
-    protected readonly checkClass = [
-        'relative m-0 me-1 box-border inline-flex size-[1.375rem] min-w-[1.375rem] shrink-0 items-center justify-center compact:size-4 compact:min-w-4',
-        'rounded-sap-field-border-corner-radius border-width-sap-field-border-width [border-style:var(--sapField_Selector_BorderStyle)] border-sap-field-border-color bg-sap-field-background',
-        'font-sap-content-icon-font-family text-sap-font-size leading-[normal] text-sap-content-selected-foreground-color before:content-[attr(data-glyph)]'
-    ].join(' ');
+    protected readonly checkClass = LIST_DROPDOWN_CHECK;
 
     protected readonly listClass = computed(() =>
         cn(
