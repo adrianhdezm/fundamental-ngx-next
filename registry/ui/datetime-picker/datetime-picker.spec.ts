@@ -148,7 +148,9 @@ describe('DatetimePicker', () => {
         await userEvent.keyboard('{Enter}');
         await userEvent.tab();
         await stable();
-        expect(host.date()!.day).toBe(13);
+        // a disabled date is read but not emitted, as upstream: the bound date keeps its day
+        expect(host.date()!.day).toBe(9);
+        expect(input.value).toBe('3/13/2024, 8:00 AM');
         expect(input.getAttribute('aria-invalid')).toBe('true');
     });
 
@@ -255,12 +257,16 @@ describe('DatetimePicker forms', () => {
         id="dt"
         [formControl]="control"
         [showFooter]="footer()"
+        [allowNull]="allowNull()"
+        [disableFunction]="disable()"
         (dateChange)="changes.push($event)"
     />`
 })
 class EmitHost {
     readonly control = new FormControl<FdDate | null>(new FdDate(2024, 3, 9, 14, 30, 0));
     readonly footer = signal(true);
+    readonly allowNull = signal(true);
+    readonly disable = signal<((date: FdDate) => boolean) | null>(null);
     readonly changes: (FdDate | null)[] = [];
 }
 
@@ -338,6 +344,29 @@ describe('DatetimePicker dateChange', () => {
         await enter('');
         expect(changes()).toEqual([null]);
         expect(host.control.value).toBeNull();
+        expect(host.control.valid).toBe(true);
+    });
+
+    it('does not emit for unreadable, disabled or disallowed null input, but passes it to the form', async () => {
+        const { host, enter, changes } = await setupEmit((h) => {
+            h.allowNull.set(false);
+            h.disable.set((d) => d.day === 13);
+        });
+        await enter('not a date');
+        expect(changes()).toEqual([]);
+        expect(host.control.value).not.toBeNull();
+        expect(host.control.errors).toEqual({ dateValidation: { valid: false } });
+        await enter('3/13/2024, 8:00 AM');
+        expect(changes()).toEqual([]);
+        expect(host.control.value!.toString()).toBe(new FdDate(2024, 3, 13, 8, 0, 0).toString());
+        expect(host.control.errors).toEqual({ dateValidation: { valid: false } });
+        await enter('');
+        expect(changes()).toEqual([]);
+        expect(host.control.value).toBeNull();
+        expect(host.control.errors).toEqual({ dateValidation: { valid: false } });
+        // a valid value emits again
+        await enter('3/14/2024, 8:00 AM');
+        expect(changes()).toEqual([new FdDate(2024, 3, 14, 8, 0, 0).toString()]);
         expect(host.control.valid).toBe(true);
     });
 

@@ -414,7 +414,8 @@ export class DatetimePicker<D> implements ControlValueAccessor, Validator {
     readonly date = input<D | null | undefined>(null);
     /**
      * A change by the user: a submitted pick or accepted typing that differs from the value. Not for
-     * values written by a form, Cancel or a submit without a change.
+     * values written by a form, Cancel or a submit without a change, nor for an invalid value (unreadable
+     * or disabled text, or null when `allowNull` is false), which still reaches the form as upstream.
      */
     readonly dateChange = output<D | null>();
     readonly isOpen = model(false);
@@ -619,10 +620,10 @@ export class DatetimePicker<D> implements ControlValueAccessor, Validator {
         if (date != null && this.adapter.isValid(date)) this.text.set(this.format(date));
     }
 
-    /** A change by the user: emits `dateChange`. */
+    /** A change by the user: emits `dateChange` when the value is valid, as upstream. */
     private setDate(value: D | null): void {
         this.value.set(value);
-        this.dateChange.emit(value);
+        if (!this.invalid()) this.dateChange.emit(value);
     }
 
     private markTouched(): void {
