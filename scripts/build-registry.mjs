@@ -46,6 +46,22 @@ function targetOf(item, file) {
     return file.path.replace(/^registry\/ui\//, 'src/components/ui/');
 }
 
+/**
+ * The shadcn CLI drops the comment above the first statement of an installed file, which would lose the
+ * attribution header. In the registry copy the header goes after the imports (or after the first statement of a
+ * file without imports) instead.
+ */
+function headerAfterImports(content) {
+    const header = content.match(/^\/\*[\s\S]*?\*\/\n+/);
+    if (!header) return content;
+    const body = content.slice(header[0].length);
+    const imports = [...body.matchAll(/^import\s[\s\S]*?['"];\n/gm)];
+    const anchor = imports.at(-1) ?? body.match(/^[^\n]*;\n/m);
+    if (!anchor) return content;
+    const end = anchor.index + anchor[0].length;
+    return `${body.slice(0, end)}\n${header[0].trimEnd()}\n${body.slice(end)}`;
+}
+
 function checkImports(item, file, content) {
     const own = new Set(item.files.map((f) => f.path));
     for (const [, spec] of content.matchAll(/(?:^|\n)\s*(?:import|export)\s[^'"]*?from\s+'([^']+)'/g)) {
@@ -87,6 +103,7 @@ for (const item of registry.items) {
         }
         let content = readFileSync(abs, 'utf8');
         if (file.path.endsWith('.ts')) checkImports(item, file, content);
+        if (file.path.endsWith('.ts')) content = headerAfterImports(content);
         // fonts are binary: point the registry copy of fonts.css at the npm package on a CDN
         if (file.path.endsWith('styles/fonts.css')) {
             content = content.replace(/url\('\.\/fonts\/([^']+)'\)/g, (_, f) => {

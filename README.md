@@ -48,6 +48,8 @@ pnpm tokens             # regenerate the theme layer after bumping theming-base-
 
 ## Using the components in an app
 
+### By copying the files
+
 ```sh
 pnpm add @angular/cdk clsx tailwind-merge class-variance-authority
 ```
@@ -65,16 +67,45 @@ pnpm add @angular/cdk clsx tailwind-merge class-variance-authority
 4. Copy the component folders you need to `src/components/ui/`. A component's `registryDependencies` in
    `registry.json` lists the other folders it needs.
 
-With the shadcn CLI, the same files are installed by `npx shadcn add <registry-url>/r/<name>.json`
-(`theme` and `utils` come along as dependencies). The registry copy of `fonts.css` loads the fonts from the
-`@sap-theming/theming-base-content` package on jsDelivr; self-host them by copying the `.woff2` files instead.
+### With the shadcn CLI
+
+The registry is published at `https://adrianhdezm.github.io/fundamental-ngx-registry/r/<name>.json`. A component
+brings its dependencies along, including `theme` (the styles) and `utils`, and the CLI adds the npm packages.
+
+1. Map `@/*` to `src/*` in `tsconfig.json` (the CLI resolves the aliases below through it):
+   ```json
+   "paths": { "@/*": ["./src/*"] }
+   ```
+2. Add a `components.json` at the project root:
+   ```json
+   {
+     "$schema": "https://ui.shadcn.com/schema.json",
+     "style": "new-york",
+     "rsc": false,
+     "tsx": true,
+     "tailwind": { "config": "", "css": "", "baseColor": "neutral", "cssVariables": true },
+     "aliases": { "components": "@/components", "ui": "@/components/ui", "utils": "@/lib/utils", "lib": "@/lib" }
+   }
+   ```
+   Keep `"tsx": true` (TypeScript files, not transpiled JavaScript) and `"cssVariables": true` (with `false` the CLI
+   rewrites class names).
+3. Add components, then import `src/styles/fundamental.css` after Tailwind as above:
+   ```sh
+   npx shadcn add https://adrianhdezm.github.io/fundamental-ngx-registry/r/date-picker.json
+   ```
+
+Installed components import each other from `@/components/ui/...`. The registry copy of `fonts.css` loads the fonts
+from the `@sap-theming/theming-base-content` package on jsDelivr; self-host them by copying the `.woff2` files
+instead.
+
+### Theme and usage
 
 ```html
 <html data-sap-theme="sap_horizon" data-density="compact" dir="ltr"></html>
 ```
 
 ```ts
-import { Button } from '@/ui/button/button';
+import { Button } from '@/ui/button/button'; // '@/components/ui/button/button' when installed with the CLI
 
 @Component({
     imports: [Button],
