@@ -782,6 +782,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "breadcrumb",
+      "type": "registry:ui",
+      "title": "Breadcrumb",
+      "description": "Trail of links to the current page with separator styles; items that do not fit collapse into an overflow menu.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "icon", "link", "menu", "overflow-layout"],
+      "files": [
+        {
+          "path": "registry/ui/breadcrumb/breadcrumb.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
