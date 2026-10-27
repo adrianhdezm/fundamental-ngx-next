@@ -55,6 +55,8 @@ const NAMES = [
                         <div class="details p-4">
                             <span class="details-name">{{ p.name }}</span>
                             <button class="details-action">Message {{ p.name }}</button>
+                            <!-- a widget that keeps its keys to itself -->
+                            <input class="details-stopper" aria-label="Note" (keydown)="$event.stopPropagation()" />
                         </div>
                     </ng-template>
                 }
@@ -436,5 +438,27 @@ describe('AvatarGroup', () => {
         expect(shown).toBeLessThan(10);
         expect(overflow()!.textContent!.trim()).toBe(`+${NAMES.length - shown}`);
         expect(overflow()!.getBoundingClientRect().right).toBeLessThanOrEqual(group.getBoundingClientRect().right);
+    });
+
+    it('Escape closes the overflow popover even when its content stops propagation', async () => {
+        const { overflowTrigger, body, stable } = await setup((h) => {
+            h.width.set(1000);
+            h.max.set(5);
+        });
+        await userEvent.click(overflowTrigger()!);
+        await stable();
+        body()!.querySelector<HTMLElement>('[role=list] > [role=listitem]')!.focus();
+        await userEvent.keyboard('{Enter}');
+        await stable();
+        const stopper = body()!.querySelector<HTMLElement>('.details-stopper')!;
+        stopper.focus();
+        // other keys stay with the content
+        await userEvent.keyboard('a');
+        await stable();
+        expect(body()).not.toBeNull();
+        await userEvent.keyboard('{Escape}');
+        await stable();
+        expect(body()).toBeNull();
+        expect(document.activeElement).toBe(overflowTrigger());
     });
 });

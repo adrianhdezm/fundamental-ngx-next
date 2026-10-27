@@ -1,7 +1,7 @@
 ## avatar-group
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/avatar-group) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/avatar-group)
-Registry: `registry/ui/avatar-group/` — 8 stories, 13 tests.
+Registry: `registry/ui/avatar-group/` — 8 stories, 14 tests.
 
 ### Stories vs. upstream examples
 
@@ -28,7 +28,7 @@ Registry: `registry/ui/avatar-group/` — 8 stories, 13 tests.
 | Vertical orientation: caps, null shows all, ignores container width; orientation default/update                                      | —                                                                                                                                                               | ❌ missing | No vertical test                                                                                                                                                                    |
 | Width-based visibility: container width, room for the overflow button, no reservation when all fit, forced items under width         | shows as many avatars as fit …; shows all avatars without overflow button …; re-measures when the container resizes …                                           | ✅ covered |                                                                                                                                                                                     |
 | Effective popover placement: bottom (horizontal), right (vertical), explicit override, clearing restores default                     | vertical groups open their popovers to the right unless placement is set                                                                                        | ✅ covered | Fixed: `placement` defaults to bottom, or right for vertical groups (also the details popovers of individual groups); the vertical column now hugs its avatars                      |
-| Overflow body: Escape emits/closes, even when a child stops propagation; other keys ignored                                          | overflow popover: list stage → details stage → back …                                                                                                           | 🟡 partial | Escape closes and restores focus; the stopPropagation case is untested                                                                                                              |
+| Overflow body: Escape emits/closes, even when a child stops propagation; other keys ignored                                          | overflow popover: list stage → details stage → back …; Escape closes the overflow popover even when its content stops propagation                               | ✅ covered | Fixed: the overflow list catches Escape in the capture phase, like upstream; other keys stay with the content                                                                       |
 | `should create`                                                                                                                      | —                                                                                                                                                               | ➖ n/a     |                                                                                                                                                                                     |
 
 Registry-only coverage: overflow "+N" wrapped in `<bdi dir="ltr">` for RTL, list → details → back stage navigation with focus restore, Enter/Space on avatars, `visibleCountChange` output, re-measure on resize and item changes.
@@ -36,5 +36,5 @@ Registry-only coverage: overflow "+N" wrapped in `<bdi dir="ltr">` for RTL, list
 ### Gaps to fill
 
 - **Stories:** done.
-- **Tests:** "maxVisibleItems 0 hides every avatar"; "maxVisibleItems equal to the count shows no overflow button"; "changing maxVisibleItems updates the visible count"; "group type respects maxVisibleItems"; "vertical orientation caps by maxVisibleItems and ignores the container width"; "Escape closes the overflow popover even when its content stops propagation".
+- **Tests:** "maxVisibleItems 0 hides every avatar"; "maxVisibleItems equal to the count shows no overflow button"; "changing maxVisibleItems updates the visible count"; "group type respects maxVisibleItems"; "vertical orientation caps by maxVisibleItems and ignores the container width".
 - **Effort:** M, about 8 tests and 5 stories.

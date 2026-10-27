@@ -22,7 +22,8 @@ import {
     input,
     output,
     signal,
-    viewChild
+    viewChild,
+    viewChildren
 } from '@angular/core';
 import { cn, type ClassValue } from '@/lib/utils';
 import { type AvatarSize } from '@/ui/avatar/avatar';
@@ -150,6 +151,14 @@ export class AvatarGroupOverflowList {
     protected readonly selected = signal<AvatarGroupItem | null>(null);
     protected readonly heading = computed(() => this.selected()?.fdAvatarGroupItemTitle() ?? this.title() ?? '');
     private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+
+    constructor() {
+        // Escape closes the popover even when the content (e.g. a details template) stops its propagation
+        const group = inject(AvatarGroup, { optional: true });
+        const onKeydown = (event: KeyboardEvent) => event.key === 'Escape' && group?.closePopovers();
+        this.element.addEventListener('keydown', onKeydown, true);
+        inject(DestroyRef).onDestroy(() => this.element.removeEventListener('keydown', onKeydown, true));
+    }
 
     protected open(item: AvatarGroupItem): void {
         if (!item.details()) return;
@@ -331,6 +340,7 @@ export class AvatarGroup {
     protected readonly customButton = contentChild(AvatarGroupOverflowButton);
     protected readonly customBody = contentChild(AvatarGroupOverflowBody);
     private readonly row = viewChild<ElementRef<HTMLElement>>('row');
+    private readonly popovers = viewChildren(Popover);
     private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     private readonly announcer = inject(LiveAnnouncer);
 
@@ -383,6 +393,11 @@ export class AvatarGroup {
             observer.observe(this.host);
             destroyRef.onDestroy(() => observer.disconnect());
         });
+    }
+
+    /** Closes the open popover of the group (details, overflow or group popover). */
+    closePopovers(): void {
+        for (const popover of this.popovers()) if (popover.isOpen()) popover.close();
     }
 
     /** Announces "2 of 6" when an avatar (or the overflow button) of an individual group gets the focus. */
