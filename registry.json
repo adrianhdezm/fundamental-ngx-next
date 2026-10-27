@@ -809,6 +809,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "action-sheet",
+      "type": "registry:ui",
+      "title": "Action Sheet",
+      "description": "Actions for a control in a popover, or in mobile mode in a sheet at the bottom of the screen, with keyboard navigation.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "bar", "button", "icon", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/action-sheet/action-sheet.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
