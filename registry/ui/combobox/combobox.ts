@@ -582,6 +582,8 @@ export class Combobox<T = unknown> implements ControlValueAccessor {
         this.searchTerm.set('');
         this.modelValue.set(this.communicateByObject() ? (value ?? null) : text);
         this.confirmed = { text, value: this.modelValue() };
+        // a value written while a mobile draft is open is what Cancel goes back to
+        if (this.snapshot) this.snapshot = { text, value: this.modelValue(), confirmed: this.confirmed };
         const field = this.field()?.nativeElement;
         if (field) field.value = text;
     }

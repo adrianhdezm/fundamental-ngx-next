@@ -620,6 +620,27 @@ describe('Combobox', () => {
             expect(input.value).toBe('Kiwi');
         });
 
+        it('keeps a value written during a draft when Cancel discards the draft', async () => {
+            const { fixture, host, input } = await setupOptions((h) => {
+                h.mobile.set(true);
+                h.mobileConfig.set({ title: 'Fruit', approveButtonText: 'Save', cancelButtonText: 'Cancel' });
+                h.control.setValue('Apple');
+            });
+            await userEvent.click(input);
+            await fixture.whenStable();
+            await wait();
+            await userEvent.click(options().find((o) => o.textContent?.trim() === 'Banana')!);
+            await fixture.whenStable();
+            host.control.setValue('Kiwi');
+            await fixture.whenStable();
+            await userEvent.click(dialogButton('Cancel')!);
+            await fixture.whenStable();
+            await wait(300);
+            expect(document.querySelector('[role=dialog]')).toBeNull();
+            expect(input.value).toBe('Kiwi');
+            expect(host.control.value).toBe('Kiwi');
+        });
+
         it('immediate mode keeps the dialog open on select when closeOnSelect is false', async () => {
             const { fixture, host, input } = await setupOptions((h) => {
                 h.mobile.set(true);

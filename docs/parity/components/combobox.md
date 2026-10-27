@@ -1,7 +1,7 @@
 ## combobox
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/combobox) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/combobox)
-Registry: `registry/ui/combobox/` — 13 stories, 26 tests.
+Registry: `registry/ui/combobox/` — 13 stories, 27 tests.
 
 ### Stories vs. upstream examples
 
@@ -46,7 +46,7 @@ Registry: `registry/ui/combobox/` — 13 stories, 26 tests.
 | Focus-trap pause when open changes                                                                                                                      | —                                                                                                      | ➖ n/a     | Our popover uses `focusTrapped=false`                                          |
 | Outside click / Tab-out parity (revert invalid text, `tabOutStrategy` close vs closeAndSelect, commit autocomplete candidate, re-focus does not revert) | leaving the field: Tab reverts…; tabOutStrategy close…; Tab commits…; duplicate label…; outside click… | ✅ covered | Revert to the last choice ported in `fix(combobox)`; text mode keeps free text |
 | autoComplete=false free text with communicateByObject is not reverted on close/Tab                                                                      | keeps free text on Tab and on a later close…                                                           | ✅ covered |                                                                                |
-| Mobile selection transactions (draft until Approve, Cancel restores, immediate mode, closeOnSelect, external writeValue during draft)                   | mobile: Approve commits the draft once…; immediate mode…; keeps the dialog open…                       | ✅ covered | External writeValue during a draft: see below                                  |
+| Mobile selection transactions (draft until Approve, Cancel restores, immediate mode, closeOnSelect, external writeValue during draft)                   | mobile: Approve commits the draft once…; immediate mode…; keeps the dialog open…                       | ✅ covered | Includes an external writeValue during a draft (`fix(combobox)`)               |
 | Global mobile confirmation config                                                                                                                       | —                                                                                                      | ➖ n/a     | No global mobile-config token in our port                                      |
 
 Open stories: "Open: dropdown", "Open: groups", "Open: list message", "Open: inside a dialog" and "Open: mobile dialog" open the list (or dialog) in `play`.
