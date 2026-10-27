@@ -380,6 +380,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "status-indicator",
+      "type": "registry:ui",
+      "title": "Status Indicator",
+      "description": "SVG shapes filled to a percentage linearly, at an angle or radially, coloured by status.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/status-indicator/status-indicator.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
