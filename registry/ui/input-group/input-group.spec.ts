@@ -39,6 +39,44 @@ class Host {
     readonly control = new FormControl<string | number | null>('10');
 }
 
+@Component({
+    imports: [InputGroup],
+    template: `
+        <fd-input-group
+            ariaLabel="Field"
+            [glyph]="glyph()"
+            [glyphAriaLabel]="glyphAriaLabel()"
+            [addOnText]="addOnText()"
+            [button]="button()"
+        />
+    `
+})
+class AddonHost {
+    readonly glyph = signal<string | null>(null);
+    readonly glyphAriaLabel = signal<string | null>(null);
+    readonly addOnText = signal<string | null>(null);
+    readonly button = signal(false);
+}
+
+async function setupAddon(
+    init: Partial<{ glyph: string; glyphAriaLabel: string; addOnText: string; button: boolean }>
+) {
+    const fixture = TestBed.createComponent(AddonHost);
+    const host = fixture.componentInstance;
+    if (init.glyph) host.glyph.set(init.glyph);
+    if (init.glyphAriaLabel) host.glyphAriaLabel.set(init.glyphAriaLabel);
+    if (init.addOnText) host.addOnText.set(init.addOnText);
+    if (init.button) host.button.set(true);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    return {
+        addon: root.querySelector<HTMLElement>('[fdInputGroupAddon]')!,
+        icon: root.querySelector<HTMLElement>('[fdInputGroupAddon] fd-icon'),
+        button: root.querySelector<HTMLButtonElement>('[fdInputGroupAddon] button')
+    };
+}
+
 async function setup() {
     const fixture = TestBed.createComponent(Host);
     document.body.appendChild(fixture.nativeElement);
@@ -124,5 +162,41 @@ describe('InputGroup', () => {
         expect(group.querySelectorAll('input')).toHaveLength(1);
         expect(group.querySelector('input')!.getAttribute('aria-label')).toBe('Date');
         expect(group.querySelectorAll('[fdInputGroupAddon]')).toHaveLength(1);
+    });
+
+    describe('addon accessible names', () => {
+        it('names the icon of a non-button addon with glyphAriaLabel, not the addon', async () => {
+            const { addon, icon } = await setupAddon({ glyph: 'search', glyphAriaLabel: 'Search icon' });
+            expect(addon.hasAttribute('aria-label')).toBe(false);
+            expect(icon!.getAttribute('role')).toBe('img');
+            expect(icon!.getAttribute('aria-label')).toBe('Search icon');
+        });
+
+        it('falls back to the glyph name for the icon of a non-button addon', async () => {
+            const { addon, icon } = await setupAddon({ glyph: 'search' });
+            expect(addon.hasAttribute('aria-label')).toBe(false);
+            expect(icon!.getAttribute('role')).toBe('img');
+            expect(icon!.getAttribute('aria-label')).toBe('search');
+        });
+
+        it('has no labelled icon in a text-only addon', async () => {
+            const { addon, icon } = await setupAddon({ addOnText: 'USD' });
+            expect(icon).toBeNull();
+            expect(addon.hasAttribute('aria-label')).toBe(false);
+            expect(addon.textContent?.trim()).toBe('USD');
+        });
+
+        it('falls back to the glyph name for a button addon without glyphAriaLabel', async () => {
+            const { button } = await setupAddon({ glyph: 'search', button: true });
+            expect(button!.getAttribute('aria-label')).toBe('search');
+        });
+
+        it('names a button addon without glyph by its addOnText', async () => {
+            const { button } = await setupAddon({ addOnText: 'USD', button: true });
+            // the text is the visible label of the button; with aria-label it must match it
+            expect(button!.getAttribute('aria-label') ?? button!.textContent?.trim()).toBe('USD');
+            expect(button!.textContent?.trim()).toBe('USD');
+            expect(button!.querySelector('fd-icon')).toBeNull();
+        });
     });
 });

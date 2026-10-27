@@ -1,7 +1,7 @@
 ## input-group
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/input-group) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/input-group)
-Registry: `registry/ui/input-group/` — 11 stories, 7 tests.
+Registry: `registry/ui/input-group/` — 11 stories, 12 tests.
 
 ### Stories vs. upstream examples
 
@@ -19,16 +19,16 @@ Registry: `registry/ui/input-group/` — 11 stories, 7 tests.
 
 ### Tests vs. upstream specs
 
-| Upstream behaviour                                                                                                            | Registry test                                  | Status     | Notes                                                                              |
-| ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ---------- | ---------------------------------------------------------------------------------- |
-| Should create                                                                                                                 | —                                              | ➖ n/a     |                                                                                    |
-| addOnButtonClicked emitted from the button                                                                                    | emits addOnButtonClicked from the addon button | ✅ covered |                                                                                    |
-| Non-button icon addon: aria-label on the icon (not the span), falls back to the glyph name, no icon label for text-only addon | —                                              | ❌ missing | Our template sets `ariaLabel` on the icon (glyphAriaLabel or glyph); not asserted. |
-| Button addon: aria-label from glyphAriaLabel, fallback to glyph name, fallback to addOnText without glyph                     | emits addOnButtonClicked from the addon button | 🟡 partial | Only the `glyphAriaLabel` case is asserted ("Clear"); both fallbacks untested.     |
+| Upstream behaviour                                                                                                            | Registry test                                                                                                                                          | Status     | Notes                                                                                                                                              |
+| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Should create                                                                                                                 | —                                                                                                                                                      | ➖ n/a     |                                                                                                                                                    |
+| addOnButtonClicked emitted from the button                                                                                    | emits addOnButtonClicked from the addon button                                                                                                         | ✅ covered |                                                                                                                                                    |
+| Non-button icon addon: aria-label on the icon (not the span), falls back to the glyph name, no icon label for text-only addon | names the icon of a non-button addon with glyphAriaLabel …; falls back to the glyph name for the icon …; has no labelled icon in a text-only addon     | ✅ covered |                                                                                                                                                    |
+| Button addon: aria-label from glyphAriaLabel, fallback to glyph name, fallback to addOnText without glyph                     | emits addOnButtonClicked from the addon button; falls back to the glyph name for a button addon …; names a button addon without glyph by its addOnText | ✅ covered | Without a glyph our button shows `addOnText` as its visible label, which names it (upstream also copies it to `aria-label`; same accessible name). |
 
 Registry-only coverage: label/description wiring of the inner input, addon placement before/after, ControlValueAccessor (upstream's CVA describe block is empty), number values, focus kept in input with non-focusable button, projected input and addons.
 
 ### Gaps to fill
 
-- **Tests:** "a non-button icon addon names the icon via glyphAriaLabel, not the addon span"; "a non-button icon addon falls back to the glyph name"; "a text-only addon has no labelled icon"; "a button addon falls back to the glyph name without glyphAriaLabel"; "a button addon without glyph is named by addOnText".
-- **Effort:** S, five short ARIA assertions and one play story.
+- None.
+- **Effort:** done.
