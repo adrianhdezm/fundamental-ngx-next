@@ -1201,6 +1201,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "rating-indicator",
+      "type": "registry:ui",
+      "title": "Rating Indicator",
+      "description": "Star (or custom icon) ratings as a keyboard slider with halves, sizes, a display mode, averages of votes and a popover with the votes per rating.",
+      "dependencies": ["@angular/cdk", "@angular/forms"],
+      "registryDependencies": ["utils", "theme", "icon", "link", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/rating-indicator/rating-indicator.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
