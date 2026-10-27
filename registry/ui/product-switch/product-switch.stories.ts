@@ -1,4 +1,4 @@
-import { Component, afterNextRender, input, signal, viewChild } from '@angular/core';
+import { Component, afterNextRender, input, linkedSignal, signal, viewChild } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { Button } from '@/ui/button/button';
 import { ProductSwitch, ProductSwitchBody, ProductSwitchButton, type ProductSwitchItem } from './product-switch';
@@ -18,7 +18,8 @@ const ALL: ProductSwitchItem[] = [
     {
         title: 'Customer Data Cloud',
         icon: 'customer-briefing',
-        avatar: { label: 'Customer Data Cloud', colorAccent: 6 }
+        // an image or glyph avatar: initials would be visible text missing from the item's name (WCAG 2.5.3)
+        avatar: { glyph: 'customer-briefing', colorAccent: 6 }
     }
 ];
 
@@ -52,13 +53,13 @@ class StoryProductSwitch {
     readonly busy = input(false);
     readonly custom = input(false);
     readonly autoOpen = input(false);
-    protected readonly products = signal<ProductSwitchItem[]>([]);
+    // derived from the inputs, so the first render already has the right products (and drops can reorder them)
+    protected readonly products = linkedSignal<ProductSwitchItem[]>(() =>
+        ALL.slice(0, this.count()).map((p) => ({ ...p, callback: () => undefined }))
+    );
     protected readonly chosen = signal('');
     private readonly ps = viewChild.required<ProductSwitch>('ps');
     constructor() {
-        queueMicrotask(() =>
-            this.products.set(ALL.slice(0, this.count()).map((p) => ({ ...p, callback: () => undefined })))
-        );
         afterNextRender(() => this.autoOpen() && setTimeout(() => this.ps().isOpen.set(true), 50));
     }
 }

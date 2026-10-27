@@ -42,6 +42,10 @@ export interface ProductSwitchItem {
     target?: '_self' | '_blank' | '_parent' | '_top';
     icon?: string;
     font?: IconFont;
+    /**
+     * An avatar instead of the icon. Prefer an `image` or a `glyph`: the initials of a `label` are visible text that
+     * the item's accessible name (title, subtitle) does not contain (WCAG 2.5.3, Label in Name).
+     */
     avatar?: {
         glyph?: string;
         label?: string;
