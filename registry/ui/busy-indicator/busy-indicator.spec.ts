@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cdp, userEvent } from 'vitest/browser';
 import { BusyIndicator, BusyIndicatorExtended, type BusyIndicatorSize } from './busy-indicator';
 
@@ -30,6 +30,7 @@ import { BusyIndicator, BusyIndicatorExtended, type BusyIndicatorSize } from './
             [size]="size()"
             [contrast]="contrast()"
             [ariaLabel]="ariaLabel()"
+            [ariaValueText]="ariaValueText()"
             [title]="title()"
         />
         <div fdBusyIndicatorExtended><fd-busy-indicator id="extended" loading label="Loading data" /></div>
@@ -41,6 +42,7 @@ class Host {
     readonly size = signal<BusyIndicatorSize>('m');
     readonly contrast = signal(false);
     readonly ariaLabel = signal<string | null>('Loading');
+    readonly ariaValueText = signal<string | null>(null);
     readonly title = signal<string | undefined>(undefined);
     readonly label = signal<string | undefined>(undefined);
     readonly ariaLive = signal<'assertive' | 'polite' | 'off' | null>(null);
@@ -226,5 +228,42 @@ describe('BusyIndicator', () => {
         await update((h) => h.loading.set(false));
         expect(block.hasAttribute('aria-live')).toBe(false);
         expect(await wheel()).toBeGreaterThan(0);
+    });
+
+    it('is inline-block by default and uses a custom ariaValueText while loading', async () => {
+        const { standalone, update } = await setup();
+        expect(getComputedStyle(standalone).display).toBe('inline-block');
+        await update((h) => h.ariaValueText.set('Fetching orders'));
+        expect(standalone.getAttribute('aria-valuetext')).toBe('Fetching orders');
+        await update((h) => h.loading.set(false));
+        expect(standalone.hasAttribute('aria-valuetext')).toBe(false);
+    });
+
+    it('sets aria-live assertive and off', async () => {
+        const { block, update } = await setup();
+        await update((h) => h.ariaLive.set('assertive'));
+        expect(block.getAttribute('aria-live')).toBe('assertive');
+        await update((h) => h.ariaLive.set('off'));
+        expect(block.getAttribute('aria-live')).toBe('off');
+    });
+
+    it('stops blocking wheel events when preventWheelEvents turns off and removes the listener on destroy', async () => {
+        const { fixture, block, update } = await setup();
+        const wheel = () => {
+            const event = new WheelEvent('wheel', { deltaY: 100, cancelable: true, bubbles: true });
+            block.dispatchEvent(event);
+            return event.defaultPrevented;
+        };
+        await update((h) => h.preventWheel.set(true));
+        expect(wheel()).toBe(true);
+        await update((h) => h.preventWheel.set(false));
+        expect(wheel()).toBe(false);
+
+        await update((h) => h.preventWheel.set(true));
+        expect(wheel()).toBe(true);
+        const removed = vi.spyOn(block, 'removeEventListener');
+        fixture.destroy();
+        expect(removed).toHaveBeenCalledWith('wheel', expect.any(Function));
+        expect(wheel()).toBe(false);
     });
 });

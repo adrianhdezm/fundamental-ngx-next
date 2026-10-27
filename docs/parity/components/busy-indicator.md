@@ -1,7 +1,7 @@
 ## busy-indicator
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/busy-indicator) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/busy-indicator)
-Registry: `registry/ui/busy-indicator/` — 8 stories, 6 tests.
+Registry: `registry/ui/busy-indicator/` — 8 stories, 9 tests.
 
 ### Stories vs. upstream examples
 
@@ -15,27 +15,26 @@ Registry: `registry/ui/busy-indicator/` — 8 stories, 6 tests.
 
 ### Tests vs. upstream specs
 
-| Upstream behaviour                                                                                       | Registry test                                                       | Status     | Notes                                                                                                   |
-| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------- |
-| Shows the loading state                                                                                  | loading shows the dots with role progressbar …                      | ✅ covered |                                                                                                         |
-| Size                                                                                                     | size s, m, l and the contrast variant                               | ✅ covered | Real dot sizes                                                                                          |
-| Block vs inline-block display                                                                            | block mode overlays the content …                                   | 🟡 partial | Block covered; the default inline-block display is not asserted                                         |
-| Role progressbar / presentation                                                                          | loading shows the dots …                                            | ✅ covered |                                                                                                         |
-| tabindex 0 / -1                                                                                          | loading shows the dots …                                            | ✅ covered |                                                                                                         |
-| `aria-busy`                                                                                              | loading shows the dots …                                            | ✅ covered |                                                                                                         |
-| `aria-valuemin` / `aria-valuemax`                                                                        | loading shows the dots …                                            | ✅ covered |                                                                                                         |
-| `aria-valuetext`: custom, default, absent when idle                                                      | loading shows the dots …                                            | 🟡 partial | Default and idle covered; a custom `ariaValueText` is never asserted                                    |
-| Title: default, custom, removed when idle                                                                | loading shows the dots …                                            | ✅ covered |                                                                                                         |
-| Custom `ariaLabel`                                                                                       | loading shows the dots …                                            | ✅ covered |                                                                                                         |
-| `aria-live` assertive / polite / off                                                                     | ariaLive announces the label …                                      | 🟡 partial | Only `polite`                                                                                           |
-| Loading label displayed                                                                                  | shows the label under the dots                                      | ✅ covered |                                                                                                         |
-| `preventWheelEvents`: added, not added, preventDefault, removed when switched off, cleaned up on destroy | ariaLive announces the label; preventWheelEvents blocks scrolling … | 🟡 partial | On, off and "only while loading" covered; switching the input back to false and destroy cleanup are not |
-| Extended directive classes                                                                               | —                                                                   | ➖ n/a     | Class only                                                                                              |
-| `should create`                                                                                          | —                                                                   | ➖ n/a     |                                                                                                         |
+| Upstream behaviour                                                                                       | Registry test                                                                                                                        | Status     | Notes          |
+| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------- | -------------- |
+| Shows the loading state                                                                                  | loading shows the dots with role progressbar …                                                                                       | ✅ covered |                |
+| Size                                                                                                     | size s, m, l and the contrast variant                                                                                                | ✅ covered | Real dot sizes |
+| Block vs inline-block display                                                                            | block mode overlays the content …; is inline-block by default …                                                                      | ✅ covered |                |
+| Role progressbar / presentation                                                                          | loading shows the dots …                                                                                                             | ✅ covered |                |
+| tabindex 0 / -1                                                                                          | loading shows the dots …                                                                                                             | ✅ covered |                |
+| `aria-busy`                                                                                              | loading shows the dots …                                                                                                             | ✅ covered |                |
+| `aria-valuemin` / `aria-valuemax`                                                                        | loading shows the dots …                                                                                                             | ✅ covered |                |
+| `aria-valuetext`: custom, default, absent when idle                                                      | loading shows the dots …; is inline-block by default and uses a custom ariaValueText …                                               | ✅ covered |                |
+| Title: default, custom, removed when idle                                                                | loading shows the dots …                                                                                                             | ✅ covered |                |
+| Custom `ariaLabel`                                                                                       | loading shows the dots …                                                                                                             | ✅ covered |                |
+| `aria-live` assertive / polite / off                                                                     | ariaLive announces the label …; sets aria-live assertive and off                                                                     | ✅ covered |                |
+| Loading label displayed                                                                                  | shows the label under the dots                                                                                                       | ✅ covered |                |
+| `preventWheelEvents`: added, not added, preventDefault, removed when switched off, cleaned up on destroy | ariaLive announces the label; preventWheelEvents blocks scrolling …; stops blocking wheel events when preventWheelEvents turns off … | ✅ covered |                |
+| Extended directive classes                                                                               | —                                                                                                                                    | ➖ n/a     | Class only     |
+| `should create`                                                                                          | —                                                                                                                                    | ➖ n/a     |                |
 
 Registry-only coverage: block mode makes the content inert and keeps focus on the indicator, contrast colours (incl. HC theme), `prefers-reduced-motion`.
 
 ### Gaps to fill
 
-- **Tests:** "is inline-block by default"; "uses a custom ariaValueText while loading"; "sets aria-live assertive and off"; "stops blocking wheel events when preventWheelEvents turns off"; "removes the wheel listener on destroy".
-- **Effort:** S, small attribute tests and one toast story.
+None: all gaps are filled.
