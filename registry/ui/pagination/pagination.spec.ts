@@ -10,7 +10,7 @@ import { Pagination, paginationPages } from './pagination';
         <fd-pagination
             [totalItems]="total()"
             [mobile]="mobile()"
-            [itemsPerPageOptions]="[10, 25]"
+            [itemsPerPageOptions]="options()"
             [(currentPage)]="page"
             [(itemsPerPage)]="size"
             (pageChangeStart)="requested.set($event)"
@@ -22,6 +22,7 @@ class Host {
     readonly mobile = signal(false);
     readonly page = signal(1);
     readonly size = signal(10);
+    readonly options = signal([10, 25]);
     readonly requested = signal<number | null>(null);
 }
 
@@ -46,6 +47,15 @@ describe('paginationPages', () => {
         expect(paginationPages(50, 1)).toEqual([1, 2, 3, 4, 5, 6, 7, -1, 50]);
         expect(paginationPages(50, 25)).toEqual([1, -1, 23, 24, 25, 26, 27, -1, 50]);
         expect(paginationPages(50, 50)).toEqual([1, -1, 44, 45, 46, 47, 48, 49, 50]);
+    });
+
+    it('shows only one ellipsis while the current page is near an end', () => {
+        expect(paginationPages(50, 2)).toEqual([1, 2, 3, 4, 5, 6, 7, -1, 50]);
+        expect(paginationPages(50, 5)).toEqual([1, 2, 3, 4, 5, 6, 7, -1, 50]);
+        expect(paginationPages(50, 6)).toEqual([1, -1, 4, 5, 6, 7, 8, -1, 50]);
+        expect(paginationPages(50, 46)).toEqual([1, -1, 44, 45, 46, 47, 48, 49, 50]);
+        expect(paginationPages(50, 49)).toEqual([1, -1, 44, 45, 46, 47, 48, 49, 50]);
+        expect(paginationPages(10, 9)).toEqual([1, -1, 4, 5, 6, 7, 8, 9, 10]);
     });
 });
 
@@ -145,5 +155,76 @@ describe('Pagination', () => {
         host.size.set(7.9);
         await fixture.whenStable();
         expect(document.querySelector('fd-select [role=combobox]')?.textContent).toContain('7');
+    });
+
+    it('starts on the first page by default', async () => {
+        @Component({
+            imports: [Pagination],
+            template: `<fd-pagination [totalItems]="50" />`
+        })
+        class DefaultHost {}
+        const fixture = TestBed.createComponent(DefaultHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        const root = fixture.nativeElement as HTMLElement;
+        expect(root.querySelector('[aria-current=page]')?.textContent?.trim()).toBe('1');
+        expect(button(root, 'Previous page').disabled).toBe(true);
+    });
+
+    it('rounds a fractional currentPage down and keeps it in range', async () => {
+        const { fixture, host, root } = await setup({ total: 50 });
+        const current = () => root.querySelector('[aria-current=page]')?.textContent?.trim();
+        host.page.set(3.7);
+        await fixture.whenStable();
+        expect(current()).toBe('3');
+        host.page.set(999);
+        await fixture.whenStable();
+        expect(current()).toBe('5');
+        expect(button(root, 'Next page').disabled).toBe(true);
+        host.page.set(-2);
+        await fixture.whenStable();
+        expect(current()).toBe('1');
+        host.page.set(null as unknown as number);
+        await fixture.whenStable();
+        expect(current()).toBe('1');
+    });
+
+    it('rounds items per page options down, drops values below 1, adds itemsPerPage and sorts them', async () => {
+        const { fixture, host } = await setup({ total: 100 });
+        host.options.set([20.7, 0, -5, 5, 20, 30.1]);
+        await fixture.whenStable();
+        await userEvent.click(document.querySelector<HTMLElement>('fd-select [role=combobox]')!);
+        await fixture.whenStable();
+        const options = () =>
+            [...document.querySelectorAll<HTMLElement>('[role=listbox] [role=option]')].map((o) =>
+                o.textContent?.trim()
+            );
+        expect(options()).toEqual(['5', '10', '20', '30']);
+        await userEvent.keyboard('{Escape}');
+        host.size.set(5);
+        await fixture.whenStable();
+        await userEvent.click(document.querySelector<HTMLElement>('fd-select [role=combobox]')!);
+        await fixture.whenStable();
+        expect(options()).toEqual(['5', '20', '30']);
+        await userEvent.keyboard('{Escape}');
+        await wait();
+    });
+
+    it('resets an invalid page in the input to the current page on Enter and on blur', async () => {
+        const { fixture, host, root } = await setup({ page: 12 });
+        const input = root.querySelector<HTMLInputElement>('input[type=number]')!;
+        await userEvent.clear(input);
+        await userEvent.type(input, '99{Enter}');
+        await fixture.whenStable();
+        expect(host.page()).toBe(12);
+        expect(input.value).toBe('12');
+        await userEvent.clear(input);
+        await userEvent.type(input, '0');
+        expect(input.getAttribute('aria-invalid')).toBe('true');
+        input.blur();
+        await fixture.whenStable();
+        expect(input.value).toBe('12');
+        expect(input.hasAttribute('aria-invalid')).toBe(false);
+        expect(host.page()).toBe(12);
     });
 });
