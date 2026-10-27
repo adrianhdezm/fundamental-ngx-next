@@ -1,19 +1,19 @@
 ## toolbar
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/toolbar) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/toolbar)
-Registry: `registry/ui/toolbar/` — 5 stories, 11 tests.
+Registry: `registry/ui/toolbar/` — 8 stories, 12 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example          | Registry story                             | Status     | Notes                                                                                                                                                                                           |
-| ------------------------- | ------------------------------------------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Toolbar Types             | Types                                      | ✅ covered | solid, auto, transparent + clearBorder, info, info active                                                                                                                                       |
-| Toolbar Title             | TitleSpacerSeparator, Playground           | 🟡 partial | Only `title` input; no `headingLevel` and no projected `fdTitle` + icon variant                                                                                                                 |
-| Toolbar Overflow          | Overflow (third toolbar), Playground       | 🟡 partial | Buttons, input, checkbox only; upstream also overflows a date-time picker, select, split button with menu, segmented button, overflow menu button and a fixed spacer; no "Open: overflow" story |
-| Toolbar Overflow Priority | Overflow (first toolbar), "Open: overflow" | ✅ covered | always/never/low/high/disappear; the Open story opens the overflow popover of this toolbar                                                                                                      |
-| Toolbar Overflow Grouping | Overflow (second toolbar)                  | ✅ covered |                                                                                                                                                                                                 |
-| Toolbar Spacer            | TitleSpacerSeparator                       | ✅ covered | Flexible and fixed width                                                                                                                                                                        |
-| Toolbar Separator         | TitleSpacerSeparator                       | ✅ covered |                                                                                                                                                                                                 |
+| Upstream example          | Registry story                                                                   | Status     | Notes                                                                                                                                                                   |
+| ------------------------- | -------------------------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Toolbar Types             | Types                                                                            | ✅ covered | solid, auto, transparent + clearBorder, info, info active                                                                                                               |
+| Toolbar Title             | Title variants, TitleSpacerSeparator, Playground                                 | ✅ covered | `title` input, `title` with `headingLevel`, and a projected `h4 fdTitle` with an icon                                                                                   |
+| Toolbar Overflow          | Overflow with overlays, "Open: overflow with overlays"; Overflow (third toolbar) | ✅ covered | Date picker, select, checkbox, split button with menu, label and input, menu button, segmented button and a fixed spacer; the Open story opens the popover holding them |
+| Toolbar Overflow Priority | Overflow (first toolbar), "Open: overflow"                                       | ✅ covered | always/never/low/high/disappear; the Open story opens the overflow popover of this toolbar                                                                              |
+| Toolbar Overflow Grouping | Overflow (second toolbar)                                                        | ✅ covered |                                                                                                                                                                         |
+| Toolbar Spacer            | TitleSpacerSeparator                                                             | ✅ covered | Flexible and fixed width                                                                                                                                                |
+| Toolbar Separator         | TitleSpacerSeparator                                                             | ✅ covered |                                                                                                                                                                         |
 
 ### Tests vs. upstream specs
 
@@ -31,6 +31,6 @@ Registry-only coverage: the overflow popover dialog is named like the More butto
 
 ### Gaps to fill
 
-- **Stories:** "Title variants" — `title` with `headingLevel`, and a projected `h4 fdTitle` + icon; "Open: overflow" — a narrow toolbar whose `play` opens the more popover containing a select, date picker, segmented button and a menu button.
+- **Stories:** none.
 - **Tests:** "recomputes the overflow when a hidden toolbar becomes visible"; "a longer title moves more items into the overflow"; "the title truncates with an ellipsis and keeps the full text in title"; "overflown select and menu buttons still open their overlays from the popover".
 - **Effort:** M, the overlay-in-overflow story and test need several components wired.
