@@ -1215,6 +1215,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "progress-indicator",
+      "type": "registry:ui",
+      "title": "Progress Indicator",
+      "description": "A progress bar with the value or a text above it, value state colours and icons, animation and a popover for truncated texts.",
+      "registryDependencies": ["utils", "theme", "button", "icon", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/progress-indicator/progress-indicator.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
