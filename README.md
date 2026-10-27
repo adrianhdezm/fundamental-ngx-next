@@ -2,7 +2,7 @@
 
 SAP Fiori Horizon components for Angular, as copy-paste source files.
 
-- **Port of [`@fundamental-ngx/core`](https://sap.github.io/fundamental-ngx/#/core/home)**: same behaviour, ARIA and keyboard handling.
+- **Unofficial port of [`@fundamental-ngx/core`](https://sap.github.io/fundamental-ngx/#/core/home)** (Apache-2.0, see [License and attribution](#license-and-attribution)): same behaviour, ARIA and keyboard handling.
 - **Styled with Tailwind CSS v4** on the SAP theme tokens from [`@sap-theming/theming-base-content`](https://github.com/SAP/theming-base-content). No fundamental-styles CSS at runtime.
 - **Behaviour from the Angular CDK** (a11y, overlay, bidi, ...).
 - **Modern Angular**: standalone, signals, `input()`/`model()`/`output()`, OnPush, zoneless.
@@ -89,6 +89,22 @@ values Tailwind may turn the `_` of `--sap*_*` names into spaces: write calc ope
 right (`calc(var(--sapX_Y)*2)`), and alias tokens into local variables (`[--bw:var(--sapList_BorderWidth)]`) before
 using them in multi-part values like `shadow-[0_var(--bw)_0_var(--c)]`. `pnpm check:styles` catches all of these.
 
-## License
+## License and attribution
 
-Apache-2.0. SAP theme content and fonts come from `@sap-theming/theming-base-content` (Apache-2.0).
+Apache-2.0, see [LICENSE](./LICENSE) and [NOTICE](./NOTICE).
+
+This is an unofficial derivative work of SAP's open source Fundamental Library, which is also licensed under
+Apache-2.0:
+
+- The components are **ports of [fundamental-ngx](https://github.com/SAP/fundamental-ngx)** (`@fundamental-ngx/core`):
+  behaviour, keyboard handling, ARIA and APIs come from it, rewritten with signals, the Angular CDK and Tailwind CSS.
+- Their **visual design follows [fundamental-styles](https://github.com/SAP/fundamental-styles)**, rebuilt as Tailwind
+  utilities; `registry/styles/extensions.css` holds theme values taken from it.
+- The **theme values, the "72" typeface and the SAP icon fonts** come from
+  [`@sap-theming/theming-base-content`](https://github.com/SAP/theming-base-content).
+
+Every component file starts with a header naming the code it is ported from, its copyright holders and the license, so
+the attribution travels with the file when you copy it into your app. Keep these headers, and keep the `LICENSE` and
+`NOTICE` information with any redistribution.
+
+SAP and SAP Fiori are trademarks of SAP SE. This project is not affiliated with, endorsed by or sponsored by SAP SE.

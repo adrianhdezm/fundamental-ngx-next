@@ -1,3 +1,9 @@
+/*
+ * Port of @fundamental-ngx/core (overflow-layout) with the visual design of fundamental-styles,
+ * Copyright (c) SAP SE or an SAP affiliate company and Fundamental Library contributors.
+ * Modified for fundamental-ngx-next: rewritten with Angular signals, the Angular CDK and Tailwind CSS.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import { NgTemplateOutlet } from '@angular/common';
 import {
     ChangeDetectionStrategy,

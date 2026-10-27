@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) fundamental-ngx-next contributors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import { type ClassValue, clsx } from 'clsx';
 import { extendTailwindMerge } from 'tailwind-merge';
 

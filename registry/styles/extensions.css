@@ -2,6 +2,9 @@
  * Theme values that fundamental-styles defines on top of the SAP theme tokens, for visuals
  * that have no --sap* token. Components use them through the variable shorthand,
  * e.g. border-(--fdPopover_Border_Color).
+ *
+ * Values from fundamental-styles, Copyright (c) SAP SE or an SAP affiliate company and
+ * Fundamental Library contributors. SPDX-License-Identifier: Apache-2.0
  */
 :root,
 [data-sap-theme='sap_horizon'] {

@@ -10,6 +10,9 @@
  *          on <html> (or any element, to theme a subtree). sap_horizon is the default.
  * Density: set data-density="compact" on <html> (or any element). Cozy is the default.
  * RTL:     set dir="rtl"; components use logical utilities (ps-, me-, start-, ...) and CDK Directionality.
+ *
+ * Copyright (c) fundamental-ngx-next contributors.
+ * SPDX-License-Identifier: Apache-2.0
  */
 @import './fonts.css';
 @import './themes/sap_horizon.css';
