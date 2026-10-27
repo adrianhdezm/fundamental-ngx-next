@@ -1,7 +1,7 @@
 ## popover
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/popover) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/popover)
-Registry: `registry/ui/popover/` — 13 stories, 29 tests.
+Registry: `registry/ui/popover/` — 13 stories, 28 tests.
 
 ### Stories vs. upstream examples
 
@@ -64,7 +64,7 @@ Registry: `registry/ui/popover/` — 13 stories, 29 tests.
 | Placement default and input changes                                                                                     | opens below the trigger…; follows the placement input                                | ✅ covered |                                                                                                             |
 | Default input values; component delegates to service (stub tests)                                                       | —                                                                                    | ➖ n/a     | Wiring only                                                                                                 |
 
-Registry-only coverage: flip when no room, `fixedPosition`, RTL positioning, arrow side and offset, Tab trapped in the body, `focusAutoCapture=false`, `fit-content`, `fdPopoverTrigger` aria-haspopup/controls/expanded, `normalizeTriggers` and placement helpers.
+Registry-only coverage: flip when no room, `fixedPosition`, RTL positioning, arrow side and offset, Tab trapped in the body (without the CDK's aria-hidden focusable anchors, which fail axe `aria-hidden-focus` for non-dialog bodies), `focusAutoCapture=false`, `fit-content`, `fdPopoverTrigger` aria-haspopup/controls/expanded, `normalizeTriggers` and placement helpers.
 
 ### Gaps to fill
 

@@ -378,6 +378,26 @@ describe('Popover', () => {
             expect(document.activeElement).toBe(el('last'));
         });
 
+        it('traps focus without aria-hidden focusable anchors', async () => {
+            const { stable, el, trigger } = await setup();
+            await userEvent.click(trigger());
+            await stable();
+            const pane = document.querySelector('.cdk-overlay-pane')!;
+            // axe aria-hidden-focus: nothing hidden from assistive technology may take focus
+            const hiddenFocusable = [
+                ...pane.querySelectorAll<HTMLElement>('[aria-hidden="true"], [aria-hidden="true"] *')
+            ].filter((node) => node.tabIndex >= 0);
+            expect(hiddenFocusable).toEqual([]);
+            // Tab from a non-tabbable element inside the body moves on to the next tabbable one
+            const text = el('first').parentElement!;
+            text.tabIndex = -1;
+            text.focus();
+            await userEvent.tab();
+            expect(document.activeElement).toBe(el('first'));
+            await userEvent.tab({ shift: true });
+            expect(document.activeElement).toBe(el('last'));
+        });
+
         it('focusTrapped=false lets Tab leave the body', async () => {
             const { stable, el, trigger, body } = await setup({ trapped: false });
             await userEvent.click(trigger());
