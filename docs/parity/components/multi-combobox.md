@@ -1,23 +1,23 @@
 ## multi-combobox
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/multi-combobox) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/multi-combobox)
-Registry: `registry/ui/multi-combobox/` — 12 stories, 7 tests.
+Registry: `registry/ui/multi-combobox/` — 15 stories, 7 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                | Registry story                     | Status     | Notes                                                                                                                                        |
-| ------------------------------- | ---------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| DataSource                      | DataSources, Playground            | ✅ covered | Strings, objects, observable, limitless                                                                                                      |
-| Dynamic DataSource              | —                                  | ❌ missing | No story swaps `[dataSource]` at runtime                                                                                                     |
-| Multi-Combobox Mobile Mode      | Mobile, Open: mobile               | ✅ covered | Approve/Cancel dialog                                                                                                                        |
-| Multi-Combobox with Groups      | Layout, Open: groups               | ✅ covered |                                                                                                                                              |
-| Multi-Combobox with Two Columns | Layout, Open: two columns          | ✅ covered |                                                                                                                                              |
-| Multi Combobox states           | States                             | ✅ covered | 4 states + readonly + disabled                                                                                                               |
-| Reactive Form                   | Forms                              | ✅ covered |                                                                                                                                              |
-| Loading                         | —                                  | ❌ missing | Upstream `dataRequested`/`dataReceived` outputs are not in our API; needs a decision (or a busy-indicator story around an observable source) |
-| Reviewing tokens                | DataSources                        | ✅ covered | 15 tokens with "n more"                                                                                                                      |
-| Custom Item Template            | Layout, Open: custom item template | ✅ covered | Byline template                                                                                                                              |
-| Multi Combobox Inside Dialog    | —                                  | ❌ missing |                                                                                                                                              |
+| Upstream example                | Registry story                         | Status     | Notes                                                                                                                                        |
+| ------------------------------- | -------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| DataSource                      | DataSources, Playground                | ✅ covered | Strings, objects, observable, limitless                                                                                                      |
+| Dynamic DataSource              | Dynamic data source                    | ✅ covered | Segmented button swaps `[dataSource]`; the first set arrives after 500 ms                                                                    |
+| Multi-Combobox Mobile Mode      | Mobile, Open: mobile                   | ✅ covered | Approve/Cancel dialog                                                                                                                        |
+| Multi-Combobox with Groups      | Layout, Open: groups                   | ✅ covered |                                                                                                                                              |
+| Multi-Combobox with Two Columns | Layout, Open: two columns              | ✅ covered |                                                                                                                                              |
+| Multi Combobox states           | States                                 | ✅ covered | 4 states + readonly + disabled                                                                                                               |
+| Reactive Form                   | Forms                                  | ✅ covered |                                                                                                                                              |
+| Loading                         | —                                      | ❌ missing | Upstream `dataRequested`/`dataReceived` outputs are not in our API; needs a decision (or a busy-indicator story around an observable source) |
+| Reviewing tokens                | DataSources                            | ✅ covered | 15 tokens with "n more"                                                                                                                      |
+| Custom Item Template            | Layout, Open: custom item template     | ✅ covered | Byline template                                                                                                                              |
+| Multi Combobox Inside Dialog    | Inside a dialog, Open: inside a dialog | ✅ covered |                                                                                                                                              |
 
 ### Tests vs. upstream specs
 
@@ -43,12 +43,12 @@ Registry: `registry/ui/multi-combobox/` — 12 stories, 7 tests.
 | Token removal deselects in the open menu                                       | —                                                 | ❌ missing |                                                                                                    |
 | FormControl initial value renders once an async dataSource arrives             | shows the chosen items as tokens                  | 🟡 partial | Sync array only                                                                                    |
 
-Open stories: "Open: select all", "Open: groups", "Open: two columns", "Open: custom item template", "Open: state message" and "Open: mobile" open the list (or dialog) in `play`.
+Open stories: "Open: select all", "Open: groups", "Open: two columns", "Open: custom item template", "Open: state message", "Open: inside a dialog" and "Open: mobile" open the list (or dialog) in `play`.
 
 Registry-only coverage: word-start filtering, invalid-entry rejection with `aria-invalid`, `aria-activedescendant`, group `role=group` labelling, `selectionChange` count.
 
 ### Gaps to fill
 
-- **Stories:** "Dynamic data source" (button swapping the list); "Inside dialog"; "Loading" once the loading API is decided.
+- **Stories:** "Loading" once the loading API is decided (blocked: `dataRequested`/`dataReceived`).
 - **Tests:** "the addon button opens and closes the list"; "openDropdownOnAddOnClicked=false keeps the list closed"; "limitless shows every item, otherwise mapLimit"; "shows secondary text in a second column"; "filters the new items after the dataSource is replaced (and handles an empty one)"; "selectedItems input adds, replaces and clears tokens and the checked options"; "renders the form value once an observable dataSource emits"; "removing a token unchecks it in the open list"; "deselect all keeps the focus where it was"; "mobile dialog approve commits once and cancel restores the selection"; "inside a dialog Escape closes the list but not the dialog".
 - **Effort:** L — about 11 tests including mobile dialog and data-source swaps, plus five stories.
