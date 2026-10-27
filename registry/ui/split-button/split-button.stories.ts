@@ -1,7 +1,7 @@
 import { Component, input, signal } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { expect, userEvent, waitFor } from 'storybook/test';
-import type { ButtonVariant } from '@/ui/button/button';
+import { Button, type ButtonVariant } from '@/ui/button/button';
 import { Icon } from '@/ui/icon/icon';
 import { Menu, MenuAddon, MenuInteractive, MenuItem, MenuTitle } from '@/ui/menu/menu';
 import { SplitButton, SplitButtonActionTitle } from './split-button';
@@ -110,10 +110,37 @@ class StorySplitButton {
     }
 }
 
+/** `[selected]` and the menu driven from outside, like the upstream "Programmatic Selection" example. */
+@Component({
+    selector: 'story-split-button-programmatic',
+    imports: [SplitButton, Menu, MenuItem, MenuInteractive, MenuTitle, Button],
+    template: `
+        <div class="flex flex-wrap items-center gap-3">
+            <fd-split-button [mainAction]="{ mainActionTitle: 'Action button' }" [selected]="selected()">
+                <fd-menu #menu [closeOnOutsideClick]="false">
+                    <li fd-menu-item #option1>
+                        <div fd-menu-interactive><span fd-menu-title>Option 1</span></div>
+                    </li>
+                    <li fd-menu-item #option2>
+                        <div fd-menu-interactive><span fd-menu-title>Option 2</span></div>
+                    </li>
+                </fd-menu>
+            </fd-split-button>
+            <button fdButton label="Open" (click)="menu.open()"></button>
+            <button fdButton label="Close" (click)="menu.close()"></button>
+            <button fdButton label="Select Option 1" (click)="selected.set(option1)"></button>
+            <button fdButton label="Select Option 2" (click)="selected.set(option2)"></button>
+        </div>
+    `
+})
+class StorySplitButtonProgrammatic {
+    protected readonly selected = signal<MenuItem | null>(null);
+}
+
 const meta: Meta<SplitButton> = {
     title: 'Components/Split Button',
     component: SplitButton,
-    decorators: [moduleMetadata({ imports: [StorySplitButton] })],
+    decorators: [moduleMetadata({ imports: [StorySplitButton, StorySplitButtonProgrammatic] })],
     parameters: {
         docs: {
             story: { inline: false, iframeHeight: 360 },
@@ -140,6 +167,11 @@ export const Template: Story = {
     name: 'Template title and custom arrow',
     render: () => ({ template: `<story-split-button [kind]="'template'" />` })
 };
+export const Programmatic: Story = {
+    name: 'Programmatic selection and open / close',
+    render: () => ({ template: `<story-split-button-programmatic />` })
+};
+
 export const OpenMenu: Story = {
     name: 'Open: menu',
     tags: ['!autodocs'],
