@@ -1,16 +1,16 @@
 ## inline-help
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/inline-help) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/inline-help)
-Registry: `registry/ui/inline-help/` — 4 stories, 10 tests.
+Registry: `registry/ui/inline-help/` — 5 stories, 10 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                       | Registry story                      | Status     | Notes                                                                                                                             |
-| -------------------------------------- | ----------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Inline Help                            | `Default` ("Placements and states") | 🟡 partial | Placements, long text, input host, disabled, closeOnEscape all present; no "Open: …" story, so axe never checks the open tooltip. |
-| Inline Help with Changed Trigger Event | `Triggers` ("Custom triggers")      | ✅ covered | Click trigger on an icon and on a button with closeOnOutsideClick.                                                                |
-| Inline Help with Additional Class      | `Styled` ("Custom body class")      | ✅ covered | `additionalBodyClass`.                                                                                                            |
-| Inline Help with Template Inside       | `Template` ("Template content")     | ✅ covered |                                                                                                                                   |
+| Upstream example                       | Registry story                                           | Status     | Notes                                                                                                                                           |
+| -------------------------------------- | -------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inline Help                            | `Default` ("Placements and states"), `Open: Inline help` | ✅ covered | Placements, long text, input host, disabled, closeOnEscape; the Open story focuses the first trigger in `play`, so axe checks the open tooltip. |
+| Inline Help with Changed Trigger Event | `Triggers` ("Custom triggers")                           | ✅ covered | Click trigger on an icon and on a button with closeOnOutsideClick.                                                                              |
+| Inline Help with Additional Class      | `Styled` ("Custom body class")                           | ✅ covered | `additionalBodyClass`.                                                                                                                          |
+| Inline Help with Template Inside       | `Template` ("Template content")                          | ✅ covered |                                                                                                                                                 |
 
 ### Tests vs. upstream specs
 
@@ -29,6 +29,5 @@ Registry-only coverage: disabled does not open, click triggers toggle, aria-desc
 
 ### Gaps to fill
 
-- **Stories:** `Open: Inline help` — `play()` focuses the default trigger so the open tooltip is checked by axe (Horizon and HC Black).
 - **Tests:** "the help closes when the trigger is destroyed"; "Escape closes a hover-opened help when closeOnEscapeKey is set"; "Escape leaves a hover-opened help open without closeOnEscapeKey"; "noArrow hides the arrow"; "maxWidth limits the body width"; "appendTo renders the body in the given container"; "a custom scrollStrategy is used"; "restoreFocusOnClose=false does not refocus the trigger"; "additionalBodyClass is applied to the body".
 - **Effort:** M, many small overlay tests, each needs overlay timing care.

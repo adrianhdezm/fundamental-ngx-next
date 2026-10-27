@@ -1,4 +1,5 @@
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
 import { Icon } from '@/ui/icon/icon';
 import { FormControl } from '@/ui/input/input';
@@ -39,6 +40,17 @@ export const Default: Story = {
                 <div class="${item}"><span>Close on Escape</span><fd-icon glyph="question-mark" fdInlineHelp="Inline Help Tooltip" closeOnEscapeKey tabindex="0" ariaLabel="Help" /></div>
             </div>`
     })
+};
+
+export const OpenDefault: Story = {
+    name: 'Open: Inline help',
+    tags: ['!autodocs'],
+    render: Default.render,
+    play: async ({ canvasElement }) => {
+        // focus opens the help of the first trigger
+        canvasElement.querySelector<HTMLElement>('[fdInlineHelp]')!.focus();
+        await waitFor(() => expect(document.querySelector('.cdk-overlay-pane [role=tooltip]')).not.toBeNull());
+    }
 };
 
 export const Template: Story = {
