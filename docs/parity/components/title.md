@@ -1,17 +1,17 @@
 ## title
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/title) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/title)
-Registry: `registry/ui/title/` — 4 stories, 8 tests.
+Registry: `registry/ui/title/` — 5 stories, 8 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                      | Registry story               | Status     | Notes                                                                                                     |
-| ------------------------------------- | ---------------------------- | ---------- | --------------------------------------------------------------------------------------------------------- |
-| Semantic Levels                       | Semantic ("Semantic levels") | ✅ covered | H1–H6                                                                                                     |
-| Visual Styling                        | Visual ("Visual levels")     | ✅ covered | Same H1→6 … H6→1 matrix as upstream                                                                       |
-| Text Truncation                       | Elision ("Truncation")       | ✅ covered | 300px container, three levels                                                                             |
-| Text Wrapping                         | Wrapping                     | ✅ covered | Also shows `twoLineClamp`                                                                                 |
-| Default Size via Dependency Injection | —                            | ❌ missing | Upstream is mostly a code snippet (`DEFAULT_TITLE_SIZE` provider); no story shows `FD_DEFAULT_TITLE_SIZE` |
+| Upstream example                      | Registry story                               | Status     | Notes                                                                                         |
+| ------------------------------------- | -------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------- |
+| Semantic Levels                       | Semantic ("Semantic levels")                 | ✅ covered | H1–H6                                                                                         |
+| Visual Styling                        | Visual ("Visual levels")                     | ✅ covered | Same H1→6 … H6→1 matrix as upstream                                                           |
+| Text Truncation                       | Elision ("Truncation")                       | ✅ covered | 300px container, three levels                                                                 |
+| Text Wrapping                         | Wrapping                                     | ✅ covered | Also shows `twoLineClamp`                                                                     |
+| Default Size via Dependency Injection | `DefaultSize` ("Default size via injection") | ✅ covered | A wrapper component provides `FD_DEFAULT_TITLE_SIZE: 5`; an explicit `headerSize` still wins. |
 
 ### Tests vs. upstream specs
 
@@ -28,6 +28,6 @@ Registry-only coverage: SAP header typography tokens (font family, weight, colou
 
 ### Gaps to fill
 
-- **Stories:** "Default size via injection" — a wrapper component providing `FD_DEFAULT_TITLE_SIZE: 5` with untouched `h2 fdTitle` titles next to one with an explicit `headerSize`.
+- **Stories:** none.
 - **Tests:** "exposes the host element through elementRef".
 - **Effort:** S, one story and one trivial test.
