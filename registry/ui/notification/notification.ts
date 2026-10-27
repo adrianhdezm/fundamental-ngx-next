@@ -4,7 +4,7 @@
  * Modified for fundamental-ngx-registry: rewritten with Angular signals, the Angular CDK and Tailwind CSS.
  * SPDX-License-Identifier: Apache-2.0
  */
-import { FocusTrapFactory, type FocusTrap } from '@angular/cdk/a11y';
+import { InteractivityChecker } from '@angular/cdk/a11y';
 import { Directionality } from '@angular/cdk/bidi';
 import { Overlay, type OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
@@ -628,7 +628,7 @@ export class NotificationHost {
 export class NotificationService {
     private readonly overlay = inject(Overlay);
     private readonly injector = inject(Injector);
-    private readonly focusTrapFactory = inject(FocusTrapFactory);
+    private readonly checker = inject(InteractivityChecker);
     private overlayRef: OverlayRef | null = null;
     private container: NotificationContainer | null = null;
     private readonly open$ = signal<NotificationRef[]>([]);
@@ -663,18 +663,18 @@ export class NotificationService {
         }
         hostRef.changeDetectorRef.detectChanges();
 
-        let trap: FocusTrap | null = null;
+        let releaseTrap: (() => void) | null = null;
         if (merged.shouldTrapFocus) {
             if (!this.open$().length) this.previousFocus = document.activeElement as HTMLElement | null;
             const host = hostRef.location.nativeElement as HTMLElement;
             const notification = host.querySelector<HTMLElement>('fd-notification') ?? host;
-            trap = this.focusTrapFactory.create(notification);
+            releaseTrap = this.trapTab(notification);
             notification.focus();
         }
         this.open$.update((list) => [...list, ref]);
 
         const remove = () => {
-            trap?.destroy();
+            releaseTrap?.();
             hostRef.destroy();
             this.open$.update((list) => list.filter((r) => r !== ref));
             if (!this.open$().length) {
@@ -701,6 +701,30 @@ export class NotificationService {
 
     isAnyOpened(): boolean {
         return this.open$().length > 0;
+    }
+
+    /**
+     * Keeps Tab inside the notification: Tab on its last tabbable element wraps to the notification and
+     * Shift+Tab on the notification to the last one. Unlike the CDK focus trap, this adds no `aria-hidden`
+     * focusable anchors, which axe reports (aria-hidden-focus).
+     */
+    private trapTab(notification: HTMLElement): () => void {
+        const onKeydown = (event: KeyboardEvent) => {
+            if (event.key !== 'Tab' || event.ctrlKey || event.altKey || event.metaKey) return;
+            const tabbables = [
+                notification,
+                ...[...notification.querySelectorAll<HTMLElement>('*')].filter(
+                    (el) => this.checker.isFocusable(el) && this.checker.isTabbable(el)
+                )
+            ];
+            const active = document.activeElement;
+            const edge = event.shiftKey ? tabbables[0] : tabbables[tabbables.length - 1];
+            if (active !== edge) return;
+            event.preventDefault();
+            (event.shiftKey ? tabbables[tabbables.length - 1] : tabbables[0]).focus();
+        };
+        notification.addEventListener('keydown', onKeydown);
+        return () => notification.removeEventListener('keydown', onKeydown);
     }
 
     private ensureContainer(): NotificationContainer {

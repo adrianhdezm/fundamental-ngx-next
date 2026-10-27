@@ -118,6 +118,32 @@ class ActionsHost {
     readonly extra = signal(false);
 }
 
+@Component({
+    imports: [
+        Notification,
+        NotificationBody,
+        NotificationContent,
+        NotificationHeader,
+        NotificationTitle,
+        NotificationActions,
+        Button
+    ],
+    template: `
+        <fd-notification>
+            <fd-notification-body>
+                <fd-notification-content>
+                    <fd-notification-header><h4 fd-notification-title>Saved</h4></fd-notification-header>
+                </fd-notification-content>
+                <fd-notification-actions>
+                    <button fdButton glyph="accept" ariaLabel="Approve"></button>
+                    <button fdButton glyph="decline" ariaLabel="Close"></button>
+                </fd-notification-actions>
+            </fd-notification-body>
+        </fd-notification>
+    `
+})
+class BannerWithActions {}
+
 const wait = (ms = 80) => new Promise((r) => setTimeout(r, ms));
 
 describe('Notification', () => {
@@ -211,5 +237,25 @@ describe('Notification', () => {
         await wait();
         expect(document.getElementById('btn1')!.hasAttribute('aria-describedby')).toBe(false);
         fixture.nativeElement.remove();
+    });
+    it('keeps Tab inside a banner without focusable aria-hidden anchors', async () => {
+        const trigger = document.createElement('button');
+        document.body.appendChild(trigger);
+        trigger.focus();
+        TestBed.inject(NotificationService).open(BannerWithActions);
+        await wait();
+        const banner = document.querySelector<HTMLElement>('.cdk-overlay-container fd-notification')!;
+        const [approve, close] = [...banner.querySelectorAll('button')];
+        expect(document.querySelector('.cdk-overlay-container .cdk-focus-trap-anchor')).toBeNull();
+        expect(document.activeElement).toBe(banner);
+        await userEvent.keyboard('{Tab}');
+        expect(document.activeElement).toBe(approve);
+        await userEvent.keyboard('{Tab}');
+        expect(document.activeElement).toBe(close);
+        await userEvent.keyboard('{Tab}');
+        expect(document.activeElement).toBe(banner);
+        await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+        expect(document.activeElement).toBe(close);
+        trigger.remove();
     });
 });

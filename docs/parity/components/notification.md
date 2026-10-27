@@ -1,7 +1,7 @@
 ## notification
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/notification) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/notification)
-Registry: `registry/ui/notification/` — 4 stories, 5 tests.
+Registry: `registry/ui/notification/` — 4 stories, 6 tests.
 
 ### Stories vs. upstream examples
 
@@ -35,7 +35,7 @@ Registry: `registry/ui/notification/` — 4 stories, 5 tests.
 | `actionKeyHandler`: Enter, Delete, Backspace call it; other keys and keys from nested buttons/links/inputs do not                                    | —                                                                                                        | ❌ missing | Implemented in `Notification.onKeydown`                                                                           |
 | Group base: action buttons get `aria-describedby` = header id (first header; not without header/actions/buttons; keeps existing)                     | describes the action buttons by the first header…; does not describe the action buttons without a header | ✅ covered | Ported on `fd-notification-body`; buttons anywhere inside `fd-notification-actions` (also ones added later)       |
 
-Registry-only coverage: real line-clamp height growth on More, focus moved into the banner and restored to the trigger, Escape dismiss reason `escape`.
+Registry-only coverage: real line-clamp height growth on More, focus moved into the banner and restored to the trigger, Tab kept inside a banner without the CDK focus-trap anchors (axe `aria-hidden-focus`; upstream uses the CDK trap), Escape dismiss reason `escape`.
 
 ### Gaps to fill
 
