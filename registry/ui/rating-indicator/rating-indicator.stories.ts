@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { FormControl as NgFormControl, ReactiveFormsModule } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { RatingIndicator } from './rating-indicator';
 
 const row = 'flex flex-wrap items-center gap-4 font-sap-font-family text-sap-font-size text-sap-text-color';
@@ -166,4 +167,20 @@ export const Sizes: Story = { name: 'Sizes and display mode', render: () => ({ t
 export const Ratings: Story = {
     name: 'Ratings and custom icons',
     render: () => ({ template: `<story-rating-ratings />` })
+};
+
+/** Hovers the number of votes and waits for the votes per rating. */
+async function openVotes(canvasElement: HTMLElement): Promise<void> {
+    await userEvent.hover(canvasElement.querySelector<HTMLElement>('fd-rating-indicator a')!);
+    await waitFor(() => expect(document.querySelector('.cdk-overlay-pane fd-popover-body ul li')).not.toBeNull());
+}
+
+export const OpenVotes: Story = {
+    name: 'Open: Votes per rating',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { ratings: { 1: 4, 2: 2, 3: 9, 4: 23, 5: 41 } },
+        template: `<fd-rating-indicator ariaLabel="Product rating" displayMode displayAllRatings allowHalves [ratings]="ratings" />`
+    }),
+    play: ({ canvasElement }) => openVotes(canvasElement)
 };

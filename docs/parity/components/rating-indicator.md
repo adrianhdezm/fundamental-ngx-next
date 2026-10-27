@@ -1,7 +1,7 @@
 ## rating-indicator
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/rating-indicator) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/rating-indicator)
-Registry: `registry/ui/rating-indicator/` — 4 stories, 7 tests.
+Registry: `registry/ui/rating-indicator/` — 5 stories, 7 tests.
 
 ### Stories vs. upstream examples
 
@@ -11,7 +11,7 @@ Registry: `registry/ui/rating-indicator/` — 4 stories, 7 tests.
 | Rating indicator with displayMode  | `Sizes` ("Sizes and display mode")     | ✅ covered | Display mode at every size.                                                                                                                                                                     |
 | Custom icons                       | `Ratings` ("Ratings and custom icons") | ✅ covered | Two icon pairs.                                                                                                                                                                                 |
 | Rating indicator sizes             | `Sizes`                                | 🟡 partial | xs–lg shown; upstream also shows each size with halves and with `totalRatings` + `showDynamicText`. The `cozy`/`compact`/`condensed` size aliases were dropped (sizes are `xs`/`sm`/`md`/`lg`). |
-| Rating indicator with ratings data | `Ratings`                              | 🟡 partial | Average and "votes per rating" popover, but no "Open: …" story opens the popover; no `indicatorCapacity` 7 with ratings, no invalid ratings data.                                               |
+| Rating indicator with ratings data | `Ratings`, `Open: Votes per rating`    | 🟡 partial | Average and "votes per rating" popover, opened for axe by `Open: Votes per rating` (play hovers the votes link); no `indicatorCapacity` 7 with ratings, no invalid ratings data.                |
 | Playground Area                    | `Playground`                           | ✅ covered |                                                                                                                                                                                                 |
 
 ### Tests vs. upstream specs
@@ -37,6 +37,6 @@ Registry-only coverage: slider role and ARIA values, Home/End/arrow/digit keys, 
 
 ### Gaps to fill
 
-- **Stories:** `Open: Votes per rating` (play clicks the votes link so axe checks the popover); add halves and `totalRatings`/`showDynamicText` rows to `Sizes`; a `Ratings` row with `indicatorCapacity` 7.
+- **Stories:** add halves and `totalRatings`/`showDynamicText` rows to `Sizes`; a `Ratings` row with `indicatorCapacity` 7.
 - **Tests:** "a disabled form control disables the rating (not focusable, no change on click or keys)"; "uses custom rated and unrated icons"; "size changes the icon size"; "indicatorCapacity sets the maximum and falls back to 5 for 0"; "shows half values in the value text (e.g. 3.5 of 5)"; "dynamicTextIndicator replaces 'of' in the value text"; "a click emits ratingChanged".
 - **Effort:** M — eight small tests plus a popover play story.
