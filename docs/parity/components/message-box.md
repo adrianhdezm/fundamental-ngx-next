@@ -1,19 +1,19 @@
 ## message-box
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/message-box) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/message-box)
-Registry: `registry/ui/message-box/` — 10 stories, 3 tests.
+Registry: `registry/ui/message-box/` — 15 stories, 3 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example              | Registry story                        | Status     | Notes                                                                            |
-| ----------------------------- | ------------------------------------- | ---------- | -------------------------------------------------------------------------------- |
-| Object based message box      | Others, OpenObject                    | ✅ covered |                                                                                  |
-| Template based message box    | TemplateBased, OpenError, OpenSuccess | ✅ covered | The Open: type stories render the template-based box                             |
-| Component based message box   | Others, OpenComponent                 | ✅ covered | Injects `MessageBoxRef` and data                                                 |
-| Semantic types                | Types, OpenError, OpenSuccess         | ✅ covered | Only error and success have an Open: story (no warning/information/confirmation) |
-| Message box positioning       | Position                              | 🟡 partial | No "Open: position" story, so the a11y run never checks it                       |
-| Message box on mobile devices | Mobile                                | 🟡 partial | No "Open: mobile" story                                                          |
-| Complex template              | Others, OpenComplex                   | ✅ covered | Custom bar header/footer                                                         |
+| Upstream example              | Registry story                                                                | Status     | Notes                                                |
+| ----------------------------- | ----------------------------------------------------------------------------- | ---------- | ---------------------------------------------------- |
+| Object based message box      | Others, OpenObject                                                            | ✅ covered |                                                      |
+| Template based message box    | TemplateBased, Open: type stories                                             | ✅ covered | The Open: type stories render the template-based box |
+| Component based message box   | Others, OpenComponent                                                         | ✅ covered | Injects `MessageBoxRef` and data                     |
+| Semantic types                | Types, OpenConfirmation, OpenError, OpenSuccess, OpenWarning, OpenInformation | ✅ covered | Every type has an Open: story                        |
+| Message box positioning       | Position, OpenPosition                                                        | ✅ covered |                                                      |
+| Message box on mobile devices | Mobile, OpenMobile                                                            | ✅ covered |                                                      |
+| Complex template              | Others, OpenComplex                                                           | ✅ covered | Custom bar header/footer                             |
 
 ### Tests vs. upstream specs
 
@@ -40,6 +40,5 @@ Registry-only coverage: `role=alertdialog` with `aria-modal`, `aria-labelledby`/
 
 ### Gaps to fill
 
-- **Stories:** "Open: position" (top-positioned box); "Open: mobile" (mobile warning box); optionally "Open: warning", "Open: information", "Open: confirmation".
 - **Tests:** "opens from a template and a component with data and ref"; "cancel callback dismisses with its reason"; "focusTrapped false leaves the focus on the page"; "a projected semantic icon replaces the type icon"; "each type shows its semantic glyph"; "footer renders custom content"; "dismisses on backdrop click"; "applies position, width and height"; "applies dialogPanelClass and ariaLabel"; "mobile mode fills the viewport"; "dismisses on navigation when closeOnNavigation"; "dismissAll closes every open box and removes the overlay".
 - **Effort:** M — ~12 service-driven tests on an existing harness, two Open: stories.
