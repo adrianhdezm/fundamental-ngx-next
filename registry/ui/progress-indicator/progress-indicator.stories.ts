@@ -59,6 +59,7 @@ export const Values: Story = {
                 <fd-progress-indicator ariaLabel="Most" [valueNow]="69" />
                 <fd-progress-indicator ariaLabel="Done" [valueNow]="100" />
                 <fd-progress-indicator ariaLabel="Download" [valueNow]="80" valueText="80 of 100 MB" />
+                <fd-progress-indicator ariaLabel="Upload" [valueNow]="25" unit="MB" />
                 <fd-progress-indicator ariaLabel="Steps" [valueMin]="1" [valueMax]="5" [valueNow]="3" valueText="Step 3 of 5" />
             </div>
         `
