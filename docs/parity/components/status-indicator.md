@@ -1,7 +1,7 @@
 ## status-indicator
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/status-indicator) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/status-indicator)
-Registry: `registry/ui/status-indicator/` — 5 stories, 17 tests.
+Registry: `registry/ui/status-indicator/` — 5 stories, 19 tests.
 
 ### Stories vs. upstream examples
 
@@ -19,18 +19,18 @@ Registry: `registry/ui/status-indicator/` — 5 stories, 17 tests.
 
 ### Tests vs. upstream specs
 
-| Upstream behaviour                       | Registry test                                                                          | Status     | Notes                                                      |
-| ---------------------------------------- | -------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------- |
-| Should create                            | —                                                                                      | ➖ n/a     |                                                            |
-| Status                                   | status colours the shape with the element colour and the label with the text colour    | ✅ covered | Checks the colour tokens, not just a class.                |
-| Fill percentage (gradient offset)        | fills the shape to the percentage with a gradient mask; clamps the percentage to 0–100 | ✅ covered |                                                            |
-| Size                                     | —                                                                                      | ❌ missing | No test that `size` sm/md/lg/xl changes the rendered size. |
-| Label (two its: label text and position) | label position before or after the shape, in a row or a column                         | ✅ covered |                                                            |
+| Upstream behaviour                       | Registry test                                                                          | Status     | Notes                                          |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------- |
+| Should create                            | —                                                                                      | ➖ n/a     |                                                |
+| Status                                   | status colours the shape with the element colour and the label with the text colour    | ✅ covered | Checks the colour tokens, not just a class.    |
+| Fill percentage (gradient offset)        | fills the shape to the percentage with a gradient mask; clamps the percentage to 0–100 | ✅ covered |                                                |
+| Size                                     | size sm, md, lg and xl render increasing sizes; labelSize changes the label font size  | ✅ covered | Measures the rendered SVG and label font size. |
+| Label (two its: label text and position) | label position before or after the shape, in a row or a column                         | ✅ covered |                                                |
 
 Registry-only coverage: multiple shapes, unique ids, every filling type and radial direction, progressbar ARIA values, hidden SVG, focusable and clickable keyboard activation.
 
 ### Gaps to fill
 
 - **Stories:** none.
-- **Tests:** "size sm, md, lg and xl render increasing heights"; "labelSize changes the label font size".
+- **Tests:** none.
 - **Effort:** S, one or two specs on an existing host.
