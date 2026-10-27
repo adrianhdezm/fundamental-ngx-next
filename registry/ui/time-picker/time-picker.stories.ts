@@ -31,8 +31,21 @@ const value = 'font-sap-font-family text-sap-font-size text-sap-text-color';
             keepTwoDigitsTime
         />
 
+        <h3 fdTitle headerSize="5" class="${heading}">Day period format ("in the afternoon")</h3>
+        <fd-time-picker [(time)]="time" [displayFormat]="dayPeriodFormat" />
+
         <h3 fdTitle headerSize="5" class="${heading}">Minutes in steps of 15, no spinners</h3>
         <fd-time-picker [(time)]="time" [minuteStep]="15" [spinnerButtons]="false" />
+
+        <h3 fdTitle headerSize="5" class="${heading}">Minutes in steps of 5, 10 and 30</h3>
+        <div class="flex flex-col gap-3">
+            <fd-time-picker [(time)]="time" [minuteStep]="5" timePickerInputLabel="Time in 5-minute steps" />
+            <fd-time-picker [(time)]="time" [minuteStep]="10" timePickerInputLabel="Time in 10-minute steps" />
+            <fd-time-picker [(time)]="time" [minuteStep]="30" timePickerInputLabel="Time in 30-minute steps" />
+        </div>
+
+        <h3 fdTitle headerSize="5" class="${heading}">Compact</h3>
+        <fd-time-picker [(time)]="time" data-density="compact" />
 
         <h3 fdTitle headerSize="5" class="${heading}">States and messages</h3>
         <div class="flex flex-col gap-3">
@@ -44,6 +57,13 @@ const value = 'font-sap-font-family text-sap-font-size text-sap-text-color';
     `
 })
 class StoryTimePickerBasic {
+    protected readonly dayPeriodFormat = {
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        hourCycle: 'h23',
+        dayPeriod: true
+    } as const;
     protected readonly time = signal<FdDate | null | undefined>(new FdDate(2024, 3, 9, 14, 30, 0));
 }
 

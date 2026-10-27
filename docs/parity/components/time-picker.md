@@ -8,13 +8,13 @@ Registry: `registry/ui/time-picker/` — 5 stories, 8 tests.
 | Upstream example                                                  | Registry story  | Status     | Notes                                                                                 |
 | ----------------------------------------------------------------- | --------------- | ---------- | ------------------------------------------------------------------------------------- |
 | Default Time Picker                                               | `Basic`         | ✅ covered | `Open: Time columns` and `Open: 24-hour clock with seconds` open the popover for axe. |
-| Time parsing/formatting (custom `displayFormat`, with day period) | `Basic`         | ✅ covered | 24-hour with seconds; no day-period format.                                           |
+| Time parsing/formatting (custom `displayFormat`, with day period) | `Basic`         | ✅ covered | 24-hour with seconds, and a `dayPeriod` format ("in the afternoon").                  |
 | Disabled Time Picker                                              | `Basic`         | ✅ covered |                                                                                       |
-| Compact Time Picker                                               | —               | ❌ missing | No compact density example.                                                           |
+| Compact Time Picker                                               | `Basic`         | ✅ covered | `data-density="compact"` on the picker.                                               |
 | Null Validity (`allowNull=false`)                                 | `LocaleAndNull` | ✅ covered | Set to null / valid time buttons.                                                     |
 | Time Picker in Form (state follows validity)                      | `Forms`         | ✅ covered | Required control with error message.                                                  |
 | Time Picker Locale                                                | `LocaleAndNull` | ✅ covered | Locale select drives the adapter.                                                     |
-| Minute Step (1, 5, 10, 15, 30)                                    | `Basic`         | ✅ covered | Step 15 only.                                                                         |
+| Minute Step (1, 5, 10, 15, 30)                                    | `Basic`         | ✅ covered | Steps 5, 10, 15 and 30 (1 is the default picker).                                     |
 
 ### Tests vs. upstream specs
 
@@ -36,6 +36,5 @@ Registry-only coverage: Alt+Down opens and focuses the hours column, locale swit
 
 ### Gaps to fill
 
-- **Stories:** add a compact picker (`data-density="compact"`) and the 5/10/30-minute steps and a day-period format to `Basic`.
 - **Tests:** "a 24-hour display format with seconds shows hours, minutes and seconds without a period"; "an empty field is valid with allowNull"; "blurring without changes does not emit a change"; "picking the same time does not emit a change"; "the message hides while the columns are open and returns on close"; "clicking outside closes the popover"; "disabled picker does not open"; "Tab from the columns closes the popover".
-- **Effort:** M, overlay specs plus an Open story.
+- **Effort:** M, overlay specs.
