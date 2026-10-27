@@ -1,7 +1,7 @@
 ## split-button
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/split-button) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/split-button)
-Registry: `registry/ui/split-button/` — 5 stories, 3 tests.
+Registry: `registry/ui/split-button/` — 5 stories, 9 tests.
 
 ### Stories vs. upstream examples
 
@@ -15,18 +15,18 @@ Registry: `registry/ui/split-button/` — 5 stories, 3 tests.
 
 ### Tests vs. upstream specs
 
-| Upstream behaviour                                               | Registry test                                        | Status     | Notes                            |
-| ---------------------------------------------------------------- | ---------------------------------------------------- | ---------- | -------------------------------- |
-| should create                                                    | —                                                    | ➖ n/a     |                                  |
-| Content init: title from first item, or from the `selected` item | shows the first item as the main action…             | 🟡 partial | No test of the `selected` input. |
-| Main button click: runs the first item, or the selected item     | shows the first item…; keeps a constant main action… | 🟡 partial | Same: `selected` path untested.  |
-| Button text class                                                | —                                                    | ➖ n/a     | CSS class only.                  |
-| More button is-active while open                                 | opens the menu from the arrow…                       | ✅ covered | Checked as `aria-expanded`.      |
+| Upstream behaviour                                               | Registry test                                                                                                             | Status     | Notes                                           |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------- | ----------------------------------------------- |
+| should create                                                    | —                                                                                                                         | ➖ n/a     |                                                 |
+| Content init: title from first item, or from the `selected` item | shows the first item as the main action…; the selected input sets the main action…                                        | ✅ covered |                                                 |
+| Main button click: runs the first item, or the selected item     | shows the first item…; keeps a constant main action…; the selected input sets the main action and the main button runs it | ✅ covered |                                                 |
+| Button text class                                                | —                                                                                                                         | ➖ n/a     | CSS class only.                                 |
+| More button is-active while open                                 | opens the menu from the arrow…; aria-controls points to the open menu                                                     | ✅ covered | Checked as `aria-expanded` and `aria-controls`. |
 
-Registry-only coverage: `aria-haspopup`/`aria-expanded` on the arrow, choosing an item updates the title and closes the menu, `keepMainAction` with callback.
+Registry-only coverage: `aria-haspopup`/`aria-expanded` on the arrow, ArrowDown/Enter/Space and Escape focus handling, `disabled`, `fixedWidth`, choosing an item updates the title and closes the menu, `keepMainAction` with callback.
 
 ### Gaps to fill
 
 - **Stories:** none.
-- **Tests:** "the selected input sets the main action and the main button runs it"; "ArrowDown, Enter and Space on the arrow open the menu and focus the first item"; "Escape closes the menu and returns focus to the arrow"; "disabled disables both buttons and does not open the menu"; "aria-controls points to the open menu"; "fixedWidth keeps the main button width when a longer item is chosen".
-- **Effort:** M, keyboard/focus specs with an overlay plus two stories.
+- **Tests:** none.
+- **Effort:** done.
