@@ -31,19 +31,19 @@ export const Default: Story = {
         template: `
             <div class="${col}">
                 <h3 class="${heading}">Labels</h3>
-                <fd-segmented-button [(ngModel)]="value">
+                <fd-segmented-button ariaLabel="Alignment" [(ngModel)]="value">
                     <button fdButton label="Left" value="first"></button>
                     <button fdButton label="Middle" value="second"></button>
                     <button fdButton label="Right" value="third"></button>
                 </fd-segmented-button>
                 <h3 class="${heading}">Icons</h3>
-                <fd-segmented-button [(ngModel)]="value">
+                <fd-segmented-button ariaLabel="Tools" [(ngModel)]="value">
                     <button fdButton glyph="cart" title="Add to cart" ariaLabel="Add to cart" value="first"></button>
                     <button fdButton glyph="action" title="Action" ariaLabel="Action" value="second"></button>
                     <button fdButton glyph="activities" title="Activities" ariaLabel="Activities" value="third"></button>
                 </fd-segmented-button>
                 <h3 class="${heading}">Vertical</h3>
-                <fd-segmented-button [(ngModel)]="value" vertical>
+                <fd-segmented-button ariaLabel="Tools vertical" [(ngModel)]="value" vertical>
                     <button fdButton glyph="cart" title="Add to cart" ariaLabel="Add to cart" value="first"></button>
                     <button fdButton glyph="action" title="Action" ariaLabel="Action" value="second"></button>
                     <button fdButton glyph="activities" title="Activities" ariaLabel="Activities" value="third"></button>
@@ -59,14 +59,14 @@ export const Toggle: Story = {
         props: { value: ['first'], empty: [] },
         template: `
             <div class="${col}">
-                <fd-segmented-button toggle [(ngModel)]="value">
+                <fd-segmented-button ariaLabel="Alignment multiple" toggle [(ngModel)]="value">
                     <button fdButton label="Left" value="first"></button>
                     <button fdButton label="Middle" value="second"></button>
                     <button fdButton label="Right" value="third"></button>
                 </fd-segmented-button>
                 <p class="${value}">value: {{ value | json }}</p>
                 <h3 class="${heading}">Empty initial state</h3>
-                <fd-segmented-button toggle [(value)]="empty">
+                <fd-segmented-button ariaLabel="Text style" toggle [(value)]="empty">
                     @for (v of ['Bold', 'Italic', 'Underline']; track v) {
                         <button fdButton [label]="v" [attr.value]="v"></button>
                     }
@@ -81,12 +81,12 @@ export const Disabled: Story = {
         props: { value: 'second' },
         template: `
             <div class="${col}">
-                <fd-segmented-button [(ngModel)]="value" [disabled]="true">
+                <fd-segmented-button ariaLabel="Disabled group" [(ngModel)]="value" [disabled]="true">
                     <button fdButton label="Left" value="first"></button>
                     <button fdButton label="Middle" value="second"></button>
                     <button fdButton label="Right" value="third"></button>
                 </fd-segmented-button>
-                <fd-segmented-button [(ngModel)]="value">
+                <fd-segmented-button ariaLabel="Alignment with disabled option" [(ngModel)]="value">
                     <button fdButton label="Left" value="first"></button>
                     <button fdButton label="Middle (disabled)" value="second" disabled></button>
                     <button fdButton label="Right" value="third"></button>

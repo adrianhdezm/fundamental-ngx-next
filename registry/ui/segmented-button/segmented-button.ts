@@ -25,7 +25,7 @@ export type SegmentedButtonValue = string | (string | null)[] | null;
  * Each button's `value` attribute identifies it. Arrow keys move between the buttons.
  *
  * ```html
- * <fd-segmented-button [(value)]="view">
+ * <fd-segmented-button ariaLabel="View" [(value)]="view">
  *     <button fdButton value="list" glyph="list" ariaLabel="List"></button>
  *     <button fdButton value="grid" glyph="grid" ariaLabel="Grid"></button>
  * </fd-segmented-button>
@@ -43,6 +43,8 @@ export type SegmentedButtonValue = string | (string | null)[] | null;
         '[attr.aria-orientation]': 'vertical() ? "vertical" : "horizontal"',
         '[attr.aria-roledescription]': 'groupRoleDescription()',
         '[attr.aria-disabled]': 'formDisabled() || null',
+        '[attr.aria-label]': 'ariaLabel()',
+        '[attr.aria-labelledby]': 'ariaLabelledBy()',
         '(click)': 'onClick($event)',
         '(keydown)': 'onKeydown($event)',
         '(focusout)': 'onTouched()'
@@ -55,6 +57,9 @@ export class SegmentedButton implements ControlValueAccessor {
     readonly vertical = input(false, { transform: booleanAttribute });
     /** Value of the selected button (an array with toggle). */
     readonly value = model<SegmentedButtonValue>(null);
+    /** Name of the group (required by screen readers, or use ariaLabelledBy). */
+    readonly ariaLabel = input<string | null | undefined>();
+    readonly ariaLabelledBy = input<string | null | undefined>();
     readonly groupRoleDescription = input('Segmented button group');
     readonly buttonRoleDescription = input('Segmented button');
     readonly userClass = input<ClassValue>('', { alias: 'class' });
