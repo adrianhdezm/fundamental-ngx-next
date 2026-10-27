@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import {
     UserMenu,
@@ -171,5 +171,23 @@ describe('UserMenu', () => {
         await userEvent.click(document.querySelector<HTMLElement>('[aria-label="Close"]')!);
         await wait(300);
         expect(host.open()).toBe(false);
+    });
+
+    it('keeps clicks inside the body from bubbling out of the menu', async () => {
+        const { host, control } = await setup();
+        await userEvent.click(control);
+        await wait();
+        const outside = vi.fn();
+        document.addEventListener('click', outside);
+        try {
+            await userEvent.click(document.getElementById('name')!);
+            await userEvent.click(item('Settings'));
+            expect(host.picked()).toBe('Settings');
+            expect(outside).not.toHaveBeenCalled();
+            await userEvent.click(document.querySelector<HTMLElement>('fd-user-menu-footer button')!);
+            expect(outside).toHaveBeenCalledOnce();
+        } finally {
+            document.removeEventListener('click', outside);
+        }
     });
 });
