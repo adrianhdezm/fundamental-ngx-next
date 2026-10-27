@@ -668,7 +668,8 @@ export class ListLink {
     providers: [{ provide: FD_LIST_FOCUSABLE, useExisting: forwardRef(() => ListGroupHeader) }],
     host: {
         '[attr.id]': 'id()',
-        '[attr.tabindex]': 'tabbable() ? 0 : -1',
+        // a presentational header (e.g. in a listbox) is not focusable
+        '[attr.tabindex]': 'role() === "presentation" || role() === "none" ? null : tabbable() ? 0 : -1',
         '[attr.role]': 'role()',
         '[class]': 'computedClass()',
         '(focusin)': 'list?.itemFocused(this)'

@@ -1069,6 +1069,31 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "select",
+      "type": "registry:ui",
+      "title": "Select",
+      "description": "A field that opens a list of options with keyboard selection, value states, custom triggers and a mobile dialog mode.",
+      "dependencies": ["@angular/cdk", "@angular/forms"],
+      "registryDependencies": [
+        "utils",
+        "theme",
+        "bar",
+        "button",
+        "dialog",
+        "icon",
+        "input",
+        "list",
+        "popover",
+        "title"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/select/select.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
