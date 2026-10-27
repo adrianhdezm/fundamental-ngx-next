@@ -194,7 +194,8 @@ export class MessageToast {
             const done = () => {
                 this.ref._opened();
                 const duration = this.config.duration ?? 0;
-                if (duration > 0) this.ref.dismissAfter(duration);
+                // a toast hovered before it finished opening waits for the mouse to leave
+                if (duration > 0 && !(this.config.mousePersist && this.hovered)) this.ref.dismissAfter(duration);
             };
             if (this.config.animated && this.el.animate) {
                 this.el
@@ -212,11 +213,15 @@ export class MessageToast {
         });
     }
 
+    private hovered = false;
+
     protected onMouseover(): void {
+        this.hovered = true;
         if (this.config.mousePersist) this.ref.cancelDismiss();
     }
 
     protected onMouseleave(): void {
+        this.hovered = false;
         const duration = this.config.duration ?? 0;
         if (this.config.mousePersist && duration > 0) this.ref.dismissAfter(duration);
     }

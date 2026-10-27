@@ -918,6 +918,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "shellbar",
+      "type": "registry:ui",
+      "title": "Shellbar",
+      "description": "Application top bar with branding, context area, search, actions, user menu and product switch; sizes follow its width and actions collapse into an overflow menu.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "action-sheet", "avatar", "button", "icon", "menu", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/shellbar/shellbar.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
+import { userEvent } from 'vitest/browser';
 import { MessageToastRef, MessageToastService } from './message-toast';
 
 @Component({ template: `<span class="content">{{ ref.data.text }}</span>` })
@@ -34,6 +35,11 @@ describe('MessageToast', () => {
     });
 
     it('renders components with their data and stays open while hovered', async () => {
+        // park the real pointer away from the toasts, so only the events below reach them
+        const corner = document.createElement('div');
+        corner.style.cssText = 'position:fixed;top:0;left:0;width:10px;height:10px';
+        document.body.appendChild(corner);
+        await userEvent.hover(corner);
         const service = TestBed.inject(MessageToastService);
         service.open(ToastContent, { data: { text: 'From a component' }, duration: 400 });
         await wait(50);
@@ -44,6 +50,7 @@ describe('MessageToast', () => {
         toasts()[0].dispatchEvent(new MouseEvent('mouseleave'));
         await wait(700);
         expect(toasts()).toHaveLength(0);
+        corner.remove();
     });
 
     it('stacks toasts at a position and closes them all', async () => {
