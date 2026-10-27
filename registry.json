@@ -877,6 +877,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "quick-view",
+      "type": "registry:ui",
+      "title": "Quick View",
+      "description": "Short overview of a person or object for popovers and dialogs: header, subheader with avatar, and groups of labelled values.",
+      "registryDependencies": ["utils", "theme", "bar", "form", "popover", "title"],
+      "files": [
+        {
+          "path": "registry/ui/quick-view/quick-view.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
