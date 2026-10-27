@@ -103,6 +103,18 @@ async function setupLeave(configure: (host: LeaveHost) => void = () => {}) {
     return { fixture, host: fixture.componentInstance, input, outside, emitted, pick };
 }
 
+@Component({
+    imports: [Combobox],
+    template: `<fd-combobox ariaLabel="Food" [dropdownValues]="values" [groupFn]="group" />`
+})
+class GroupHost {
+    readonly values = ['Apple', 'Banana', 'Carrot'];
+    readonly group = (items: string[]) => ({
+        Fruit: items.filter((i) => i !== 'Carrot'),
+        Vegetable: items.filter((i) => i === 'Carrot')
+    });
+}
+
 const wait = (ms = 50) => new Promise((r) => setTimeout(r, ms));
 const options = () => [...document.querySelectorAll<HTMLElement>('[role=option]')];
 
@@ -322,5 +334,22 @@ describe('Combobox', () => {
             await fixture.whenStable();
             expect(input.value).toBe('free text');
         });
+    });
+
+    it('groups options in labelled groups that are lists, not list items', async () => {
+        const fixture = TestBed.createComponent(GroupHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('input')!;
+        input.focus();
+        await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}');
+        await fixture.whenStable();
+        const groups = [...document.querySelectorAll<HTMLElement>('[role=listbox] [role=group]')];
+        expect(groups.map((g) => g.tagName)).toEqual(['UL', 'UL']);
+        expect(
+            groups.map((g) => document.getElementById(g.getAttribute('aria-labelledby')!)?.textContent?.trim())
+        ).toEqual(['Fruit', 'Vegetable']);
+        expect(groups.map((g) => g.querySelectorAll('[role=option]').length)).toEqual([2, 1]);
+        expect(groups[0].parentElement!.getAttribute('role')).toBe('none');
     });
 });

@@ -265,18 +265,19 @@ let nextId = 0;
                 <ng-content select="[fd-list-message], [fdListMessage]" />
                 @for (group of groups(); track group.key; let g = $index) {
                     @if (group.key !== null) {
-                        <li
-                            role="group"
-                            class="m-0 list-none p-0"
-                            [attr.aria-labelledby]="comboboxId() + '-group-' + g"
-                        >
-                            <div
-                                class="flex h-sap-element-line-height items-end border-b-(length:--sapList_BorderWidth) border-solid border-sap-list-group-header-border-color bg-sap-list-group-header-background px-[0.9375rem] py-0 font-sap-font-family text-sap-font-size font-bold text-sap-list-group-header-text-color"
-                                [id]="comboboxId() + '-group-' + g"
+                        <li role="none" class="m-0 list-none p-0">
+                            <ul
+                                role="group"
+                                class="m-0 list-none p-0"
+                                [attr.aria-labelledby]="comboboxId() + '-group-' + g"
                             >
-                                {{ group.key }}
-                            </div>
-                            <ul role="none" class="m-0 list-none p-0">
+                                <li
+                                    role="presentation"
+                                    class="flex h-sap-element-line-height items-end border-b-(length:--sapList_BorderWidth) border-solid border-sap-list-group-header-border-color bg-sap-list-group-header-background px-[0.9375rem] py-0 font-sap-font-family text-sap-font-size font-bold text-sap-list-group-header-text-color"
+                                    [id]="comboboxId() + '-group-' + g"
+                                >
+                                    {{ group.key }}
+                                </li>
                                 @for (entry of group.items; track entry.index) {
                                     <ng-container
                                         [ngTemplateOutlet]="optionTpl"

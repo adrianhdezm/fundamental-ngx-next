@@ -1,7 +1,7 @@
 ## combobox
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/combobox) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/combobox)
-Registry: `registry/ui/combobox/` — 6 stories, 14 tests.
+Registry: `registry/ui/combobox/` — 6 stories, 15 tests.
 
 ### Stories vs. upstream examples
 
