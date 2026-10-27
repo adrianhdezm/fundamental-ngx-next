@@ -37,11 +37,30 @@ class Host {
         <fd-segmented-button ariaLabel="Size" [formControl]="control">
             <button fdButton label="S" value="s"></button>
             <button fdButton label="M" value="m"></button>
+            @if (withLarge()) {
+                <button fdButton label="L" value="l" disabled></button>
+            }
         </fd-segmented-button>
     `
 })
 class ReactiveHost {
     readonly control = new FormControl<SegmentedButtonValue>('s');
+    readonly withLarge = signal(false);
+}
+
+@Component({
+    imports: [SegmentedButton, Button],
+    template: `
+        <fd-segmented-button ariaLabel="Views" [(value)]="view">
+            @for (v of views(); track v) {
+                <button fdButton [label]="v" [attr.value]="v"></button>
+            }
+        </fd-segmented-button>
+    `
+})
+class DynamicHost {
+    readonly view = signal<SegmentedButtonValue>('list');
+    readonly views = signal(['list', 'grid']);
 }
 
 const frame = () => new Promise((r) => requestAnimationFrame(r));
@@ -240,5 +259,42 @@ describe('SegmentedButton', () => {
         const [a, b] = buttons('single').map((o) => o.getBoundingClientRect());
         expect(b.left).toBeGreaterThanOrEqual(a.right - 1);
         expect(b.top).toBe(a.top);
+    });
+
+    it('an individually disabled button stays disabled after the group is re-enabled', async () => {
+        const { host, root, stable } = await render(ReactiveHost, (h) => h.withLarge.set(true));
+        const options = [...root.querySelectorAll<HTMLButtonElement>('fd-segmented-button > button')];
+        expect(options.map((b) => b.disabled)).toEqual([false, false, true]);
+        host.control.disable();
+        await stable();
+        expect(options.every((b) => b.disabled)).toBe(true);
+        host.control.enable();
+        await stable();
+        expect(options.map((b) => b.disabled)).toEqual([false, false, true]);
+        options[2].click();
+        await stable();
+        expect(host.control.value).toBe('s');
+    });
+
+    it('a button added after render gets option role, posinset and setsize, and setsize updates on the others', async () => {
+        const { host, root, stable } = await render(DynamicHost);
+        const options = () => [...root.querySelectorAll<HTMLButtonElement>('fd-segmented-button > button')];
+        expect(options().map((b) => b.getAttribute('aria-setsize'))).toEqual(['2', '2']);
+        host.views.set(['list', 'grid', 'table']);
+        await stable();
+        const added = options()[2];
+        expect(added.getAttribute('role')).toBe('option');
+        expect(added.getAttribute('aria-roledescription')).toBe('Segmented button');
+        expect(options().map((b) => b.getAttribute('aria-posinset'))).toEqual(['1', '2', '3']);
+        expect(options().map((b) => b.getAttribute('aria-setsize'))).toEqual(['3', '3', '3']);
+        expect(selected(options())).toEqual(['true', 'false', 'false']);
+        await userEvent.click(added);
+        await stable();
+        expect(host.view()).toBe('table');
+        expect(selected(options())).toEqual(['false', 'false', 'true']);
+        host.views.set(['grid', 'table']);
+        await stable();
+        expect(options().map((b) => b.getAttribute('aria-posinset'))).toEqual(['1', '2']);
+        expect(options().map((b) => b.getAttribute('aria-setsize'))).toEqual(['2', '2']);
     });
 });
