@@ -167,6 +167,37 @@ describe('Link', () => {
         expect(link.getBoundingClientRect().height).toBeGreaterThanOrEqual(24);
     });
 
+    it('combines modifiers: subtle undecorated and emphasized inverted', async () => {
+        const { root, link, content, resolve, update } = await setup();
+        const decoration = () => getComputedStyle(content()).textDecorationLine;
+
+        // a subtle undecorated link keeps the subtle colour and never underlines
+        await update((h) => {
+            h.subtle.set(true);
+            h.undecorated.set(true);
+        });
+        expect(getComputedStyle(link).color).toBe(resolve('--sapLink_SubtleColor'));
+        expect(decoration()).toBe('none');
+        await userEvent.hover(link);
+        expect(decoration()).toBe('none');
+        link.focus();
+        expect(decoration()).toBe('none');
+        link.blur();
+        await userEvent.hover(root.querySelector('#away')!);
+
+        // an emphasized inverted link is bold with the inverted colour
+        await update((h) => {
+            h.subtle.set(false);
+            h.undecorated.set(false);
+            h.emphasized.set(true);
+            h.inverted.set(true);
+        });
+        expect(getComputedStyle(link).color).toBe(resolve('--sapLink_InvertedColor'));
+        expect(getComputedStyle(link).fontFamily.startsWith('"72-Bold"')).toBe(true);
+        await userEvent.hover(link);
+        expect(getComputedStyle(link).color).toBe(resolve('--sapLink_InvertedColor'));
+    });
+
     it('emphasized and subtle links announce emphasizedLabel / subtleLabel', async () => {
         const { srText, update } = await setup();
         expect(srText()).toEqual([]);

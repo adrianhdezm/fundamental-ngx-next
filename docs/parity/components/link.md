@@ -1,7 +1,7 @@
 ## link
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/link) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/link)
-Registry: `registry/ui/link/` — 6 stories, 5 tests.
+Registry: `registry/ui/link/` — 6 stories, 6 tests.
 
 ### Stories vs. upstream examples
 
@@ -11,18 +11,18 @@ Registry: `registry/ui/link/` — 6 stories, 5 tests.
 
 ### Tests vs. upstream specs
 
-| Upstream behaviour                          | Registry test                                                       | Status     | Notes                                                                                                    |
-| ------------------------------------------- | ------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------- |
-| should create / base `fd-link` class        | —                                                                   | ➖ n/a     |                                                                                                          |
-| Emphasized, subtle, inverted styles         | emphasized, subtle, inverted and disabled styles…                   | ✅ covered | Token colours and font family                                                                            |
-| Disabled state + `aria-disabled` true/false | emphasized, subtle, inverted and disabled styles…                   | ✅ covered | Also tab order and pointer events                                                                        |
-| Undecorated and touchTarget                 | underlines on hover and focus only; undecorated never; touchTarget… | ✅ covered |                                                                                                          |
-| Multiple modifiers at once                  | —                                                                   | 🟡 partial | Modifiers are toggled one at a time; no combined case (e.g. subtle + undecorated, emphasized + inverted) |
+| Upstream behaviour                          | Registry test                                                       | Status     | Notes                             |
+| ------------------------------------------- | ------------------------------------------------------------------- | ---------- | --------------------------------- |
+| should create / base `fd-link` class        | —                                                                   | ➖ n/a     |                                   |
+| Emphasized, subtle, inverted styles         | emphasized, subtle, inverted and disabled styles…                   | ✅ covered | Token colours and font family     |
+| Disabled state + `aria-disabled` true/false | emphasized, subtle, inverted and disabled styles…                   | ✅ covered | Also tab order and pointer events |
+| Undecorated and touchTarget                 | underlines on hover and focus only; undecorated never; touchTarget… | ✅ covered |                                   |
+| Multiple modifiers at once                  | combines modifiers: subtle undecorated and emphasized inverted      | ✅ covered |                                   |
 
 Registry-only coverage: keyboard activation, tabindex on href-less links, hover/focus underline, screen-reader labels for emphasized/subtle.
 
 ### Gaps to fill
 
 - **Stories:** none.
-- **Tests:** "subtle undecorated link keeps the subtle colour and never underlines"; "emphasized inverted link is bold with the inverted colour".
+- **Tests:** none.
 - **Effort:** S — one small test.
