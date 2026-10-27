@@ -84,7 +84,8 @@ export class Token {
     readonly onCloseClick = output<MouseEvent | undefined>();
     /** Emitted by `Tokenizer.removeSelectedTokens()`. */
     readonly onRemove = output<void>();
-    readonly onTokenClick = output<MouseEvent>();
+    /** The token was clicked, or Enter or Space was pressed on it. */
+    readonly onTokenClick = output<MouseEvent | KeyboardEvent>();
     readonly onTokenKeydown = output<KeyboardEvent>();
     readonly elementFocused = output<boolean>();
 
@@ -157,6 +158,7 @@ export class Token {
 
     protected onKeydown(event: KeyboardEvent): void {
         this.onTokenKeydown.emit(event);
+        if (event.key === 'Enter' || event.key === ' ') this.onTokenClick.emit(event);
     }
 }
 
@@ -437,8 +439,9 @@ export class Tokenizer {
         this.focused.set(false);
     }
 
-    private onTokenClick(token: Token, index: number, event: MouseEvent): void {
-        if (token.disabled()) return;
+    private onTokenClick(token: Token, index: number, event: MouseEvent | KeyboardEvent): void {
+        // Enter and Space on a token are handled in onKeydown
+        if (token.disabled() || event instanceof KeyboardEvent) return;
         event.stopPropagation();
         token.focus();
         const tokens = this.tokens();

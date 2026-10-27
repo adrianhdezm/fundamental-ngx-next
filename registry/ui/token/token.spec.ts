@@ -26,6 +26,46 @@ class Host {
     }
 }
 
+@Component({
+    imports: [Token],
+    template: `
+        <div role="listbox" aria-label="Tokens">
+            <fd-token
+                [disabled]="disabled()"
+                [readOnly]="readOnly()"
+                [(selected)]="selected"
+                (onTokenClick)="clicks.push($event)"
+                (onCloseClick)="closes.push($event)"
+                (elementFocused)="focusEvents.push($event)"
+                >Apple</fd-token
+            >
+        </div>
+    `
+})
+class TokenHost {
+    readonly disabled = signal(false);
+    readonly readOnly = signal(false);
+    readonly selected = signal(false);
+    readonly clicks: (MouseEvent | KeyboardEvent)[] = [];
+    readonly closes: (MouseEvent | undefined)[] = [];
+    readonly focusEvents: boolean[] = [];
+}
+
+async function setupToken(init?: (host: TokenHost) => void) {
+    const fixture = TestBed.createComponent(TokenHost);
+    init?.(fixture.componentInstance);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    return {
+        fixture,
+        host: fixture.componentInstance,
+        root,
+        token: root.querySelector<HTMLElement>('[role=option]')!,
+        close: () => root.querySelector<HTMLElement>('[role=option] > [aria-hidden=true]')
+    };
+}
+
 const wait = (ms = 50) => new Promise((r) => setTimeout(r, ms));
 const options = () => [...document.querySelectorAll<HTMLElement>('[role=option]')];
 const focused = () => document.activeElement?.textContent?.trim();
@@ -40,6 +80,22 @@ async function setup(width = '40rem', values?: string[]) {
     const root = fixture.nativeElement as HTMLElement;
     return { fixture, host: fixture.componentInstance, root, input: root.querySelector('input')! };
 }
+
+describe('Token', () => {
+    it('emits onTokenClick on click, Enter and Space', async () => {
+        const { host, token } = await setupToken();
+        await userEvent.click(token);
+        expect(host.clicks).toHaveLength(1);
+        expect(host.clicks[0]).toBeInstanceOf(MouseEvent);
+        token.focus();
+        await userEvent.keyboard('{Enter}');
+        await userEvent.keyboard(' ');
+        expect(host.clicks).toHaveLength(3);
+        expect(host.clicks.slice(1).map((e) => (e as KeyboardEvent).key)).toEqual(['Enter', ' ']);
+        await userEvent.keyboard('a');
+        expect(host.clicks).toHaveLength(3);
+    });
+});
 
 describe('Tokenizer', () => {
     it('lists tokens as options with their positions', async () => {
@@ -77,7 +133,7 @@ describe('Tokenizer', () => {
         expect(document.activeElement).toBe(input);
     });
 
-    it('selects with Space, clicks and Ctrl+A', async () => {
+    it('selects with clicks, Shift clicks and Ctrl+A', async () => {
         const { fixture, input } = await setup();
         await userEvent.click(options()[0]);
         await fixture.whenStable();
@@ -93,6 +149,24 @@ describe('Tokenizer', () => {
         await userEvent.keyboard('{Control>}a{/Control}');
         await fixture.whenStable();
         expect(options().filter((o) => o.getAttribute('aria-selected') === 'true')).toHaveLength(3);
+    });
+
+    it('selects the focused token with Space and moves to the input with Enter', async () => {
+        const { fixture, input } = await setup();
+        await userEvent.click(options()[0]);
+        await fixture.whenStable();
+        input.focus();
+        await userEvent.keyboard('{ArrowLeft}{ArrowLeft}');
+        expect(focused()).toBe('Banana');
+        await userEvent.keyboard(' ');
+        await fixture.whenStable();
+        // Space selects only the focused token
+        expect(options().map((o) => o.getAttribute('aria-selected'))).toEqual(['false', 'true', 'false']);
+        await userEvent.keyboard(' ');
+        await fixture.whenStable();
+        expect(options()[1].getAttribute('aria-selected')).toBe('false');
+        await userEvent.keyboard('{Enter}');
+        expect(document.activeElement).toBe(input);
     });
 
     it('collapses tokens that do not fit into an overflow link while not focused', async () => {
