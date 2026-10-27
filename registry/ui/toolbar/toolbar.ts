@@ -232,7 +232,8 @@ let nextId = 0;
                 <fd-toolbar-spacer />
             }
             <fd-toolbar-separator />
-            <fd-popover placement="bottom-end" [(isOpen)]="overflowOpen">
+            <!-- the popover is a dialog: named like its "More" button -->
+            <fd-popover placement="bottom-end" [bodyAriaLabel]="moreLabel()" [(isOpen)]="overflowOpen">
                 <fd-popover-control>
                     <button
                         fdButton

@@ -27,7 +27,7 @@ Registry: `registry/ui/toolbar/` — 4 stories, 11 tests.
 | Title accessibility: tooltip `title`, accessible name, truncation, updates on change                            | spacer, separator, label; title renders a heading                                           | ✅ covered | We label via `aria-labelledby` + role heading instead of aria-label; title truncation not asserted (label truncation is) |
 | Title element resize observation                                                                                | —                                                                                           | ❌ missing | Our source observes the title element; no test that a wider title pushes more items to overflow                          |
 
-Registry-only coverage: `always` and `forceOverflow`, restoring overflown items in order, focus on the first popover item, info/active toolbar Enter/Space click, role/orientation/labelling, compact height, pure `toolbarOverflow` unit tests.
+Registry-only coverage: the overflow popover dialog is named like the More button (axe `aria-dialog-name`), `always` and `forceOverflow`, restoring overflown items in order, focus on the first popover item, info/active toolbar Enter/Space click, role/orientation/labelling, compact height, pure `toolbarOverflow` unit tests.
 
 ### Gaps to fill
 

@@ -141,6 +141,8 @@ describe('Toolbar', () => {
 
         await open();
         const overlay = document.querySelector('.cdk-overlay-container')!;
+        // the popover dialog is named like the More button
+        expect(overlay.querySelector('fd-popover-body [role=dialog]')!.getAttribute('aria-label')).toBe('More');
         expect([...overlay.querySelectorAll('[data-toolbar-overflow] > button')].map((b) => b.id)).toEqual([
             'd',
             'c',
