@@ -15,6 +15,8 @@ import { TimePicker } from './time-picker';
             [message]="message()"
             messageType="information"
             [allowNull]="allowNull()"
+            [disabled]="disabled()"
+            [displayFormat]="displayFormat()"
         />
         <button id="after">After</button>
     `
@@ -23,6 +25,8 @@ class Host {
     readonly time = signal<FdDate | null | undefined>(new FdDate(2024, 3, 9, 14, 30, 0));
     readonly message = signal<string | null>(null);
     readonly allowNull = signal(true);
+    readonly disabled = signal(false);
+    readonly displayFormat = signal<object | undefined>(undefined);
 }
 
 async function setup(configure?: (host: Host) => void) {
@@ -131,6 +135,149 @@ describe('TimePicker', () => {
         );
         expect(messages.length).toBeGreaterThan(0);
         expect(input.getAttribute('aria-describedby')).toBeTruthy();
+    });
+
+    it('shows hours, minutes and seconds without a period for a 24-hour format with seconds', async () => {
+        const { input, button, stable } = await setup((h) =>
+            h.displayFormat.set({ hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
+        );
+        expect(input.value).toBe('14:30:00');
+        expect(input.placeholder).toBe('hh:mm:ss');
+        await userEvent.click(button);
+        await stable();
+        expect(document.querySelector('#tp-time-hours')).not.toBeNull();
+        expect(document.querySelector('#tp-time-minutes')).not.toBeNull();
+        expect(document.querySelector('#tp-time-seconds')).not.toBeNull();
+        expect(document.querySelector('#tp-time-period')).toBeNull();
+        expect(document.querySelector('#tp-time-hours')!.getAttribute('aria-valuetext')).toBe('14');
+    });
+
+    it('hides the message while the columns are open and shows it again on close', async () => {
+        const { input, button, stable } = await setup((h) => h.message.set('Times are local'));
+        const fieldMessage = () => document.querySelector('[aria-label="Field validation messages"]');
+        input.focus();
+        await stable();
+        expect(fieldMessage()).not.toBeNull();
+        await userEvent.click(button);
+        await stable();
+        expect(fieldMessage()).toBeNull();
+        // the open columns show the message inside the popover instead
+        const body = document.querySelector('#tp-time-hours')!.closest('.cdk-overlay-pane')!;
+        expect(body.textContent).toContain('Times are local');
+        await userEvent.keyboard('{Escape}');
+        await stable();
+        expect(document.activeElement).toBe(input);
+        expect(fieldMessage()).not.toBeNull();
+    });
+
+    it('closes the columns on a click outside', async () => {
+        const { root, button, stable } = await setup();
+        await userEvent.click(button);
+        await stable();
+        expect(document.querySelector('#tp-time-hours')).not.toBeNull();
+        await userEvent.click(root.querySelector<HTMLElement>('#after')!);
+        await stable();
+        expect(document.querySelector('#tp-time-hours')).toBeNull();
+        expect(button.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('does not open when disabled', async () => {
+        const { input, button, stable } = await setup((h) => h.disabled.set(true));
+        expect(input.disabled).toBe(true);
+        expect(button.disabled).toBe(true);
+        button.click();
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', altKey: true, bubbles: true }));
+        await stable();
+        expect(document.querySelector('#tp-time-hours')).toBeNull();
+        expect(button.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('keeps Tab within the open columns, like upstream (focus trapped)', async () => {
+        const { button, stable } = await setup();
+        await userEvent.click(button);
+        await stable();
+        const hours = document.querySelector<HTMLElement>('#tp-time-hours')!;
+        expect(document.activeElement).toBe(hours);
+        await userEvent.tab();
+        expect(document.activeElement!.id).toBe('tp-time-minutes');
+        await userEvent.tab();
+        expect(document.activeElement!.id).toBe('tp-time-period');
+        await userEvent.tab();
+        await stable();
+        expect(document.activeElement).toBe(hours);
+        expect(button.getAttribute('aria-expanded')).toBe('true');
+    });
+});
+
+@Component({
+    imports: [TimePicker, ReactiveFormsModule],
+    template: `<fd-time-picker id="tpc" [formControl]="control" />`
+})
+class ChangeHost {
+    readonly control = new FormControl<FdDate | null>(new FdDate(2024, 1, 1, 8, 0, 0));
+}
+
+describe('TimePicker changes', () => {
+    async function setupChanges() {
+        const fixture = TestBed.createComponent(ChangeHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        const root = fixture.nativeElement as HTMLElement;
+        const changes: (FdDate | null)[] = [];
+        fixture.componentInstance.control.valueChanges.subscribe((value) => changes.push(value));
+        return {
+            fixture,
+            control: fixture.componentInstance.control,
+            changes,
+            input: root.querySelector<HTMLInputElement>('input')!,
+            button: root.querySelector<HTMLButtonElement>('button[aria-label="Open picker"]')!,
+            stable: async () => {
+                await fixture.whenStable();
+                await new Promise((resolve) => requestAnimationFrame(resolve));
+                await fixture.whenStable();
+            }
+        };
+    }
+
+    it('keeps an empty field valid with allowNull', async () => {
+        const { control, changes, input, stable } = await setupChanges();
+        await userEvent.clear(input);
+        await userEvent.type(input, '{Enter}');
+        await stable();
+        expect(control.value).toBeNull();
+        expect(changes).toEqual([null]);
+        expect(control.valid).toBe(true);
+        expect(input.hasAttribute('aria-invalid')).toBe(false);
+    });
+
+    it('does not emit a change when focus leaves an unchanged field', async () => {
+        const { control, changes, input, stable } = await setupChanges();
+        input.focus();
+        // past the picker button and out of the picker
+        await userEvent.tab();
+        await userEvent.tab();
+        await stable();
+        expect(changes).toEqual([]);
+        expect(control.touched).toBe(true);
+        // retyping the same time is no change either
+        await userEvent.clear(input);
+        await userEvent.type(input, '8:00 AM{Enter}');
+        await stable();
+        expect(changes).toEqual([]);
+    });
+
+    it('does not emit a change when the columns pick the current time', async () => {
+        const { changes, button, stable } = await setupChanges();
+        await userEvent.click(button);
+        await stable();
+        const current = document.querySelector<HTMLElement>('#tpc-time-hours [data-displayed-value="8"]')!;
+        await userEvent.click(current);
+        await stable();
+        expect(changes).toEqual([]);
+        await userEvent.click(document.querySelector<HTMLElement>('#tpc-time-hours [data-displayed-value="9"]')!);
+        await stable();
+        expect(changes.length).toBe(1);
+        expect(changes[0]!.hour).toBe(9);
     });
 });
 
