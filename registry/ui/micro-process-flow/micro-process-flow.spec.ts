@@ -9,6 +9,7 @@ import {
     MicroProcessFlowIntermediaryItem,
     MicroProcessFlowItem
 } from './micro-process-flow';
+import type { IconFont } from '@/ui/icon/icon';
 
 @Component({
     imports: [
@@ -39,6 +40,15 @@ import {
 class Host {
     readonly steps = signal([1, 2, 3]);
     readonly independent = signal(false);
+}
+
+@Component({
+    imports: [MicroProcessFlowIcon],
+    template: `<fd-micro-process-flow-icon [glyph]="glyph()" [font]="font()" ariaLabel="Step" />`
+})
+class IconHost {
+    readonly glyph = signal<string | null>('actor');
+    readonly font = signal<IconFont>('SAP-icons-TNT');
 }
 
 async function setup(count = 3) {
@@ -126,5 +136,26 @@ describe('MicroProcessFlow', () => {
         const flow = icons()[0].closest('fd-micro-process-flow')!.getBoundingClientRect();
         const focused = document.activeElement!.getBoundingClientRect();
         expect(focused.right).toBeLessThanOrEqual(flow.right);
+    });
+
+    it('renders the glyph in the given icon font', async () => {
+        const fixture = TestBed.createComponent(IconHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        const icon = () => (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('fd-icon');
+        const before = () => getComputedStyle(icon()!, '::before');
+        expect(icon()!.dataset['glyph']).toBe(String.fromCodePoint(0xe03c));
+        expect(before().fontFamily).toContain('SAP-icons-TNT');
+
+        fixture.componentInstance.font.set('BusinessSuiteInAppSymbols');
+        fixture.componentInstance.glyph.set('add-note');
+        await fixture.whenStable();
+        expect(icon()!.dataset['glyph']).toBe(String.fromCodePoint(0xe008));
+        expect(before().fontFamily).toContain('SAP-icons-Business-Suite');
+
+        // without a glyph the step renders no icon
+        fixture.componentInstance.glyph.set(null);
+        await fixture.whenStable();
+        expect(icon()).toBeNull();
     });
 });
