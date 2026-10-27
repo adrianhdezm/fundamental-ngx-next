@@ -713,6 +713,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "fixed-card-layout",
+      "type": "registry:ui",
+      "title": "Fixed Card Layout",
+      "description": "Cards in as many equal columns as fit, reorderable by drag and drop or keyboard.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/fixed-card-layout/fixed-card-layout.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk"]
     }
   ]
 }
