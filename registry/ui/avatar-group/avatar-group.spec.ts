@@ -38,6 +38,7 @@ const NAMES = [
                 [orientation]="orientation()"
                 [placement]="placement()"
                 [maxVisibleItems]="max()"
+                [overflowButtonShape]="shape()"
                 [ariaLabel]="ariaLabel()"
                 overflowPopoverTitle="Team members"
                 (visibleCountChange)="visibleCount.set($event)"
@@ -72,6 +73,7 @@ class Host {
     readonly orientation = signal<AvatarGroupOrientation>('horizontal');
     readonly placement = signal<Placement | undefined>(undefined);
     readonly max = signal<number | null>(null);
+    readonly shape = signal<'circle' | 'square'>('square');
     readonly ariaLabel = signal<string | null>(null);
     readonly people = signal<Person[]>(NAMES.map((name) => ({ name })));
     readonly visibleCount = signal(-1);
@@ -469,5 +471,76 @@ describe('AvatarGroup', () => {
         expect(host.visibleCount()).toBe(2);
         await update((h) => h.max.set(null));
         expect(host.visibleCount()).toBe(NAMES.length);
+    });
+
+    it('maxVisibleItems: 0 hides every avatar, the total count hides none, and changes apply', async () => {
+        const { host, visible, overflow, update } = await setup((h) => {
+            h.width.set(1000);
+            h.max.set(0);
+        });
+        expect(visible()).toEqual([]);
+        expect(overflow()!.textContent!.trim()).toBe(`+${NAMES.length}`);
+
+        await update((h) => h.max.set(NAMES.length));
+        expect(visible()).toEqual(NAMES);
+        expect(overflow()).toBeNull();
+        expect(host.visibleCount()).toBe(NAMES.length);
+
+        await update((h) => h.max.set(3));
+        expect(visible()).toEqual(NAMES.slice(0, 2));
+        expect(overflow()!.textContent!.trim()).toBe(`+${NAMES.length - 2}`);
+        expect(host.visibleCount()).toBe(2);
+    });
+
+    it('group type respects maxVisibleItems', async () => {
+        const { group, update } = await setup((h) => {
+            h.type.set('group');
+            h.width.set(1000);
+            h.max.set(4);
+        });
+        const shown = () => group.querySelectorAll('[data-avatar-group-item]').length;
+        const count = () => group.querySelector('[data-avatar-group-overflow]')?.textContent!.trim();
+        expect(shown()).toBe(3);
+        expect(count()).toBe(`+${NAMES.length - 3}`);
+        await update((h) => h.max.set(null));
+        expect(shown()).toBe(NAMES.length);
+        expect(count()).toBeUndefined();
+    });
+
+    it('vertical orientation caps by maxVisibleItems and ignores the container width', async () => {
+        const { group, visible, overflow, update } = await setup((h) => {
+            h.orientation.set('vertical');
+            h.width.set(60);
+        });
+        // a narrow container does not hide anything in a column
+        expect(visible()).toEqual(NAMES);
+        expect(overflow()).toBeNull();
+        const avatars = [...group.querySelectorAll<HTMLElement>('[data-avatar-group-item]')];
+        expect(avatars[1].getBoundingClientRect().top).toBeGreaterThanOrEqual(
+            avatars[0].getBoundingClientRect().bottom
+        );
+
+        await update((h) => h.max.set(4));
+        expect(visible()).toEqual(NAMES.slice(0, 3));
+        expect(overflow()!.textContent!.trim()).toBe(`+${NAMES.length - 3}`);
+        // the overflow button is below the last avatar
+        const last = group.querySelectorAll<HTMLElement>('[data-avatar-group-item]')[2];
+        expect(overflow()!.getBoundingClientRect().top).toBeGreaterThanOrEqual(last.getBoundingClientRect().bottom);
+    });
+
+    it('overflowButtonShape applies to group-type groups and follows changes', async () => {
+        const { group, update } = await setup((h) => {
+            h.type.set('group');
+            h.width.set(1000);
+            h.max.set(4);
+        });
+        const button = () => group.querySelector<HTMLElement>('[data-avatar-group-overflow] > span')!;
+        const round = () =>
+            parseFloat(getComputedStyle(button()).borderTopLeftRadius) >= button().getBoundingClientRect().width / 2;
+        expect(round()).toBe(false);
+        await update((h) => h.shape.set('circle'));
+        expect(round()).toBe(true);
+        await update((h) => h.shape.set('square'));
+        expect(round()).toBe(false);
     });
 });
