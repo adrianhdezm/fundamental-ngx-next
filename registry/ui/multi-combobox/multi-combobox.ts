@@ -193,8 +193,8 @@ let nextId = 0;
                         [disabled]="disabledState()"
                         [readOnly]="readonly()"
                         [attr.title]="token.label"
-                        (onCloseClick)="toggle(token, false)"
-                        (onRemove)="toggle(token, false)"
+                        (onCloseClick)="removeToken(token)"
+                        (onRemove)="removeToken(token)"
                         >{{ token.label }}</fd-token
                     >
                 }
@@ -661,6 +661,11 @@ export class MultiCombobox<T = unknown> implements ControlValueAccessor {
     toggle(suggestion: Suggestion<T>, select = !this.isSelected(suggestion)): void {
         const rest = this.selectedItems().filter((item) => this.lookup(item) !== suggestion.id);
         this.setSelected(select ? [...rest, suggestion.value] : rest);
+    }
+
+    /** Removes the item of a token; without tokens left the focus goes to the input, as the token is gone. */
+    protected removeToken(suggestion: Suggestion<T>): void {
+        this.toggle(suggestion, false);
         if (!this.selectedItems().length) this.field()?.nativeElement.focus();
     }
 

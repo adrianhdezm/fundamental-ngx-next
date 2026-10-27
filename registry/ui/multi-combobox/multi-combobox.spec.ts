@@ -1,9 +1,11 @@
-import { Component, signal } from '@angular/core';
+import { Component, TemplateRef, inject, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import { MultiCombobox } from './multi-combobox';
+import { Dialog, DialogBody, DialogService, type DialogRef } from '@/ui/dialog/dialog';
+import { MultiCombobox, type MultiComboboxDataSource, type MultiComboboxMobileConfig } from './multi-combobox';
 
 interface Item {
     id: number;
@@ -45,7 +47,98 @@ class Host {
     readonly control = new FormControl<Item[]>([ITEMS[1]]);
 }
 
+@Component({
+    imports: [MultiCombobox],
+    template: `
+        <fd-multi-combobox
+            ariaLabel="Food"
+            displayKey="name"
+            lookupKey="id"
+            secondaryKey="type"
+            [showSecondaryText]="secondary()"
+            [limitless]="limitless()"
+            [openDropdownOnAddOnClicked]="openOnAddon()"
+            [mobile]="mobile()"
+            [mobileConfig]="mobileConfig()"
+            [dataSource]="data()"
+            [(selectedItems)]="selected"
+            (selectionChange)="changes.set(changes() + 1)"
+            (addOnButtonClicked)="addonClicks.set(addonClicks() + 1)"
+        />
+    `
+})
+class ModelHost {
+    readonly data = signal<MultiComboboxDataSource<any>>(ITEMS);
+    readonly selected = signal<any[]>([]);
+    readonly secondary = signal(false);
+    readonly limitless = signal(false);
+    readonly openOnAddon = signal(true);
+    readonly mobile = signal(false);
+    readonly mobileConfig = signal<MultiComboboxMobileConfig>({
+        title: 'Food',
+        approveButtonText: 'OK',
+        cancelButtonText: 'Cancel'
+    });
+    readonly changes = signal(0);
+    readonly addonClicks = signal(0);
+}
+
+@Component({
+    imports: [MultiCombobox, ReactiveFormsModule],
+    template: `<fd-multi-combobox
+        ariaLabel="Food"
+        displayKey="name"
+        lookupKey="id"
+        [dataSource]="source"
+        [formControl]="control"
+    />`
+})
+class ObservableHost {
+    readonly source = new Subject<Item[]>();
+    readonly control = new FormControl<Item[]>([ITEMS[1]]);
+}
+
+@Component({
+    imports: [MultiCombobox, Dialog, DialogBody],
+    template: `
+        <ng-template #tpl>
+            <fd-dialog>
+                <fd-dialog-body>
+                    <fd-multi-combobox ariaLabel="Food" displayKey="name" lookupKey="id" [dataSource]="items" />
+                </fd-dialog-body>
+            </fd-dialog>
+        </ng-template>
+    `
+})
+class DialogHost {
+    readonly items = ITEMS;
+    readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
+    private readonly dialogs = inject(DialogService);
+    open(): DialogRef {
+        return this.dialogs.open(this.tpl(), { ariaLabel: 'Food' });
+    }
+}
+
+async function setupModel(configure: (host: ModelHost) => void = () => {}) {
+    const fixture = TestBed.createComponent(ModelHost);
+    configure(fixture.componentInstance);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    const input = root.querySelector<HTMLInputElement>('input[role=combobox]')!;
+    const addon = () => root.querySelector<HTMLElement>('button[aria-haspopup]')!;
+    return { fixture, host: fixture.componentInstance, root, input, addon };
+}
+
+/** A button of the open dialog by the start of its text, or by its label. */
+const dialogButton = (label: string) =>
+    [...document.querySelectorAll<HTMLButtonElement>('[role=dialog] button')].find(
+        (b) => b.textContent?.trim().startsWith(label) || b.getAttribute('aria-label') === label
+    );
+
 const wait = (ms = 50) => new Promise((r) => setTimeout(r, ms));
+const optionTexts = () =>
+    [...document.querySelectorAll<HTMLElement>('ul[role=listbox] [role=option]')].map((o) => o.textContent?.trim());
 const options = () => [...document.querySelectorAll<HTMLElement>('ul[role=listbox] [role=option]')];
 const tokens = () => [...document.querySelectorAll<HTMLElement>('fd-token')].map((t) => t.textContent?.trim());
 const names = (items: Item[] | null) => (items ?? []).map((i) => i.name);
@@ -146,5 +239,33 @@ describe('MultiCombobox', () => {
         expect(document.getElementById(groups[1].getAttribute('aria-labelledby')!)?.textContent?.trim()).toBe(
             'Vegetable'
         );
+    });
+
+    describe('options', () => {});
+
+    describe('mobile', () => {
+        const mobileSetup = () =>
+            setupModel((h) => {
+                h.mobile.set(true);
+                h.selected.set([ITEMS[1]]);
+            });
+        const openDialog = async (fixture: { whenStable(): Promise<unknown> }, addon: () => HTMLElement) => {
+            await userEvent.click(addon());
+            await fixture.whenStable();
+            await wait();
+            expect(document.querySelector('[role=dialog] [role=listbox]')).not.toBeNull();
+        };
+
+        it('deselecting the last item keeps the focus in the dialog', async () => {
+            const { fixture, host, addon } = await mobileSetup();
+            await openDialog(fixture, addon);
+            const field = document.querySelector<HTMLInputElement>('[role=dialog] input[role=combobox]')!;
+            field.focus();
+            await userEvent.keyboard('{ArrowDown}{ArrowDown} ');
+            await fixture.whenStable();
+            expect(options()[1].getAttribute('aria-selected')).toBe('false');
+            expect(names(host.selected())).toEqual([]);
+            expect(document.activeElement).toBe(field);
+        });
     });
 });
