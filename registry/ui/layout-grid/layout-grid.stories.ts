@@ -54,6 +54,10 @@ export const Responsive: Story = {
                 <div fdLayoutGridCol="4" colOffset="4"><div class="${block}">4, offset 4</div></div>
                 <div fdLayoutGridCol="6" colOffset="6"><div class="${alt}">6, offset 6</div></div>
                 <div fdLayoutGridCol="6" colOffset="0" colOffsetMd="3" colOffsetLg="6"><div class="${block}">offset 0 / md 3 / lg 6</div></div>
+            </fd-layout-grid>
+            <h3 class="${heading}">Responsive offset: md 1 / lg 2 / xl 4</h3>
+            <fd-layout-grid>
+                <div fdLayoutGridCol="6" colOffsetMd="1" colOffsetLg="2" colOffsetXl="4"><div class="${alt}">6, offset md 1 / lg 2 / xl 4</div></div>
             </fd-layout-grid>`
     })
 };
