@@ -1,6 +1,6 @@
 import { JsonPipe } from '@angular/common';
 import { Component, TemplateRef, inject, signal, viewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { expect, userEvent, waitFor } from 'storybook/test';
 import { DatetimeAdapter, FdDate, provideDateTimeFormats } from '@/lib/datetime';
@@ -16,8 +16,16 @@ import {
     DialogTemplate,
     DialogTitle
 } from '@/ui/dialog/dialog';
+import { SegmentedButton } from '@/ui/segmented-button/segmented-button';
 import { Title } from '@/ui/title/title';
-import { Calendar, CalendarCloseButton, CalendarLegend, DateRange, type SpecialDayRule } from './calendar';
+import {
+    Calendar,
+    CalendarCloseButton,
+    CalendarLegend,
+    DateRange,
+    type CalendarYearGrid,
+    type SpecialDayRule
+} from './calendar';
 
 const heading = 'mt-6 mb-2 first:mt-0';
 const value = 'font-sap-font-family text-sap-font-size text-sap-text-color';
@@ -110,6 +118,10 @@ class StoryCalendarRange {
                 <fd-calendar [selectedDate]="date" [specialDaysRules]="rules" showCalendarLegend />
             </div>
             <div>
+                <h3 fdTitle headerSize="5" class="${heading}">Legend in a column</h3>
+                <fd-calendar [selectedDate]="date" [specialDaysRules]="rules" showCalendarLegend legendCol />
+            </div>
+            <div>
                 <h3 fdTitle headerSize="5" class="${heading}">Months and years ranges</h3>
                 <div class="flex flex-col gap-4">
                     <fd-calendar calType="range" dateRangeFormat="month" activeView="month" rangeHoverEffect />
@@ -150,6 +162,10 @@ class StoryCalendarSpecial {
                 <h3 fdTitle headerSize="5" class="${heading}">Large year grid</h3>
                 <fd-calendar activeView="year" [yearGrid]="{ rows: 6, cols: 4 }" />
             </div>
+            <div>
+                <h3 fdTitle headerSize="5" class="${heading}">Own year and years range grids</h3>
+                <fd-calendar [yearGrid]="yearGrid" [aggregatedYearGrid]="aggregatedYearGrid" />
+            </div>
         </div>
     `
 })
@@ -157,6 +173,9 @@ class StoryCalendarForm {
     protected readonly show = show;
     protected model: FdDate | null = new FdDate(2024, 6, 1);
     protected readonly date = new FdDate(2024, 6, 1);
+    /** Five rows of three years; the years range view lists eight periods of 15 years. */
+    protected readonly yearGrid: CalendarYearGrid = { rows: 5, cols: 3, yearMapping: (year) => `${year} AD` };
+    protected readonly aggregatedYearGrid: CalendarYearGrid = { rows: 8, cols: 1 };
     protected readonly noEarlier = (_: unknown, current: { year: number; month: number }, view: string) =>
         view === 'day' ? current.year <= 2024 && current.month <= 1 : current.year <= 2024;
     protected readonly noLater = (_: unknown, current: { year: number; month: number }, view: string) =>
@@ -262,6 +281,133 @@ async function openMobile(canvasElement: HTMLElement, label: string): Promise<vo
     await waitFor(() => expect(document.querySelector('[role="dialog"] fd-calendar [role="grid"]')).not.toBeNull());
 }
 
+@Component({
+    selector: 'story-calendar-reactive',
+    imports: [Calendar, Title, Button, ReactiveFormsModule],
+    template: `
+        <form [formGroup]="form" class="${row}">
+            <div>
+                <h3 fdTitle headerSize="5" class="${heading}">Single date</h3>
+                <fd-calendar formControlName="date" [startingDayOfWeek]="2" />
+                <p class="${value}">
+                    Touched: {{ form.controls.date.touched }}, dirty: {{ form.controls.date.dirty }}, valid:
+                    {{ form.controls.date.valid }}<br />Selected: {{ show(form.controls.date.value) }}
+                </p>
+                <button fdButton type="button" label="Set invalid date" (click)="setInvalid('date')"></button>
+            </div>
+            <div>
+                <h3 fdTitle headerSize="5" class="${heading}">Several dates</h3>
+                <fd-calendar formControlName="dates" allowMultipleSelection showWeekNumbers [startingDayOfWeek]="2" />
+                <p class="${value}">
+                    Touched: {{ form.controls.dates.touched }}, dirty: {{ form.controls.dates.dirty }}, valid:
+                    {{ form.controls.dates.valid }}<br />{{ form.controls.dates.value?.length ?? 0 }} dates
+                </p>
+                <button fdButton type="button" label="Set invalid dates" (click)="setInvalid('dates')"></button>
+            </div>
+            <div>
+                <h3 fdTitle headerSize="5" class="${heading}">Range</h3>
+                <fd-calendar formControlName="range" calType="range" [startingDayOfWeek]="2" />
+                <p class="${value}">
+                    Touched: {{ form.controls.range.touched }}, dirty: {{ form.controls.range.dirty }}, valid:
+                    {{ form.controls.range.valid }}<br />{{ show(form.controls.range.value?.start) }} –
+                    {{ show(form.controls.range.value?.end) }}
+                </p>
+                <button fdButton type="button" label="Set invalid range" (click)="setInvalid('range')"></button>
+            </div>
+            <div>
+                <h3 fdTitle headerSize="5" class="${heading}">Several ranges</h3>
+                <fd-calendar formControlName="ranges" calType="range" allowMultipleSelection [startingDayOfWeek]="2" />
+                <p class="${value}">
+                    Touched: {{ form.controls.ranges.touched }}, dirty: {{ form.controls.ranges.dirty }}, valid:
+                    {{ form.controls.ranges.valid }}<br />{{ form.controls.ranges.value?.length ?? 0 }} ranges
+                </p>
+                <button fdButton type="button" label="Set invalid ranges" (click)="setInvalid('ranges')"></button>
+            </div>
+        </form>
+    `
+})
+class StoryCalendarReactive {
+    protected readonly show = show;
+    protected readonly form = new FormGroup({
+        date: new FormControl<FdDate | null>(new FdDate(2024, 9, 20)),
+        dates: new FormControl<FdDate[]>([new FdDate(2024, 9, 2), new FdDate(2024, 9, 3), new FdDate(2024, 9, 4)]),
+        range: new FormControl<DateRange<FdDate> | null>(
+            new DateRange(new FdDate(2024, 10, 11), new FdDate(2024, 10, 19))
+        ),
+        ranges: new FormControl<DateRange<FdDate>[]>([
+            new DateRange(new FdDate(2024, 10, 1), new FdDate(2024, 10, 10)),
+            new DateRange(new FdDate(2024, 10, 14), new FdDate(2024, 10, 18))
+        ])
+    });
+
+    /** Writes a date that is not valid, like a broken value from a server. */
+    protected setInvalid(control: 'date' | 'dates' | 'range' | 'ranges'): void {
+        const invalid = new FdDate(NaN);
+        const controls = this.form.controls;
+        if (control === 'date') controls.date.setValue(invalid);
+        else if (control === 'dates') controls.dates.setValue([invalid]);
+        else if (control === 'range') controls.range.setValue(new DateRange(invalid, invalid));
+        else controls.ranges.setValue([new DateRange(invalid, invalid)]);
+    }
+}
+
+@Component({
+    selector: 'story-calendar-programmatic',
+    imports: [Calendar, Button, Title, FormsModule],
+    template: `
+        <h3 fdTitle headerSize="5" class="${heading}">The value changes from outside</h3>
+        <fd-calendar [(ngModel)]="date" />
+        <p class="${value}">Selected: {{ show(date) }}</p>
+        <button fdButton label="Next day" (click)="nextDay()"></button>
+    `
+})
+class StoryCalendarProgrammatic {
+    private readonly adapter = inject<DatetimeAdapter<FdDate>>(DatetimeAdapter);
+    protected readonly show = show;
+    protected date: FdDate | null = new FdDate(2024, 3, 31);
+
+    protected nextDay(): void {
+        this.date = this.adapter.addCalendarDays(this.date ?? this.adapter.today(), 1);
+    }
+}
+
+@Component({
+    selector: 'story-calendar-locale-switch',
+    imports: [Calendar, Button, SegmentedButton, Title, FormsModule],
+    providers: [provideDateTimeFormats()],
+    template: `
+        <h3 fdTitle headerSize="5" class="${heading}">Locale, switched live (BCP 47 tags)</h3>
+        <fd-segmented-button ariaLabel="Locale" [ngModel]="locale()" (ngModelChange)="setLocale($event)">
+            @for (option of locales; track option.code) {
+                <button fdButton [label]="option.name" [value]="option.code"></button>
+            }
+        </fd-segmented-button>
+        <p class="${value}">Current locale: {{ locale() }}</p>
+        <fd-calendar [selectedDate]="date" showWeekNumbers />
+    `
+})
+class StoryCalendarLocaleSwitch {
+    private readonly adapter = inject(DatetimeAdapter);
+    protected readonly locales = [
+        { code: 'en-US', name: 'English (US)' },
+        { code: 'de-DE', name: 'Deutsch' },
+        { code: 'fr-FR', name: 'Français' },
+        { code: 'ja-JP', name: '日本語' },
+        { code: 'ar-EG', name: 'العربية' }
+    ];
+    protected readonly locale = signal('en-US');
+    protected readonly date = new FdDate(2024, 3, 9);
+
+    constructor() {
+        this.adapter.setLocale(this.locale());
+    }
+
+    protected setLocale(locale: string): void {
+        this.locale.set(locale);
+        this.adapter.setLocale(locale);
+    }
+}
+
 const meta: Meta<Calendar<FdDate>> = {
     title: 'Components/Calendar',
     component: Calendar,
@@ -273,7 +419,10 @@ const meta: Meta<Calendar<FdDate>> = {
                 StoryCalendarSpecial,
                 StoryCalendarForm,
                 StoryCalendarLocale,
-                StoryCalendarMobile
+                StoryCalendarMobile,
+                StoryCalendarReactive,
+                StoryCalendarProgrammatic,
+                StoryCalendarLocaleSwitch
             ]
         })
     ],
@@ -301,6 +450,19 @@ export const SpecialDays: Story = {
 };
 export const Forms: Story = { name: 'Forms and navigation', render: () => ({ template: `<story-calendar-form />` }) };
 export const Locale: Story = { render: () => ({ template: `<story-calendar-locale />` }) };
+export const LocaleSwitcher: Story = {
+    name: 'Locale switcher',
+    render: () => ({ template: `<story-calendar-locale-switch />` })
+};
+export const ReactiveForms: Story = {
+    name: 'Reactive forms',
+    render: () => ({ template: `<story-calendar-reactive />` })
+};
+export const Programmatic: Story = {
+    name: 'Programmatic date change',
+    render: () => ({ template: `<story-calendar-programmatic />` })
+};
+export const Mobile: Story = { render: () => ({ template: `<story-calendar-mobile />` }) };
 export const OpenMobileLandscape: Story = {
     name: 'Open: mobile landscape',
     tags: ['!autodocs'],
