@@ -634,6 +634,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "grid-list",
+      "type": "registry:ui",
+      "title": "Grid List",
+      "description": "Responsive grid of item cards with selection, delete and navigation modes.",
+      "registryDependencies": ["utils", "theme", "button", "checkbox", "radio", "icon", "object-status", "toolbar"],
+      "files": [
+        {
+          "path": "registry/ui/grid-list/grid-list.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/forms"]
     }
   ]
 }
