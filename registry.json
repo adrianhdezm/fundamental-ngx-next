@@ -1346,6 +1346,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "time-picker",
+      "type": "registry:ui",
+      "title": "Time Picker",
+      "description": "A time field with a button that opens the time columns, reading typed times, with validation states and messages.",
+      "registryDependencies": ["utils", "theme", "datetime", "button", "form", "input-group", "popover", "time"],
+      "files": [
+        {
+          "path": "registry/ui/time-picker/time-picker.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
