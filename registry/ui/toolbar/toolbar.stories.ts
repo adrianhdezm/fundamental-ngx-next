@@ -1,4 +1,5 @@
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
 import { Checkbox } from '@/ui/checkbox/checkbox';
 import { Icon } from '@/ui/icon/icon';
@@ -126,4 +127,22 @@ export const Overflow: Story = {
                 </fd-toolbar>
             </div>`
     })
+};
+
+/** Clicks the overflow button of the first toolbar of the story and waits for its popover. */
+async function openOverflow(canvasElement: HTMLElement): Promise<void> {
+    const more = await waitFor(() => {
+        const el = canvasElement.querySelector<HTMLElement>('fd-toolbar fd-popover-control button');
+        expect(el).not.toBeNull();
+        return el!;
+    });
+    await userEvent.click(more);
+    await waitFor(() => expect(document.querySelector('.cdk-overlay-pane [data-toolbar-overflow]')).not.toBeNull());
+}
+
+export const OpenOverflow: Story = {
+    name: 'Open: overflow',
+    tags: ['!autodocs'],
+    render: Overflow.render,
+    play: ({ canvasElement }) => openOverflow(canvasElement)
 };
