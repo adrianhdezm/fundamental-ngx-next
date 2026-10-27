@@ -1,34 +1,34 @@
 ## date-picker
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/date-picker) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/date-picker)
-Registry: `registry/ui/date-picker/` — 10 stories, 14 tests.
+Registry: `registry/ui/date-picker/` — 12 stories, 14 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                                          | Registry story           | Status     | Notes                                                                                                                                       |
-| --------------------------------------------------------- | ------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Simple Date Picker                                        | Single                   | ✅ covered | Labelled field with placeholder                                                                                                             |
-| Multi Date Picker                                         | RangeAndMultiple         | ✅ covered |                                                                                                                                             |
-| Range Date Picker                                         | RangeAndMultiple         | ✅ covered | With `rangeHoverEffect` and today button                                                                                                    |
-| Multi Range Date Picker                                   | RangeAndMultiple         | ✅ covered |                                                                                                                                             |
-| Internationalization                                      | Locale                   | ✅ covered | Locale select switches the adapter (6 locales, incl. RTL `ar-EG`)                                                                           |
-| Today Selection Button                                    | Single, RangeAndMultiple | ✅ covered |                                                                                                                                             |
-| Formatting                                                | Single                   | 🟡 partial | Only `customDateTimeFormat` (long month); upstream also provides custom `DATE_TIME_FORMATS` (dd-mm-yyyy) for single/multi/range/multi-range |
-| Null Validity                                             | Forms                    | ✅ covered | `[allowNull]="false"` with required                                                                                                         |
-| Date Picker in Reactive Form                              | Forms                    | ✅ covered |                                                                                                                                             |
-| …Reactive Form with a MultiSelection                      | Forms                    | ✅ covered |                                                                                                                                             |
-| …Reactive Form with a Range of Dates                      | Forms                    | ✅ covered |                                                                                                                                             |
-| …Reactive Form with a Multi Range of Dates                | Forms                    | ✅ covered |                                                                                                                                             |
-| Single Date Picker in Reactive Form with Disable Function | DisableFunctions         | 🟡 partial | Disable function shown, but via `[(selectedDate)]`, not a form control (no validity shown)                                                  |
-| Multi Date Picker in Reactive Form with Disable Function  | DisableFunctions         | 🟡 partial | Same: not bound to a form                                                                                                                   |
-| Date picker that updates its value on blur                | Single                   | ✅ covered | `processInputOnBlur`                                                                                                                        |
-| Range Date Picker in Reactive Form with Disable Functions | DisableFunctions         | 🟡 partial | Start/end functions shown, not in a form                                                                                                    |
-| Placement                                                 | Single                   | ✅ covered | `placement="top-start"`                                                                                                                     |
-| Disabled State                                            | Single                   | ✅ covered |                                                                                                                                             |
-| Prevent scrolling when calendar is closed                 | —                        | ❌ missing | `preventScrollOnFocus` exists, no story                                                                                                     |
-| DatePicker with Special Days                              | SpecialDays              | ✅ covered |                                                                                                                                             |
-| Mobile mode                                               | Mobile                   | ✅ covered | Single and range; "Open: mobile" opens the dialog in `play`                                                                                 |
-| Date Picker with Legend                                   | SpecialDays              | ✅ covered | `showCalendarLegend`, `legendCol`                                                                                                           |
+| Upstream example                                          | Registry story           | Status     | Notes                                                                                                                                      |
+| --------------------------------------------------------- | ------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Simple Date Picker                                        | Single                   | ✅ covered | Labelled field with placeholder                                                                                                            |
+| Multi Date Picker                                         | RangeAndMultiple         | ✅ covered |                                                                                                                                            |
+| Range Date Picker                                         | RangeAndMultiple         | ✅ covered | With `rangeHoverEffect` and today button                                                                                                   |
+| Multi Range Date Picker                                   | RangeAndMultiple         | ✅ covered |                                                                                                                                            |
+| Internationalization                                      | Locale                   | ✅ covered | Locale select switches the adapter (6 locales, incl. RTL `ar-EG`)                                                                          |
+| Today Selection Button                                    | Single, RangeAndMultiple | ✅ covered |                                                                                                                                            |
+| Formatting                                                | Single, CustomFormats    | ✅ covered | `customDateTimeFormat` (long month); provided `DATE_TIME_FORMATS` with two-digit dates and " to " for single, multi, range and multi-range |
+| Null Validity                                             | Forms                    | ✅ covered | `[allowNull]="false"` with required                                                                                                        |
+| Date Picker in Reactive Form                              | Forms                    | ✅ covered |                                                                                                                                            |
+| …Reactive Form with a MultiSelection                      | Forms                    | ✅ covered |                                                                                                                                            |
+| …Reactive Form with a Range of Dates                      | Forms                    | ✅ covered |                                                                                                                                            |
+| …Reactive Form with a Multi Range of Dates                | Forms                    | ✅ covered |                                                                                                                                            |
+| Single Date Picker in Reactive Form with Disable Function | DisableFunctions         | ✅ covered | Form control with state, message and touched/dirty/valid                                                                                   |
+| Multi Date Picker in Reactive Form with Disable Function  | DisableFunctions         | ✅ covered | Same, multiple dates                                                                                                                       |
+| Date picker that updates its value on blur                | Single                   | ✅ covered | `processInputOnBlur`                                                                                                                       |
+| Range Date Picker in Reactive Form with Disable Functions | DisableFunctions         | ✅ covered | Start/end functions on a range form control                                                                                                |
+| Placement                                                 | Single                   | ✅ covered | `placement="top-start"`                                                                                                                    |
+| Disabled State                                            | Single                   | ✅ covered |                                                                                                                                            |
+| Prevent scrolling when calendar is closed                 | PreventScrollOnFocus     | ✅ covered | `preventScrollOnFocus` toggled, field in a scrolling box                                                                                   |
+| DatePicker with Special Days                              | SpecialDays              | ✅ covered |                                                                                                                                            |
+| Mobile mode                                               | Mobile                   | ✅ covered | Single and range; "Open: mobile" opens the dialog in `play`                                                                                |
+| Date Picker with Legend                                   | SpecialDays              | ✅ covered | `showCalendarLegend`, `legendCol`                                                                                                          |
 
 "Open: calendar", "Open: range" and "Open: mobile" open the calendar in `play`, so axe checks the popover, the calendar grid and the mobile dialog.
 
@@ -61,6 +61,5 @@ Registry-only coverage: Alt+Down opening, focus returning to the input after pic
 
 ### Gaps to fill
 
-- **Stories:** "Prevent scroll on focus" — `preventScrollOnFocus` in a scrolling container; "Custom formats" — `provideDateTimeFormats` with dd-mm-yyyy for single/multi/range; turn the three disable-function examples into reactive-form controls showing validity.
 - **Tests:** "does not open when disabled"; "keeps the displayed month when adding a multiple date"; "today button navigates to today in multiple mode"; "writes and clears multiple dates and multiple ranges through the form"; "picks, types and rejects multiple date ranges"; "accepts a reversed typed range"; "marks a typed range invalid when start or end is disabled"; "renders the legend inside the calendar with legendCol"; "sets aria-required".
 - **Effort:** M, about ten focused tests plus a small aria-describedby source change and three Open stories.
