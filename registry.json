@@ -741,6 +741,20 @@
         }
       ],
       "dependencies": ["@angular/cdk"]
+    },
+    {
+      "name": "dialog",
+      "type": "registry:ui",
+      "title": "Dialog",
+      "description": "Modal dialog opened by a service from a template, a component or an object: header, subheader, scrolling body and footer, focus trap, Escape and backdrop dismissal, draggable, resizable, full-screen, mobile, positioned, stacked, hidden and loading states.",
+      "dependencies": ["@angular/cdk", "rxjs"],
+      "registryDependencies": ["utils", "theme", "bar", "busy-indicator", "button", "icon", "title"],
+      "files": [
+        {
+          "path": "registry/ui/dialog/dialog.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
