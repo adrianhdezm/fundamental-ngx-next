@@ -13,6 +13,7 @@ import { RatingIndicator } from './rating-indicator';
             [allowHalves]="halves()"
             [displayMode]="displayMode()"
             [ratings]="ratings()"
+            [displayAllRatings]="displayAllRatings()"
             [formControl]="control"
             (ratingChanged)="changes.set(changes() + 1)"
         />
@@ -22,6 +23,7 @@ class Host {
     readonly halves = signal(false);
     readonly displayMode = signal(false);
     readonly ratings = signal<Record<number, number> | null>(null);
+    readonly displayAllRatings = signal(false);
     readonly changes = signal(0);
     readonly control = new FormControl<number | null>(2);
 }
@@ -110,5 +112,26 @@ describe('RatingIndicator', () => {
         slider.focus();
         await userEvent.keyboard('{ArrowRight}');
         expect(host.control.value).toBe(2);
+    });
+
+    it('lists the votes per rating in a named popover with displayAllRatings', async () => {
+        const { fixture, host, root } = await setup({ value: null, ratings: { 5: 3, 3: 1 } });
+        host.displayAllRatings.set(true);
+        await fixture.whenStable();
+        const link = root.querySelector<HTMLElement>('a')!;
+        expect(link.textContent!.trim()).toBe('4');
+        expect(link.getAttribute('aria-label')).toBe('Total ratings 4');
+        await userEvent.hover(link);
+        await fixture.whenStable();
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        const body = document.querySelector<HTMLElement>('.cdk-overlay-pane fd-popover-body')!;
+        expect(body).not.toBeNull();
+        // the dialog needs a name (axe aria-dialog-name)
+        expect(body.querySelector('[role=dialog]')!.getAttribute('aria-label')).toBe('Total ratings');
+        const items = [...body.querySelectorAll('ul[aria-label="Total ratings"] > li')];
+        expect(items.map((item) => item.textContent!.replace(/\s+/g, ' ').trim())).toEqual([
+            '5 of 5: (3)',
+            '3 of 5: (1)'
+        ]);
     });
 });
