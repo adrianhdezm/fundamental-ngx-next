@@ -255,4 +255,31 @@ describe('Tokenizer', () => {
         await wait();
         expect(popoverList()).not.toBeNull();
     });
+
+    it('lists the hidden tokens in a named popover where they can be removed', async () => {
+        const { fixture, host, root } = await setup('14rem', [
+            'Apple',
+            'Banana',
+            'Cherry',
+            'Dragon fruit',
+            'Elderberry'
+        ]);
+        const hidden = options()
+            .filter((o) => o.offsetParent === null)
+            .map((o) => o.textContent?.trim());
+        expect(hidden.length).toBeGreaterThan(0);
+        await userEvent.click(root.querySelector<HTMLElement>('[data-tokenizer-more]')!);
+        await fixture.whenStable();
+        await wait();
+        const dialog = document.querySelector<HTMLElement>('.cdk-overlay-container [role=dialog]')!;
+        expect(dialog.getAttribute('aria-label')).toBe('Tokenizer');
+        const items = [...dialog.querySelectorAll('li')];
+        expect(items.map((li) => li.textContent?.trim())).toEqual(hidden);
+        const remove = dialog.querySelector<HTMLButtonElement>('button')!;
+        expect(remove.getAttribute('aria-label')).toBe(`Remove ${hidden[0]}`);
+        await userEvent.click(remove);
+        await fixture.whenStable();
+        expect(host.values()).not.toContain(hidden[0]);
+        expect(host.values()).toHaveLength(4);
+    });
 });

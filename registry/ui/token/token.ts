@@ -214,7 +214,12 @@ export class TokenizerInput {
                 </div>
                 @if (hiddenCount() > 0) {
                     @if (showOverflowPopover() && externalHiddenCount() === 0) {
-                        <fd-popover placement="bottom-start" [noArrow]="false" [(isOpen)]="overflowOpen">
+                        <fd-popover
+                            placement="bottom-start"
+                            [noArrow]="false"
+                            [bodyAriaLabel]="tokenizerLabel()"
+                            [(isOpen)]="overflowOpen"
+                        >
                             <fd-popover-control>
                                 <span
                                     role="button"

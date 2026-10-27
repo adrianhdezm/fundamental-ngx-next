@@ -1,7 +1,7 @@
 ## token
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/token) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/token)
-Registry: `registry/ui/token/` — 4 stories, 9 tests.
+Registry: `registry/ui/token/` — 4 stories, 10 tests.
 
 ### Stories vs. upstream examples
 
@@ -37,10 +37,10 @@ The "n more" overflow popover has no "Open: …" story, so axe never checks it.
 | Tokenizer: resize smaller/bigger, hidden count                                                                                   | collapses tokens that do not fit into an overflow link while not focused                                             | 🟡 partial | Collapse and expand-on-focus covered; no width change (getting bigger restores tokens)                                                                                     |
 | Tokenizer: `externalHiddenCount` (label count, indicator with 0 width-hidden, `moreClickedEvent`, popover behaviour, reset to 0) | counts externalHiddenCount in the n more link and leaves the hidden tokens to the owner                              | ✅ covered | Fixed: with `externalHiddenCount > 0` the link no longer opens our popover (as upstream); it only emits `moreClickedEvent`, also on Space.                                 |
 
-Registry-only coverage: Backspace/Delete removal with focus handling, Ctrl+A select all, deselect on outside click, expansion while focused.
+Registry-only coverage: Backspace/Delete removal with focus handling, Ctrl+A select all, deselect on outside click, expansion while focused, the overflow popover (named by `tokenizerLabel`) listing hidden tokens with remove buttons.
 
 ### Gaps to fill
 
 - **Stories:** "Compact tokens" — standalone compact `fd-token`s (default, selected, read-only) in a compact density container; "Open: overflow" — narrow tokenizer whose `play` clicks the "n more" link and shows the popover list with remove buttons.
-- **Tests:** "disabled tokens do not emit onCloseClick and are aria-disabled"; "read-only tokens have no close icon and are not removed by Backspace"; "emits elementFocused on focus and blur"; "sets aria-roledescription"; "Ctrl click toggles a token without clearing the others"; "tokens expand back when the tokenizer gets wider"; "n more opens a popover listing hidden tokens that can be removed"; "arrow keys are mirrored in RTL".
+- **Tests:** "disabled tokens do not emit onCloseClick and are aria-disabled"; "read-only tokens have no close icon and are not removed by Backspace"; "emits elementFocused on focus and blur"; "sets aria-roledescription"; "Ctrl click toggles a token without clearing the others"; "tokens expand back when the tokenizer gets wider"; "arrow keys are mirrored in RTL".
 - **Effort:** M, two stories and about eleven focused tests.
