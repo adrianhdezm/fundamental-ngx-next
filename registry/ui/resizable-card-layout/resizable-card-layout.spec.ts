@@ -78,6 +78,30 @@ class LayoutConfigHost {
     readonly miniHeader: ResizedEvent[] = [];
 }
 
+@Component({
+    imports: [ResizableCardLayout, ResizableCardItem],
+    template: `
+        <div style="width: 1500px">
+            <fd-resizable-card-layout>
+                <fd-resizable-card-item
+                    title="Wide"
+                    [rank]="2"
+                    [cardWidthColSpan]="2"
+                    [cardHeightRowSpan]="12"
+                    [cardMiniHeaderRowSpan]="3"
+                    [cardMiniContentRowSpan]="5"
+                >
+                    <div class="h-full bg-sap-tile-background">Wide</div>
+                </fd-resizable-card-item>
+                <fd-resizable-card-item title="Tall" [rank]="1" [cardHeightRowSpan]="20" [resizable]="false">
+                    <div class="h-full bg-sap-tile-background">Tall</div>
+                </fd-resizable-card-item>
+            </fd-resizable-card-layout>
+        </div>
+    `
+})
+class InputsHost {}
+
 const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
 
 async function setup(config: Partial<{ width: number; cards: ResizableCardItemConfig[] }> = {}) {
@@ -463,5 +487,35 @@ describe('ResizableCardLayout', () => {
         await stable();
         expect(size(items[2])[1]).toBe(64);
         expect(fixture.componentInstance.miniHeader.at(-1)?.cardHeightRowSpan).toBe(4);
+    });
+
+    it('a one-column card dragged left stays one column wide', async () => {
+        const { host, handle, size, stable } = await setup();
+        await drag(handle('A', 'ew')!, -250, 0);
+        await stable();
+        expect(size('A')[0]).toBe(320);
+        expect(host.resizeds.at(-1)!.cardWidthColSpan).toBe(1);
+    });
+
+    it('item inputs (title, rank, cardWidthColSpan, cardHeightRowSpan, resizable) place and size a card like config', async () => {
+        const fixture = TestBed.createComponent(InputsHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        await frame();
+        await frame();
+        await fixture.whenStable();
+        const root = fixture.nativeElement as HTMLElement;
+        const [wide, tall] = [...root.querySelectorAll<HTMLElement>('fd-resizable-card-item')];
+        const box = (el: HTMLElement) => el.querySelector<HTMLElement>('.flex.transition-\\[width\\,height\\]')!;
+        const size = (el: HTMLElement) => [parseFloat(box(el).style.width), parseFloat(box(el).style.height)];
+        const position = (el: HTMLElement) => [parseFloat(el.style.insetInlineStart), parseFloat(el.style.top)];
+        expect([wide.getAttribute('aria-label'), tall.getAttribute('aria-label')]).toEqual(['Wide', 'Tall']);
+        expect(size(wide)).toEqual([2 * 320 + 16, 192]);
+        expect(size(tall)).toEqual([320, 320]);
+        // rank 1 first, though it comes second in the content
+        expect(position(tall)).toEqual([48, 0]);
+        expect(position(wide)).toEqual([48 + 336, 0]);
+        expect(tall.querySelector('.cursor-ew-resize')).toBeNull();
+        expect(wide.querySelector('.cursor-ew-resize')).not.toBeNull();
     });
 });
