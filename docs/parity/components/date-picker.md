@@ -1,7 +1,7 @@
 ## date-picker
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/date-picker) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/date-picker)
-Registry: `registry/ui/date-picker/` — 7 stories, 14 tests.
+Registry: `registry/ui/date-picker/` — 10 stories, 14 tests.
 
 ### Stories vs. upstream examples
 
@@ -27,10 +27,10 @@ Registry: `registry/ui/date-picker/` — 7 stories, 14 tests.
 | Disabled State                                            | Single                   | ✅ covered |                                                                                                                                             |
 | Prevent scrolling when calendar is closed                 | —                        | ❌ missing | `preventScrollOnFocus` exists, no story                                                                                                     |
 | DatePicker with Special Days                              | SpecialDays              | ✅ covered |                                                                                                                                             |
-| Mobile mode                                               | Mobile                   | ✅ covered | Single and range; no "Open: …" story                                                                                                        |
+| Mobile mode                                               | Mobile                   | ✅ covered | Single and range; "Open: mobile" opens the dialog in `play`                                                                                 |
 | Date Picker with Legend                                   | SpecialDays              | ✅ covered | `showCalendarLegend`, `legendCol`                                                                                                           |
 
-No story opens the calendar in `play`, so axe never checks the popover, calendar grid or mobile dialog.
+"Open: calendar", "Open: range" and "Open: mobile" open the calendar in `play`, so axe checks the popover, the calendar grid and the mobile dialog.
 
 ### Tests vs. upstream specs
 
@@ -61,6 +61,6 @@ Registry-only coverage: Alt+Down opening, focus returning to the input after pic
 
 ### Gaps to fill
 
-- **Stories:** "Open: calendar" — play() clicks the picker button; "Open: range" — range picker opened with a selected range; "Open: mobile" — mobile dialog opened; "Prevent scroll on focus" — `preventScrollOnFocus` in a scrolling container; "Custom formats" — `provideDateTimeFormats` with dd-mm-yyyy for single/multi/range; turn the three disable-function examples into reactive-form controls showing validity.
+- **Stories:** "Prevent scroll on focus" — `preventScrollOnFocus` in a scrolling container; "Custom formats" — `provideDateTimeFormats` with dd-mm-yyyy for single/multi/range; turn the three disable-function examples into reactive-form controls showing validity.
 - **Tests:** "does not open when disabled"; "keeps the displayed month when adding a multiple date"; "today button navigates to today in multiple mode"; "writes and clears multiple dates and multiple ranges through the form"; "picks, types and rejects multiple date ranges"; "accepts a reversed typed range"; "marks a typed range invalid when start or end is disabled"; "renders the legend inside the calendar with legendCol"; "sets aria-required".
 - **Effort:** M, about ten focused tests plus a small aria-describedby source change and three Open stories.

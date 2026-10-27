@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { DatetimeAdapter, FdDate, provideDateTimeFormats } from '@/lib/datetime';
 import { DateRange, type SpecialDayRule } from '@/ui/calendar/calendar';
 import { FormItem, FormLabel } from '@/ui/form/form';
@@ -264,6 +265,7 @@ const meta: Meta<DatePicker<FdDate>> = {
     decorators: [
         moduleMetadata({
             imports: [
+                DatePicker,
                 StoryDatePickerSingle,
                 StoryDatePickerRange,
                 StoryDatePickerDisable,
@@ -294,3 +296,49 @@ export const SpecialDays: Story = { render: () => ({ template: `<story-date-pick
 export const Forms: Story = { render: () => ({ template: `<story-date-picker-form />` }) };
 export const Locale: Story = { render: () => ({ template: `<story-date-picker-locale />` }) };
 export const Mobile: Story = { render: () => ({ template: `<story-date-picker-mobile />` }) };
+
+/** Opens the picker with its button (or its field, in mobile mode) and waits for the calendar. */
+async function openPicker(canvasElement: HTMLElement, target: 'button' | 'input' = 'button'): Promise<void> {
+    const control = canvasElement.querySelector<HTMLElement>(
+        target === 'button' ? 'fd-date-picker button[aria-haspopup]' : 'fd-date-picker input'
+    )!;
+    await userEvent.click(control);
+    await waitFor(() => expect(document.querySelector('fd-calendar [role="grid"]')).not.toBeNull());
+}
+
+export const OpenCalendar: Story = {
+    name: 'Open: calendar',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { date: new FdDate(2024, 3, 9) },
+        template: `<fd-date-picker
+            [(selectedDate)]="date"
+            showTodayButton
+            message="Dates are local"
+            messageType="information"
+        />`
+    }),
+    play: ({ canvasElement }) => openPicker(canvasElement)
+};
+export const OpenRange: Story = {
+    name: 'Open: range',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { range: new DateRange(new FdDate(2024, 3, 4), new FdDate(2024, 3, 8)) },
+        template: `<fd-date-picker type="range" [(selectedRangeDate)]="range" rangeHoverEffect showTodayButton />`
+    }),
+    play: ({ canvasElement }) => openPicker(canvasElement)
+};
+export const OpenMobile: Story = {
+    name: 'Open: mobile',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { date: new FdDate(2024, 3, 9) },
+        template: `<fd-date-picker
+            mobile
+            [(selectedDate)]="date"
+            [mobileConfig]="{ title: 'Delivery date', approveButtonText: 'Save', cancelButtonText: 'Cancel' }"
+        />`
+    }),
+    play: ({ canvasElement }) => openPicker(canvasElement, 'input')
+};
