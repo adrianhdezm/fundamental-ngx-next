@@ -6,7 +6,7 @@
  *
  * It also enforces the copy-paste contract. A component file may import only:
  *   - @angular/*, rxjs, and the npm packages listed in the item's `dependencies`
- *   - @/lib/utils
+ *   - @/lib/<name> when <name> is the item itself or listed in `registryDependencies` (e.g. utils, datetime)
  *   - @/ui/<other>/... when <other> is listed in `registryDependencies`
  *   - relative files of its own folder that are part of the item
  *
@@ -50,9 +50,10 @@ function checkImports(item, file, content) {
     const own = new Set(item.files.map((f) => f.path));
     for (const [, spec] of content.matchAll(/(?:^|\n)\s*(?:import|export)\s[^'"]*?from\s+'([^']+)'/g)) {
         if (BUILTIN.test(spec)) continue;
-        if (spec === '@/lib/utils') {
-            if (item.name !== 'utils' && !(item.registryDependencies ?? []).includes('utils'))
-                errors.push(`${file.path}: imports @/lib/utils without registryDependency "utils"`);
+        const lib = spec.match(/^@\/lib\/([^/]+)$/);
+        if (lib) {
+            if (item.name !== lib[1] && !(item.registryDependencies ?? []).includes(lib[1]))
+                errors.push(`${file.path}: imports ${spec} without registryDependency "${lib[1]}"`);
             continue;
         }
         const ui = spec.match(/^@\/ui\/([^/]+)\//);

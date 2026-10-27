@@ -551,6 +551,19 @@
       "dependencies": ["@angular/cdk"]
     },
     {
+      "name": "calendar",
+      "type": "registry:ui",
+      "title": "Calendar",
+      "description": "Picks a date, several dates, a range or several ranges, with month, year and years range views, special days and a legend, week numbers and disabled dates.",
+      "registryDependencies": ["utils", "theme", "datetime", "button"],
+      "files": [
+        {
+          "path": "registry/ui/calendar/calendar.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "card",
       "type": "registry:ui",
       "title": "Card",
