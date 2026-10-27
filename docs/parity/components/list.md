@@ -1,38 +1,38 @@
 ## list
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/list) · [byline docs](https://sap.github.io/fundamental-ngx/#/core/list-byline) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/list)
-Registry: `registry/ui/list/` — 5 stories, 32 tests.
+Registry: `registry/ui/list/` — 16 stories, 32 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                      | Registry story   | Status     | Notes                                                                                            |
-| ------------------------------------- | ---------------- | ---------- | ------------------------------------------------------------------------------------------------ |
-| Simple list                           | Default          | ✅ covered | Incl. compact and unread                                                                         |
-| Navigation list                       | Navigation       | ✅ covered | navigated, selected, counter                                                                     |
-| Navigation indicator                  | Navigation       | ✅ covered |                                                                                                  |
-| Action list                           | Interactive      | ✅ covered | "Action items"                                                                                   |
-| Filter and sort list                  | —                | ❌ missing | Toolbar + search input, sort buttons, remove button, `noData` item; `noData` appears in no story |
-| Secondary item on list                | Default          | ✅ covered | All secondary types + counter                                                                    |
-| List with icons                       | Default          | ✅ covered |                                                                                                  |
-| Borderless list                       | Default          | ✅ covered |                                                                                                  |
-| Interactive list                      | Interactive      | ✅ covered | Incl. inactive                                                                                   |
-| Complex list                          | Interactive      | 🟡 partial | Group header + footer only in the growing list; no borderless list with two icon groups          |
-| Selection                             | Selection        | 🟡 partial | Multi + compact single; no disabled-checkbox list, no compact multi, no cozy single              |
-| Keyboard support                      | —                | ❌ missing | `focusEscapeList` demo (focus a button before the list on escape)                                |
-| Drag and drop                         | —                | ❌ missing | No dnd component in the registry; blocked                                                        |
-| Infinite scroll list                  | —                | ❌ missing | `registry/ui/infinite-scroll` exists; needs a list + busy indicator story                        |
-| List loading                          | —                | ❌ missing | Skeleton rows toggled by a button (`registry/ui/skeleton` exists)                                |
-| Search Results List                   | —                | ❌ missing | `searchResultsList` / `suggestion` not ported (only title `scope`); needs a decision             |
-| List with Byline                      | Byline           | ✅ covered | No group header inside the byline list                                                           |
-| List with Byline Navigation           | Byline           | ✅ covered |                                                                                                  |
-| Borderless List with Byline           | —                | ❌ missing |                                                                                                  |
-| List Selection with Byline            | —                | ❌ missing | Checkbox and radio byline lists                                                                  |
-| List with Byline, Buttons and Counter | —                | ❌ missing | Buttons only shown in non-byline items                                                           |
-| Wrap List with Byline                 | —                | ❌ missing | `fd-list-byline wrap` never shown                                                                |
-| Interactive List with Byline          | —                | ❌ missing |                                                                                                  |
-| Unread List item                      | Byline / Default | 🟡 partial | Unread items shown, but never with `unreadIndicator` on the list                                 |
-| Skeleton Loading (byline)             | —                | ❌ missing |                                                                                                  |
-| Subline (list-subline page)           | Byline           | ✅ covered |                                                                                                  |
+| Upstream example                      | Registry story                                        | Status     | Notes                                                                                         |
+| ------------------------------------- | ----------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------- |
+| Simple list                           | Default                                               | ✅ covered | Incl. compact and unread                                                                      |
+| Navigation list                       | Navigation                                            | ✅ covered | navigated, selected, counter                                                                  |
+| Navigation indicator                  | Navigation                                            | ✅ covered |                                                                                               |
+| Action list                           | Interactive                                           | ✅ covered | "Action items"                                                                                |
+| Filter and sort list                  | Filter and sort                                       | ✅ covered | Toolbar with search input and sort buttons, remove buttons, `noData` row when nothing matches |
+| Secondary item on list                | Default                                               | ✅ covered | All secondary types + counter                                                                 |
+| List with icons                       | Default                                               | ✅ covered |                                                                                               |
+| Borderless list                       | Default                                               | ✅ covered |                                                                                               |
+| Interactive list                      | Interactive                                           | ✅ covered | Incl. inactive                                                                                |
+| Complex list                          | Complex (borderless, groups and footer) / Interactive | ✅ covered | Borderless list with two icon groups and a footer                                             |
+| Selection                             | Selection                                             | ✅ covered | Multi, multi with disabled checkboxes, compact multi, cozy and compact single                 |
+| Keyboard support                      | Keyboard support                                      | ✅ covered | `focusEscapeList` up focuses a button before the list, which calls `setItemActive(0)`         |
+| Drag and drop                         | —                                                     | ❌ missing | No dnd component in the registry; blocked                                                     |
+| Infinite scroll list                  | Infinite scroll                                       | ✅ covered | `fdInfiniteScroll` list inside a block busy indicator                                         |
+| List loading                          | Loading                                               | ✅ covered | Skeleton rows toggled by a button                                                             |
+| Search Results List                   | —                                                     | ❌ missing | `searchResultsList` / `suggestion` not ported (only title `scope`); needs a decision          |
+| List with Byline                      | Byline                                                | ✅ covered | No group header inside the byline list                                                        |
+| List with Byline Navigation           | Byline                                                | ✅ covered |                                                                                               |
+| Borderless List with Byline           | Byline: borderless                                    | ✅ covered |                                                                                               |
+| List Selection with Byline            | Byline: selection                                     | ✅ covered | Checkbox and radio byline lists                                                               |
+| List with Byline, Buttons and Counter | Byline: buttons and counter                           | ✅ covered |                                                                                               |
+| Wrap List with Byline                 | Byline: wrap                                          | ✅ covered | Wrapping title, byline and two-column byline                                                  |
+| Interactive List with Byline          | Byline: interactive                                   | ✅ covered |                                                                                               |
+| Unread List item                      | Byline: unread / Default                              | ✅ covered | Byline list with `unreadIndicator`                                                            |
+| Skeleton Loading (byline)             | Loading                                               | ✅ covered | Byline skeleton next to the plain one                                                         |
+| Subline (list-subline page)           | Byline                                                | ✅ covered |                                                                                               |
 
 ### Tests vs. upstream specs
 
@@ -56,6 +56,6 @@ Registry-only coverage: Arrow/Home/End/PageUp/PageDown, key manager rebuild, fie
 
 ### Gaps to fill
 
-- **Stories:** "Filter and sort" (toolbar search + sort + remove, `noData` row); "Complex" (borderless, two icon groups, footer); extend "Selection" with disabled checkboxes and compact multi; "Keyboard support" (`focusEscapeList` to a button); "Infinite scroll" (infinite-scroll + busy indicator); "Loading" (skeleton toggle, plain and byline); "Byline: borderless", "Byline: selection" (checkbox + radio), "Byline: buttons and counter", "Byline: wrap", "Byline: interactive", "Byline: unread" (with `unreadIndicator`); "Search results" only if `searchResultsList`/`suggestion` get ported; drag and drop blocked on a dnd component.
+- **Stories:** "Search results" only if `searchResultsList`/`suggestion` get ported; drag and drop blocked on a dnd component.
 - **Tests:** "non-selectable items have no aria-describedby and no selection text"; "setItemActive moves the tab stop"; "clicking an item makes it the tab stop"; "success list message uses the success background"; "merges a user class on list, icon and link".
-- **Effort:** L — about a dozen stories (several with state: filter/sort, infinite scroll, loading) plus a handful of tests.
+- **Effort:** S — a handful of tests.

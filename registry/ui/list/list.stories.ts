@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal, viewChild, type ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { Avatar } from '@/ui/avatar/avatar';
@@ -6,7 +6,12 @@ import { BusyIndicator } from '@/ui/busy-indicator/busy-indicator';
 import { Button } from '@/ui/button/button';
 import { Checkbox } from '@/ui/checkbox/checkbox';
 import { ContentDensityDirective } from '@/ui/content-density/content-density';
+import { Icon } from '@/ui/icon/icon';
+import { InfiniteScroll } from '@/ui/infinite-scroll/infinite-scroll';
+import { InputGroup } from '@/ui/input-group/input-group';
 import { RadioButton } from '@/ui/radio/radio';
+import { Skeleton } from '@/ui/skeleton/skeleton';
+import { Toolbar, ToolbarLabel, ToolbarSpacer } from '@/ui/toolbar/toolbar';
 import {
     List,
     ListByline,
@@ -59,8 +64,204 @@ class GrowingList {
     }
 }
 
+@Component({
+    selector: 'story-list-filter-sort',
+    imports: [List, ListItem, ListTitle, Button, InputGroup, Toolbar, ToolbarLabel, ToolbarSpacer, FormsModule],
+    template: `
+        <div class="max-w-xl">
+            <fd-toolbar ariaLabel="Filter and sort">
+                <label fd-toolbar-label for="list-filter-search">Filter for list elements</label>
+                <fd-toolbar-spacer />
+                <fd-input-group
+                    inputId="list-filter-search"
+                    glyph="decline"
+                    glyphAriaLabel="Clear"
+                    placeholder="Search"
+                    button
+                    [(ngModel)]="term"
+                    (addOnButtonClicked)="term.set('')"
+                />
+                <button
+                    fdButton
+                    glyph="sort-ascending"
+                    ariaLabel="Sort ascending"
+                    title="Sort ascending"
+                    (click)="ascending.set(true)"
+                ></button>
+                <button
+                    fdButton
+                    glyph="sort-descending"
+                    ariaLabel="Sort descending"
+                    title="Sort descending"
+                    (click)="ascending.set(false)"
+                ></button>
+            </fd-toolbar>
+            <ul fd-list aria-label="Fruits">
+                @for (item of shown(); track item) {
+                    <li fd-list-item>
+                        <span fd-list-title>{{ item }}</span>
+                        <button
+                            fdButton
+                            variant="transparent"
+                            glyph="delete"
+                            [ariaLabel]="'Remove ' + item"
+                            title="Remove"
+                            (click)="remove(item)"
+                        ></button>
+                    </li>
+                } @empty {
+                    <li fd-list-item noData><span fd-list-title>No results found!</span></li>
+                }
+            </ul>
+            <p class="m-0 mt-2 text-sap-font-small-size text-sap-content-label-color" aria-live="polite">
+                Sorted {{ ascending() ? 'ascending' : 'descending' }}
+            </p>
+        </div>
+    `
+})
+class FilterSortList {
+    protected readonly term = signal('');
+    protected readonly ascending = signal(true);
+    private readonly items = signal(['Apple', 'Banana', 'Orange', 'Pineapple', 'Strawberry']);
+    protected readonly shown = computed(() => {
+        const term = this.term().toLocaleLowerCase();
+        const sign = this.ascending() ? 1 : -1;
+        return this.items()
+            .filter((item) => item.toLocaleLowerCase().includes(term))
+            .sort((a, b) => a.localeCompare(b) * sign);
+    });
+    protected remove(item: string): void {
+        this.items.update((items) => items.filter((i) => i !== item));
+    }
+}
+
+@Component({
+    selector: 'story-list-keyboard',
+    imports: [List, ListItem, ListTitle, Button],
+    template: `
+        <div class="flex max-w-md flex-col items-start gap-4">
+            <button
+                #before
+                fdButton
+                label="Focused when the focus leaves the list upwards"
+                (click)="list().setItemActive(0)"
+            ></button>
+            <ul fd-list aria-label="Keyboard support" (focusEscapeList)="escaped($event)">
+                @for (i of [1, 2, 3, 4]; track i) {
+                    <li fd-list-item>
+                        <span fd-list-title>List item {{ i }}</span>
+                    </li>
+                }
+            </ul>
+            <p class="m-0 text-sap-font-small-size text-sap-content-label-color" aria-live="polite">{{ message() }}</p>
+        </div>
+    `
+})
+class KeyboardList {
+    protected readonly list = viewChild.required(List);
+    private readonly before = viewChild.required<ElementRef<HTMLElement>>('before');
+    protected readonly message = signal(
+        'Arrow Up on the first item focuses the button; the button focuses the first item.'
+    );
+    protected escaped(direction: 'up' | 'down'): void {
+        if (direction === 'up') this.before().nativeElement.focus();
+        else this.message.set('End of list reached');
+    }
+}
+
+@Component({
+    selector: 'story-list-infinite',
+    imports: [List, ListItem, ListTitle, BusyIndicator, InfiniteScroll],
+    template: `
+        <fd-busy-indicator size="l" block [loading]="loading()" ariaLabel="Loading" class="max-w-md">
+            <ul
+                fd-list
+                fdInfiniteScroll
+                [scrollOffset]="40"
+                (onScrollAction)="more()"
+                aria-label="Infinite scroll"
+                class="scrollbar-sap block max-h-[15.625rem] overflow-y-scroll"
+            >
+                @for (item of items(); track $index) {
+                    <li fd-list-item>
+                        <span fd-list-title>{{ item }}</span>
+                    </li>
+                }
+            </ul>
+        </fd-busy-indicator>
+    `
+})
+class InfiniteList {
+    protected readonly items = signal<string[]>(Array.from({ length: 10 }, () => 'Initially shown item'));
+    protected readonly loading = signal(false);
+    protected more(): void {
+        if (this.loading()) return;
+        this.loading.set(true);
+        setTimeout(() => {
+            this.items.update((items) => [
+                ...items,
+                ...Array.from({ length: 5 }, (_, i) => `Element ${items.length + i}`)
+            ]);
+            this.loading.set(false);
+        }, 1000);
+    }
+}
+
+@Component({
+    selector: 'story-list-loading',
+    imports: [List, ListItem, ListTitle, ListContent, ListByline, ListThumbnail, Button, Icon, Skeleton],
+    template: `
+        <button
+            fdButton
+            class="mb-4"
+            [label]="loading() ? 'Show items' : 'Show loading'"
+            (click)="loading.set(!loading())"
+        ></button>
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <ul fd-list aria-label="Loading list" [attr.aria-busy]="loading() || null">
+                @for (i of [1, 2, 3]; track i) {
+                    <li fd-list-item>
+                        @if (loading()) {
+                            <fd-skeleton type="text" width="40%" [textLines]="1" class="my-auto" />
+                        } @else {
+                            <span fd-list-title>List item {{ i }}</span>
+                        }
+                    </li>
+                }
+            </ul>
+            <ul fd-list byline aria-label="Loading byline list" [attr.aria-busy]="loading() || null">
+                @for (i of [1, 2, 3]; track i) {
+                    <li fd-list-item>
+                        @if (loading()) {
+                            <fd-skeleton width="100%" height="48px" class="my-auto">
+                                <svg:rect x="0" y="0" width="48" height="48" rx="4" />
+                                <svg:rect x="60" y="0" width="40%" height="12" rx="4" />
+                                <svg:rect x="60" y="20" width="30%" height="8" rx="4" />
+                            </fd-skeleton>
+                        } @else {
+                            <span fd-list-thumbnail><fd-icon glyph="activate" /></span>
+                            <div fd-list-content>
+                                <div fd-list-title>Title {{ i }}</div>
+                                <div fd-list-byline>Byline text</div>
+                            </div>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+    `
+})
+class LoadingList {
+    protected readonly loading = signal(true);
+}
+
 const IMPORTS = [
     GrowingList,
+    FilterSortList,
+    KeyboardList,
+    InfiniteList,
+    LoadingList,
+    Icon,
     List,
     ListItem,
     ListTitle,
@@ -222,7 +423,18 @@ export const Selection: Story = {
                 { label: 'Item 2', selected: false },
                 { label: 'Item 3', selected: false }
             ],
-            single: 'radio2'
+            disabled: [
+                { label: 'Item 1', selected: true },
+                { label: 'Item 2', selected: false },
+                { label: 'Item 3', selected: true }
+            ],
+            compact: [
+                { label: 'Item 1', selected: false },
+                { label: 'Item 2', selected: true },
+                { label: 'Item 3', selected: false }
+            ],
+            single: 'radio2',
+            singleCompact: 'radio1'
         },
         template: `
             <div class="${grid}">
@@ -238,16 +450,50 @@ export const Selection: Story = {
                     </ul>
                 </section>
                 <section>
-                    <h3 class="${heading}">Single selection (compact)</h3>
-                    <ul fd-list selection fdCompact role="listbox" aria-label="Single selection">
+                    <h3 class="${heading}">Multi selection with disabled checkboxes</h3>
+                    <ul fd-list selection role="listbox" aria-multiselectable="true" aria-label="Multi selection, disabled">
+                        @for (item of disabled; track item.label) {
+                            <li fd-list-item aria-disabled="true">
+                                <fd-checkbox [(ngModel)]="item.selected" disabled [ariaLabel]="item.label" />
+                                <span fd-list-title>{{ item.label }}</span>
+                            </li>
+                        }
+                    </ul>
+                </section>
+                <section>
+                    <h3 class="${heading}">Multi selection (compact)</h3>
+                    <ul fd-list selection fdCompact role="listbox" aria-multiselectable="true" aria-label="Compact multi selection">
+                        @for (item of compact; track item.label) {
+                            <li fd-list-item>
+                                <fd-checkbox [(ngModel)]="item.selected" [ariaLabel]="item.label" />
+                                <span fd-list-title>{{ item.label }}</span>
+                            </li>
+                        }
+                    </ul>
+                </section>
+                <section>
+                    <h3 class="${heading}">Single selection</h3>
+                    <ul fd-list selection role="listbox" aria-label="Single selection">
                         @for (v of ['radio1', 'radio2', 'radio3']; track v) {
                             <li fd-list-item>
-                                <fd-radio-button name="list-radio" [value]="v" [(ngModel)]="single" [ariaLabel]="v" />
+                                <fd-radio-button name="list-radio-cozy" [value]="v" [(ngModel)]="single" [ariaLabel]="v" />
                                 <span fd-list-title>{{ v }}</span>
                             </li>
                         }
                     </ul>
                     <p class="m-0 mt-2 text-sap-font-small-size text-sap-content-label-color">Selected: {{ single }}</p>
+                </section>
+                <section>
+                    <h3 class="${heading}">Single selection (compact)</h3>
+                    <ul fd-list selection fdCompact role="listbox" aria-label="Compact single selection">
+                        @for (v of ['radio1', 'radio2', 'radio3']; track v) {
+                            <li fd-list-item>
+                                <fd-radio-button name="list-radio" [value]="v" [(ngModel)]="singleCompact" [ariaLabel]="v" />
+                                <span fd-list-title>{{ v }}</span>
+                            </li>
+                        }
+                    </ul>
+                    <p class="m-0 mt-2 text-sap-font-small-size text-sap-content-label-color">Selected: {{ singleCompact }}</p>
                 </section>
             </div>`
     })
@@ -337,5 +583,216 @@ export const Byline: Story = {
                     </ul>
                 </section>
             </div>`
+    })
+};
+
+export const FilterSort: Story = {
+    name: 'Filter and sort',
+    render: () => ({ template: `<story-list-filter-sort />` })
+};
+
+export const Complex: Story = {
+    name: 'Complex (borderless, groups and footer)',
+    render: () => ({
+        template: `
+            <ul fd-list noBorder aria-label="Complex list" class="max-w-xl">
+                <li fd-list-group-header><span fd-list-title>Group Header 1</span></li>
+                <li fd-list-item><i fd-list-icon glyph="cart"></i><span fd-list-title>List item 1</span></li>
+                <li fd-list-item><i fd-list-icon glyph="wrench"></i><span fd-list-title>List item 2</span></li>
+                <li fd-list-item><i fd-list-icon glyph="lightbulb"></i><span fd-list-title>List item 3</span></li>
+                <li fd-list-item><i fd-list-icon glyph="history"></i><span fd-list-title>List item 4</span></li>
+                <li fd-list-group-header><span fd-list-title>Group Header 2</span></li>
+                <li fd-list-item><i fd-list-icon glyph="cart"></i><span fd-list-title>List item 5</span></li>
+                <li fd-list-item><i fd-list-icon glyph="wrench"></i><span fd-list-title>List item 6</span></li>
+                <li fd-list-item><i fd-list-icon glyph="lightbulb"></i><span fd-list-title>List item 7</span></li>
+                <li fd-list-item><i fd-list-icon glyph="history"></i><span fd-list-title>List item 8</span></li>
+                <li fd-list-footer>Footer text</li>
+            </ul>`
+    })
+};
+
+export const KeyboardSupport: Story = {
+    name: 'Keyboard support',
+    render: () => ({ template: `<story-list-keyboard />` })
+};
+
+export const InfiniteScrollList: Story = {
+    name: 'Infinite scroll',
+    render: () => ({ template: `<story-list-infinite />` })
+};
+
+export const Loading: Story = {
+    render: () => ({ template: `<story-list-loading />` })
+};
+
+const longText =
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ut laoreet lorem. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Aenean sagittis aliquam justo et suscipit.';
+
+export const BylineBorderless: Story = {
+    name: 'Byline: borderless',
+    render: () => ({
+        template: `
+            <ul fd-list byline noBorder aria-label="Borderless byline" class="max-w-xl">
+                <li fd-list-item>
+                    <span fd-list-thumbnail><fd-icon glyph="activate" /></span>
+                    <div fd-list-content><div fd-list-title>Title</div><div fd-list-byline>Byline Text</div></div>
+                </li>
+                <li fd-list-item>
+                    <span fd-list-thumbnail><fd-icon glyph="employee" /></span>
+                    <div fd-list-content><div fd-list-title>List item with no byline</div></div>
+                </li>
+                <li fd-list-item>
+                    <span fd-list-thumbnail><fd-icon glyph="calendar" /></span>
+                    <div fd-list-content>
+                        <div fd-list-title>List Item With Two-Column Byline</div>
+                        <div fd-list-byline twoCol>
+                            <div fd-list-byline-left>First text item in Byline (Standard text item)</div>
+                            <div fd-list-byline-right>Second text item in Byline (Can be semantic (Status) or not)</div>
+                        </div>
+                    </div>
+                </li>
+            </ul>`
+    })
+};
+
+export const BylineSelection: Story = {
+    name: 'Byline: selection',
+    render: () => ({
+        props: {
+            items: [
+                { title: 'Title 1', byline: 'Byline 1', glyph: 'calendar', selected: false },
+                { title: 'Title 2', byline: 'Byline 2', glyph: 'activate', selected: true },
+                { title: 'Title 3', byline: 'Byline 3', glyph: 'employee', selected: false }
+            ],
+            single: 'radio1'
+        },
+        template: `
+            <div class="${grid}">
+                <section>
+                    <h3 class="${heading}">With checkboxes</h3>
+                    <ul fd-list byline selection role="listbox" aria-multiselectable="true" aria-label="Byline with checkboxes">
+                        @for (item of items; track item.title) {
+                            <li fd-list-item>
+                                <fd-checkbox [(ngModel)]="item.selected" [ariaLabel]="item.title" />
+                                <span fd-list-thumbnail><fd-icon [glyph]="item.glyph" /></span>
+                                <div fd-list-content><div fd-list-title>{{ item.title }}</div><div fd-list-byline>{{ item.byline }}</div></div>
+                            </li>
+                        }
+                    </ul>
+                </section>
+                <section>
+                    <h3 class="${heading}">With radio buttons</h3>
+                    <ul fd-list byline selection role="listbox" aria-label="Byline with radio buttons">
+                        @for (item of items; track item.title; let i = $index) {
+                            <li fd-list-item>
+                                <fd-radio-button name="list-byline-radio" [value]="'radio' + (i + 1)" [(ngModel)]="single" [ariaLabel]="item.title" />
+                                <span fd-list-thumbnail><fd-icon [glyph]="item.glyph" /></span>
+                                <div fd-list-content><div fd-list-title>{{ item.title }}</div><div fd-list-byline>{{ item.byline }}</div></div>
+                            </li>
+                        }
+                    </ul>
+                </section>
+            </div>`
+    })
+};
+
+export const BylineButtons: Story = {
+    name: 'Byline: buttons and counter',
+    render: () => ({
+        template: `
+            <ul fd-list byline aria-label="Byline with buttons" class="max-w-xl">
+                <li fd-list-item>
+                    <span fd-list-thumbnail><fd-icon glyph="activate" /></span>
+                    <div fd-list-content><div fd-list-title>Title</div><div fd-list-byline>Byline Text</div></div>
+                    <button fdButton variant="transparent" glyph="edit" ariaLabel="Edit" title="Edit"></button>
+                    <button fdButton variant="transparent" glyph="decline" ariaLabel="Decline" title="Decline"></button>
+                </li>
+                <li fd-list-item [counter]="132441">
+                    <span fd-list-thumbnail><fd-icon glyph="activate" /></span>
+                    <div fd-list-content><div fd-list-title>Byline list with counter</div><div fd-list-byline>Byline Text</div></div>
+                </li>
+            </ul>`
+    })
+};
+
+export const BylineWrap: Story = {
+    name: 'Byline: wrap',
+    render: () => ({
+        props: { longText },
+        template: `
+            <ul fd-list byline aria-label="Wrapping byline" class="max-w-xl">
+                <li fd-list-item>
+                    <span fd-list-thumbnail><fd-icon glyph="activate" /></span>
+                    <div fd-list-content>
+                        <div fd-list-title wrap>Long Title - {{ longText }}</div>
+                        <div fd-list-byline wrap>Long byline text - {{ longText }}</div>
+                    </div>
+                </li>
+                <li fd-list-item>
+                    <span fd-list-thumbnail><fd-icon glyph="activate" /></span>
+                    <div fd-list-content>
+                        <div fd-list-title wrap>Long Title - {{ longText }}</div>
+                        <div fd-list-byline twoCol>
+                            <div fd-list-byline-left wrap>Long First Column - {{ longText }}</div>
+                            <div fd-list-byline-right wrap>Long Second Column - {{ longText }}</div>
+                        </div>
+                    </div>
+                </li>
+            </ul>`
+    })
+};
+
+export const BylineInteractive: Story = {
+    name: 'Byline: interactive',
+    render: () => ({
+        template: `
+            <ul fd-list byline aria-label="Interactive byline" class="max-w-xl">
+                <li fd-list-item interactive>
+                    <span fd-list-thumbnail><fd-icon glyph="activate" /></span>
+                    <div fd-list-content><div fd-list-title>Title</div><div fd-list-byline>Byline Text</div></div>
+                </li>
+                <li fd-list-item interactive>
+                    <span fd-list-thumbnail><fd-icon glyph="employee" /></span>
+                    <div fd-list-content><div fd-list-title>Title</div><div fd-list-byline>Byline Text</div></div>
+                </li>
+                <li fd-list-item interactive selected>
+                    <span fd-list-thumbnail><fd-icon glyph="calendar" /></span>
+                    <div fd-list-content><div fd-list-title>Title (selected)</div><div fd-list-byline>Byline Text</div></div>
+                </li>
+                <li fd-list-item interactive selected>
+                    <span fd-list-thumbnail><fd-icon glyph="activate" /></span>
+                    <div fd-list-content><div fd-list-title>Title (selected)</div><div fd-list-byline>Byline Text</div></div>
+                </li>
+            </ul>`
+    })
+};
+
+export const BylineUnread: Story = {
+    name: 'Byline: unread',
+    render: () => ({
+        template: `
+            <ul fd-list byline unreadIndicator aria-label="Unread byline" class="max-w-xl">
+                <li fd-list-item unread aria-description="unread">
+                    <span fd-list-thumbnail><fd-icon glyph="activate" /></span>
+                    <div fd-list-content><div fd-list-title>Title</div><div fd-list-byline>Byline Text</div></div>
+                </li>
+                <li fd-list-item>
+                    <span fd-list-thumbnail><fd-icon glyph="employee" /></span>
+                    <div fd-list-content><div fd-list-title>List item with no byline</div></div>
+                </li>
+                <li fd-list-item unread aria-description="unread">
+                    <span fd-list-thumbnail><fd-icon glyph="calendar" /></span>
+                    <div fd-list-content>
+                        <div fd-list-title>List Item With Two-Column Byline</div>
+                        <div fd-list-byline twoCol>
+                            <div fd-list-byline-left>First text item in Byline (Standard text item)</div>
+                            <div fd-list-byline-right>Second text item in Byline (Can be semantic (Status) or not)</div>
+                        </div>
+                    </div>
+                </li>
+                <li fd-list-item>
+                    <div fd-list-content><div fd-list-title>Text-Only List Item</div><div fd-list-byline>Byline Text (description)</div></div>
+                </li>
+            </ul>`
     })
 };
