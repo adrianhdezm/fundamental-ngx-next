@@ -210,8 +210,66 @@ describe('UploadCollection', () => {
         expect(titles()[0]).toBe('<b>bold</b>.pdf');
         expect((window as { __ucXss?: boolean }).__ucXss).toBeUndefined();
     });
-
     describe('buttons, layout and selection', () => {
+        const labels = () =>
+            [...document.querySelectorAll<HTMLButtonElement>('fd-upload-collection-button-group button')].map(
+                (b) => b.getAttribute('aria-label') ?? b.textContent!.trim()
+            );
+
+        it('hides the buttons with allowFileNameEdit and allowFileDeletion', async () => {
+            const { fixture, host } = await setupConfig();
+            expect(labels()).toEqual(['Edit', 'Delete']);
+            host.allowDelete.set(false);
+            await fixture.whenStable();
+            expect(labels()).toEqual(['Edit']);
+            host.allowEdit.set(false);
+            await fixture.whenStable();
+            expect(labels()).toEqual([]);
+            fixture.destroy();
+        });
+
+        it('disables the buttons with disableFileNameEdit and disableFileDeletion', async () => {
+            const { fixture } = await setupConfig((h) => {
+                h.disableEdit.set(true);
+                h.disableDelete.set(true);
+            });
+            expect(button('Edit').disabled).toBe(true);
+            expect(button('Delete').disabled).toBe(true);
+            await userEvent.click(button('Edit'), { force: true });
+            await fixture.whenStable();
+            expect(document.querySelector('fd-upload-collection-form-item input')).toBeNull();
+            fixture.destroy();
+        });
+
+        it('discards a rename with Cancel', async () => {
+            const { fixture } = await setup();
+            await userEvent.click(button('Edit'));
+            await fixture.whenStable();
+            await userEvent.type(
+                document.querySelector<HTMLInputElement>('fd-upload-collection-form-item input')!,
+                'x'
+            );
+            await userEvent.click(button('Cancel'));
+            await wait();
+            expect(fixture.componentInstance.files()[0].name).toBe('Report');
+            expect(titles()[0]).toBe('Report.pdf');
+            expect(document.querySelector('fd-upload-collection-form-item input')).toBeNull();
+            expect(document.activeElement).toBe(button('Edit'));
+            fixture.destroy();
+        });
+
+        it('works as a form control', async () => {
+            const { fixture, host } = await setupConfig((h) => (h.draft = 'Draft'));
+            await userEvent.click(button('Edit'));
+            await fixture.whenStable();
+            const field = document.querySelector<HTMLInputElement>('fd-upload-collection-form-item input')!;
+            await userEvent.clear(field);
+            await userEvent.type(field, 'Summary');
+            await fixture.whenStable();
+            expect(host.draft).toBe('Summary');
+            fixture.destroy();
+        });
+
         it('wraps the buttons below the file in small mode', async () => {
             const { fixture, host, root } = await setupConfig();
             const group = root.querySelector<HTMLElement>('fd-upload-collection-button-group')!;
@@ -224,6 +282,20 @@ describe('UploadCollection', () => {
             expect(group.getBoundingClientRect().width).toBeGreaterThan(400);
             // the file keeps its line, even without a thumbnail
             expect(content.getBoundingClientRect().width).toBeGreaterThan(400);
+            fixture.destroy();
+        });
+
+        it('marks items as selected with selection', async () => {
+            const { fixture, root } = await setupConfig((h) => h.selection.set(true));
+            const item = root.querySelector<HTMLElement>('[fd-upload-collection-item]')!;
+            const description = () =>
+                document.getElementById(item.getAttribute('aria-describedby')!)!.textContent!.trim();
+            expect(item.hasAttribute('data-selected')).toBe(false);
+            expect(description()).toBe('Not selected');
+            await userEvent.click(root.querySelector<HTMLElement>('fd-checkbox')!);
+            await fixture.whenStable();
+            expect(item.hasAttribute('data-selected')).toBe(true);
+            expect(description()).toBe('Selected');
             fixture.destroy();
         });
     });
