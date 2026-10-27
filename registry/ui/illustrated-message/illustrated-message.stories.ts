@@ -135,7 +135,10 @@ type Story = StoryObj<IllustratedMessage>;
 
 const props = { noMail: NO_MAIL, unableToLoad: UNABLE_TO_LOAD };
 
-export const Scene: Story = { name: 'Scene', render: () => ({ props, template: message('scene') }) };
+export const Scene: Story = {
+    name: 'Scene',
+    render: () => ({ props, template: message('scene', 'noMail', 'No mail', 'svgAriaLabel="Empty mailbox"') })
+};
 export const Dialog: Story = {
     name: 'Dialog',
     render: () => ({ props, template: message('dialog', 'unableToLoad', 'Unable to load data') })

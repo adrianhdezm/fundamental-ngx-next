@@ -7,7 +7,7 @@ Registry: `registry/ui/illustrated-message/` — 8 stories, 3 tests.
 
 | Upstream example | Registry story                                          | Status     | Notes                                                                                                                                                            |
 | ---------------- | ------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Large            | `Scene`                                                 | ✅ covered | Upstream sets `svgAriaLabel` on it; ours stays decorative (minor).                                                                                               |
+| Large            | `Scene`                                                 | ✅ covered | Labelled with `svgAriaLabel` like upstream.                                                                                                                      |
 | Medium           | `Dialog`; `InDialog` ("In a dialog"); Open: in a dialog | ✅ covered | Inline medium message, and upstream's dialog opened by a button (title `h2` under the dialog's `h1` for axe heading-order); the Open story opens it in `play()`. |
 | Small            | `Spot`                                                  | ✅ covered | Upstream places it in cards; cosmetic difference.                                                                                                                |
 | Extra Small      | `Dot`                                                   | ✅ covered | Same, upstream uses a card.                                                                                                                                      |
@@ -32,6 +32,5 @@ Registry-only coverage: none beyond upstream (all three tests map to upstream be
 
 ### Gaps to fill
 
-- **Stories:** optionally show `svgAriaLabel` on `Scene`.
 - **Tests:** "noSvg renders the text without an illustration"; "type base renders text only"; "a message created while hidden picks its size once it becomes visible".
 - **Effort:** S, three small tests and one dialog story.
