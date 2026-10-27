@@ -1,7 +1,7 @@
 ## list
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/list) · [byline docs](https://sap.github.io/fundamental-ngx/#/core/list-byline) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/list)
-Registry: `registry/ui/list/` — 16 stories, 32 tests.
+Registry: `registry/ui/list/` — 16 stories, 37 tests.
 
 ### Stories vs. upstream examples
 
@@ -36,26 +36,26 @@ Registry: `registry/ui/list/` — 16 stories, 32 tests.
 
 ### Tests vs. upstream specs
 
-| Upstream behaviour                                                                                                          | Registry test                                                | Status     | Notes                                                                 |
-| --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ---------- | --------------------------------------------------------------------- |
-| should create (all parts)                                                                                                   | —                                                            | ➖ n/a     |                                                                       |
-| Directive host classes (byline left/right, content, thumbnail, footer, group header, secondary, title-text, list/item base) | content › \*                                                 | ➖ n/a     | Class-only upstream; layout outcomes covered by our content tests     |
-| Additional user `class` (list, icon, link)                                                                                  | —                                                            | ❌ missing | `userClass` alias exists on every part                                |
-| Title / subline truncate and wrap                                                                                           | titles truncate by default and wrap in a wrap list           | ✅ covered | `truncate` deprecated (default); subline truncation not asserted      |
-| Item link / button modifiers                                                                                                | navigation items › _, action items › _                       | ✅ covered |                                                                       |
-| Link item keyboard handling                                                                                                 | the link fills the item and is opened with Enter on the item | ✅ covered |                                                                       |
-| Non-selectable items: no sr-only span, no `aria-describedby`                                                                | —                                                            | ❌ missing |                                                                       |
-| Selection mode sr-only Selected / Not selected, updates on click                                                            | describes the selection state for screen readers             | ✅ covered | Also custom labels                                                    |
-| List message + success type                                                                                                 | the message sits above the items…                            | 🟡 partial | Error type only                                                       |
-| ListNavigationItem (expandable)                                                                                             | —                                                            | ➖ n/a     | Ported in `vertical-navigation`, not in list                          |
-| List modifiers: unread indicator, byline                                                                                    | unread items have a bold title…, byline items show…          | ✅ covered |                                                                       |
-| Notification modifier                                                                                                       | —                                                            | ➖ n/a     | Not in our List API                                                   |
-| Roving tabindex: first item default, `setItemActive`, click moves it                                                        | has one tab stop…                                            | 🟡 partial | Default + focus covered; `setItemActive()` and click-to-move untested |
+| Upstream behaviour                                                                                                          | Registry test                                                                              | Status     | Notes                                                             |
+| --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------- | ----------------------------------------------------------------- |
+| should create (all parts)                                                                                                   | —                                                                                          | ➖ n/a     |                                                                   |
+| Directive host classes (byline left/right, content, thumbnail, footer, group header, secondary, title-text, list/item base) | content › \*                                                                               | ➖ n/a     | Class-only upstream; layout outcomes covered by our content tests |
+| Additional user `class` (list, icon, link)                                                                                  | merges a user class on the list, icon and link                                             | ✅ covered |                                                                   |
+| Title / subline truncate and wrap                                                                                           | titles truncate by default and wrap in a wrap list                                         | ✅ covered | `truncate` deprecated (default); subline truncation not asserted  |
+| Item link / button modifiers                                                                                                | navigation items › _, action items › _                                                     | ✅ covered |                                                                   |
+| Link item keyboard handling                                                                                                 | the link fills the item and is opened with Enter on the item                               | ✅ covered |                                                                   |
+| Non-selectable items: no sr-only span, no `aria-describedby`                                                                | items of a list without selection have no aria-describedby and no selection text           | ✅ covered |                                                                   |
+| Selection mode sr-only Selected / Not selected, updates on click                                                            | describes the selection state for screen readers                                           | ✅ covered | Also custom labels                                                |
+| List message + success type                                                                                                 | the message sits above the items…; a success message uses the success background           | ✅ covered | Error and success types                                           |
+| ListNavigationItem (expandable)                                                                                             | —                                                                                          | ➖ n/a     | Ported in `vertical-navigation`, not in list                      |
+| List modifiers: unread indicator, byline                                                                                    | unread items have a bold title…, byline items show…                                        | ✅ covered |                                                                   |
+| Notification modifier                                                                                                       | —                                                                                          | ➖ n/a     | Not in our List API                                               |
+| Roving tabindex: first item default, `setItemActive`, click moves it                                                        | has one tab stop…; setItemActive focuses the item…; clicking an item makes it the tab stop | ✅ covered |                                                                   |
 
 Registry-only coverage: Arrow/Home/End/PageUp/PageDown, key manager rebuild, fields inside items, `keyboardSupport=false`, `selectedChange`, inactive/preventClick, growing item, radio selection, density, HC action items.
 
 ### Gaps to fill
 
 - **Stories:** "Search results" only if `searchResultsList`/`suggestion` get ported; drag and drop blocked on a dnd component.
-- **Tests:** "non-selectable items have no aria-describedby and no selection text"; "setItemActive moves the tab stop"; "clicking an item makes it the tab stop"; "success list message uses the success background"; "merges a user class on list, icon and link".
-- **Effort:** S — a handful of tests.
+- **Tests:** none left.
+- **Effort:** none left (search results and drag and drop are blocked).
