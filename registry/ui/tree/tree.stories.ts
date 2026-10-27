@@ -3,6 +3,7 @@ import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { Observable, delay, of } from 'rxjs';
+import { Avatar } from '@/ui/avatar/avatar';
 import { Button } from '@/ui/button/button';
 import { Checkbox } from '@/ui/checkbox/checkbox';
 import { Icon } from '@/ui/icon/icon';
@@ -122,6 +123,64 @@ const products = (): Partial<TreeItemData<Product>>[] => {
 })
 class StoryTreeBasic {
     protected readonly items = products() as Partial<TreeItemData<Product>>[];
+}
+
+@Component({
+    selector: 'story-tree-customization',
+    imports: [...PARTS, Avatar, Button],
+    template: `
+        <fd-tree ariaLabel="Customized items" class="max-w-lg">
+            <fd-tree-item>
+                <fd-icon fdTreeItemIcon glyph="account" />
+                <span fdTreeItemText>Item 1 (Level 1)</span>
+            </fd-tree-item>
+            <fd-tree-item wrapContent>
+                <fd-icon fdTreeItemIcon glyph="e-care" />
+                <span fdTreeItemText>Item 2 with a long description that wraps to the next line (Level 1)</span>
+                <fd-tree-item>
+                    <span fdTreeItemText>Item 1 (Level 2)</span>
+                    <fd-tree-item>
+                        <span fdTreeItemText>Item 1 (Level 3)</span>
+                        <fd-tree-item>
+                            <span fdTreeItemText>Item 1 (Level 4)</span>
+                            <fd-tree-item><span fdTreeItemText>Item 1 (Level 5)</span></fd-tree-item>
+                        </fd-tree-item>
+                    </fd-tree-item>
+                </fd-tree-item>
+                <fd-tree-item><span fdTreeItemText>Item 2 (Level 2)</span></fd-tree-item>
+            </fd-tree-item>
+            <!-- backgroundColor: any CSS colour, here a theme token -->
+            <fd-tree-item backgroundColor="var(--sapList_HoverBackground)" wrapContent>
+                <div fdTreeItemText class="flex items-center gap-4 py-4">
+                    <fd-avatar size="s" circle glyph="product" [colorAccent]="1" />
+                    <span>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestias eum iste perspiciatis
+                        reprehenderit! Tempora provident excepturi officiis iste! Iusto architecto libero adipisci cum
+                        quaerat sed velit, voluptatibus a et recusandae.
+                    </span>
+                </div>
+            </fd-tree-item>
+            <!-- customStyles: a style object for the row -->
+            <fd-tree-item [customStyles]="customStyles">
+                <div fdTreeItemText class="flex items-center gap-4">
+                    <fd-avatar size="s" glyph="product" [colorAccent]="9" />
+                    <span class="flex-1">Product name catalog</span>
+                    <button fdButton variant="transparent" glyph="overflow" ariaLabel="More" title="More"></button>
+                </div>
+            </fd-tree-item>
+            <!-- class: classes added to the row -->
+            <fd-tree-item class="bg-sap-list-group-header-background">
+                <fd-icon fdTreeItemIcon glyph="phone" />
+                <span fdTreeItemText>Item 5 (Level 1), with a custom class</span>
+            </fd-tree-item>
+        </fd-tree>
+    `
+})
+class StoryTreeCustomization {
+    protected readonly customStyles = {
+        background: 'var(--sapInformationBackgroundColor)',
+        paddingBlock: '1rem'
+    };
 }
 
 @Component({
@@ -291,7 +350,11 @@ class StoryTreeLazy {
 const meta: Meta<Tree> = {
     title: 'Components/Tree',
     component: Tree,
-    decorators: [moduleMetadata({ imports: [StoryTreeBasic, StoryTreeStates, StoryTreeSelection, StoryTreeLazy] })],
+    decorators: [
+        moduleMetadata({
+            imports: [StoryTreeBasic, StoryTreeCustomization, StoryTreeStates, StoryTreeSelection, StoryTreeLazy]
+        })
+    ],
     parameters: {
         docs: {
             description: {
@@ -306,6 +369,7 @@ export default meta;
 type Story = StoryObj<Tree>;
 
 export const Basic: Story = { render: () => ({ template: `<story-tree-basic />` }) };
+export const Customization: Story = { render: () => ({ template: `<story-tree-customization />` }) };
 export const States: Story = {
     name: 'Navigation, highlights and buttons',
     render: () => ({ template: `<story-tree-states />` })
