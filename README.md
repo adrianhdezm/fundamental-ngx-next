@@ -25,7 +25,6 @@ scripts/
   generate-tokens.mjs     regenerates styles/ and the icon glyph map from theming-base-content
   build-registry.mjs      builds public/r/*.json and checks each component's imports
   check-styles.mjs        compiles every class and flags unknown SAP tokens / broken var() names
-  check-cn.mjs            cn() merge rules for SAP token utilities
 docs/                     Storybook introduction and foundations pages
 ```
 
@@ -38,7 +37,7 @@ Playwright and Chromium of the dev dependencies (`pnpm exec playwright install c
 pnpm install
 pnpm storybook          # http://localhost:6006
 pnpm build-storybook    # dist/storybook, including the registry under /r
-pnpm check              # typecheck (strict templates), style, cn() and registry checks, tests, a11y
+pnpm check              # typecheck (strict templates), style and registry checks, tests, a11y
 pnpm test               # component tests in Chromium (Vitest browser mode); specs next to each component
 pnpm test:a11y          # every story rendered by Vitest and checked with axe, in Horizon and Horizon HC Black
 pnpm tokens             # regenerate the theme layer after bumping theming-base-content
