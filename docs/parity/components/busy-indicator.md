@@ -1,17 +1,17 @@
 ## busy-indicator
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/busy-indicator) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/busy-indicator)
-Registry: `registry/ui/busy-indicator/` — 7 stories, 6 tests.
+Registry: `registry/ui/busy-indicator/` — 8 stories, 6 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                  | Registry story                          | Status     | Notes                                                                              |
-| --------------------------------- | --------------------------------------- | ---------- | ---------------------------------------------------------------------------------- |
-| Default Busy Indicator            | Basic, Playground                       | ✅ covered |                                                                                    |
-| Busy Indicator sizes              | Sizes                                   | ✅ covered | s, m, l                                                                            |
-| Busy Indicator with label         | Extended ("With label (extended)")      | ✅ covered | `fdBusyIndicatorExtended` with a label                                             |
-| Busy Indicator with message toast | WithMessageToast ("With message toast") | ✅ covered | Extended busy indicator in a message toast opened from a template, with "Hide all" |
-| Busy Indicator as wrapper         | Wrapper ("As a wrapper")                | ✅ covered | Block and inline wrappers with a loading toggle                                    |
+| Upstream example                  | Registry story                                            | Status     | Notes                                                                                                                        |
+| --------------------------------- | --------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Default Busy Indicator            | Basic, Playground                                         | ✅ covered |                                                                                                                              |
+| Busy Indicator sizes              | Sizes                                                     | ✅ covered | s, m, l                                                                                                                      |
+| Busy Indicator with label         | Extended ("With label (extended)")                        | ✅ covered | `fdBusyIndicatorExtended` with a label                                                                                       |
+| Busy Indicator with message toast | WithMessageToast ("With message toast"), OpenMessageToast | ✅ covered | Extended busy indicator in a message toast opened from a template, with "Hide all"; "Open: message toast" opens it in `play` |
+| Busy Indicator as wrapper         | Wrapper ("As a wrapper")                                  | ✅ covered | Block and inline wrappers with a loading toggle                                                                              |
 
 ### Tests vs. upstream specs
 
@@ -37,6 +37,5 @@ Registry-only coverage: block mode makes the content inert and keeps focus on th
 
 ### Gaps to fill
 
-- **Stories:** "Open: message toast" whose `play` clicks the button.
 - **Tests:** "is inline-block by default"; "uses a custom ariaValueText while loading"; "sets aria-live assertive and off"; "stops blocking wheel events when preventWheelEvents turns off"; "removes the wheel listener on destroy".
 - **Effort:** S, small attribute tests and one toast story.

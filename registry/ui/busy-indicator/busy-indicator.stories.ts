@@ -1,5 +1,6 @@
 import { Component, TemplateRef, inject, signal } from '@angular/core';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
 import { FormControl } from '@/ui/input/input';
 import { MessageToastService } from '@/ui/message-toast/message-toast';
@@ -132,4 +133,14 @@ export const WithMessageToast: Story = {
         }
     },
     render: () => ({ template: `<story-busy-indicator-toast />` })
+};
+
+export const OpenMessageToast: Story = {
+    name: 'Open: message toast',
+    tags: ['!autodocs'],
+    render: WithMessageToast.render,
+    play: async ({ canvasElement }) => {
+        await userEvent.click(canvasElement.querySelector<HTMLElement>('button')!);
+        await waitFor(() => expect(document.querySelector('fd-message-toast [role=progressbar]')).not.toBeNull());
+    }
 };
