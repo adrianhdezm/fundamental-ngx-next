@@ -149,8 +149,15 @@ for (const theme of THEMES) {
     for (const [family, file] of Object.entries(fonts)) {
         const json = JSON.parse(readFileSync(join(baseLib, 'baseTheme/fonts', file), 'utf8'));
         const map = {};
+        // only SAP-icons carries real mirroring data; the other fonts mark every glyph "flip"
+        const mirror = family === 'SAP-icons';
         for (const [code, info] of Object.entries(json)) {
-            for (const n of info.names ?? []) map[n] = { c: parseInt(code, 16), rtl: info.rtl === 'flip' };
+            for (const n of info.names ?? []) {
+                const glyph = { c: parseInt(code, 16), rtl: mirror && info.rtl === 'flip' };
+                map[n] = glyph;
+                // Business Suite names are "icon-heart" in the font metadata, "heart" in fundamental-styles
+                if (n.startsWith('icon-')) map[n.slice('icon-'.length)] ??= glyph;
+            }
         }
         maps[family] = map;
     }

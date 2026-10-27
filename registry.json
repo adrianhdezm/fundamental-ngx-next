@@ -8,11 +8,7 @@
       "type": "registry:lib",
       "title": "cn() and variants",
       "description": "Class name merging (clsx + tailwind-merge, aware of the SAP token utilities) and cva variants.",
-      "dependencies": [
-        "clsx",
-        "tailwind-merge",
-        "class-variance-authority"
-      ],
+      "dependencies": ["clsx", "tailwind-merge", "class-variance-authority"],
       "files": [
         {
           "path": "registry/lib/utils.ts",
@@ -68,9 +64,7 @@
           "target": "src/styles/themes/sap_horizon_hcw.css"
         }
       ],
-      "dependencies": [
-        "@angular/cdk"
-      ]
+      "dependencies": ["@angular/cdk"]
     },
     {
       "name": "content-density",
@@ -89,10 +83,7 @@
       "type": "registry:ui",
       "title": "Icon",
       "description": "Icons from the SAP-icons, SAP-icons-TNT and Business Suite fonts.",
-      "registryDependencies": [
-        "utils",
-        "theme"
-      ],
+      "registryDependencies": ["utils", "theme"],
       "files": [
         {
           "path": "registry/ui/icon/icon.ts",
@@ -109,11 +100,7 @@
       "type": "registry:ui",
       "title": "Button",
       "description": "Standard, emphasized, ghost, positive, negative, attention and transparent buttons, toggle and menu buttons, badges.",
-      "registryDependencies": [
-        "utils",
-        "theme",
-        "icon"
-      ],
+      "registryDependencies": ["utils", "theme", "icon"],
       "files": [
         {
           "path": "registry/ui/button/button.ts",
@@ -126,10 +113,7 @@
       "type": "registry:ui",
       "title": "Link",
       "description": "Standard, emphasized, subtle, undecorated and inverted links, with icons.",
-      "registryDependencies": [
-        "utils",
-        "theme"
-      ],
+      "registryDependencies": ["utils", "theme"],
       "files": [
         {
           "path": "registry/ui/link/link.ts",
@@ -142,11 +126,7 @@
       "type": "registry:ui",
       "title": "Avatar",
       "description": "Image, initials or icon avatars in five sizes, with accent and indication colours, zoom icon and value states.",
-      "registryDependencies": [
-        "utils",
-        "theme",
-        "icon"
-      ],
+      "registryDependencies": ["utils", "theme", "icon"],
       "files": [
         {
           "path": "registry/ui/avatar/avatar.ts",
@@ -159,10 +139,7 @@
       "type": "registry:ui",
       "title": "Input",
       "description": "SAP field styling and value states for native input and textarea elements.",
-      "registryDependencies": [
-        "utils",
-        "theme"
-      ],
+      "registryDependencies": ["utils", "theme"],
       "files": [
         {
           "path": "registry/ui/input/input.ts",
@@ -175,14 +152,8 @@
       "type": "registry:ui",
       "title": "Popover",
       "description": "Overlay content anchored to a trigger, built on the CDK overlay: placements, triggers, arrow, focus handling, fill modes and resizing.",
-      "dependencies": [
-        "@angular/cdk",
-        "rxjs"
-      ],
-      "registryDependencies": [
-        "utils",
-        "theme"
-      ],
+      "dependencies": ["@angular/cdk", "rxjs"],
+      "registryDependencies": ["utils", "theme"],
       "files": [
         {
           "path": "registry/ui/popover/popover.ts",
@@ -199,10 +170,7 @@
       "type": "registry:ui",
       "title": "Busy Indicator",
       "description": "Three-dot loading indicator in three sizes; wraps and blocks content while loading.",
-      "registryDependencies": [
-        "utils",
-        "theme"
-      ],
+      "registryDependencies": ["utils", "theme"],
       "files": [
         {
           "path": "registry/ui/busy-indicator/busy-indicator.ts",
@@ -215,10 +183,7 @@
       "type": "registry:ui",
       "title": "Checkbox",
       "description": "Checkbox with value states, read-only, display-only and tristate modes; a forms control.",
-      "registryDependencies": [
-        "utils",
-        "theme"
-      ],
+      "registryDependencies": ["utils", "theme"],
       "files": [
         {
           "path": "registry/ui/checkbox/checkbox.ts",
@@ -231,10 +196,7 @@
       "type": "registry:ui",
       "title": "Radio Button",
       "description": "Radio buttons with value states, read-only and wrapping labels; a forms control.",
-      "registryDependencies": [
-        "utils",
-        "theme"
-      ],
+      "registryDependencies": ["utils", "theme"],
       "files": [
         {
           "path": "registry/ui/radio/radio.ts",
@@ -247,12 +209,7 @@
       "type": "registry:ui",
       "title": "Inline Help",
       "description": "Hover and focus help popover for icons, fields and buttons.",
-      "registryDependencies": [
-        "utils",
-        "theme",
-        "icon",
-        "popover"
-      ],
+      "registryDependencies": ["utils", "theme", "icon", "popover"],
       "files": [
         {
           "path": "registry/ui/inline-help/inline-help.ts",
@@ -265,13 +222,7 @@
       "type": "registry:ui",
       "title": "Form",
       "description": "Form header, fieldset, legend, groups, items, labels with inline help, value state messages and input message groups.",
-      "registryDependencies": [
-        "utils",
-        "theme",
-        "icon",
-        "popover",
-        "inline-help"
-      ],
+      "registryDependencies": ["utils", "theme", "icon", "popover", "inline-help"],
       "files": [
         {
           "path": "registry/ui/form/form.ts",
@@ -292,14 +243,75 @@
       "type": "registry:ui",
       "title": "Switch",
       "description": "On/off switch with semantic and text variants; a forms control.",
-      "registryDependencies": [
-        "utils",
-        "theme",
-        "icon"
-      ],
+      "registryDependencies": ["utils", "theme", "icon"],
       "files": [
         {
           "path": "registry/ui/switch/switch.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "title",
+      "type": "registry:ui",
+      "title": "Title",
+      "description": "Headings with the SAP header type scale, decoupled visual size, truncation and wrapping.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/title/title.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "text",
+      "type": "registry:ui",
+      "title": "Text",
+      "description": "Paragraph text with line limit, More/Less expansion, whitespace and hyphenation.",
+      "registryDependencies": ["utils", "theme", "link"],
+      "files": [
+        {
+          "path": "registry/ui/text/text.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "formatted-text",
+      "type": "registry:ui",
+      "title": "Formatted Text",
+      "description": "Renders a sanitised subset of HTML.",
+      "registryDependencies": ["theme"],
+      "files": [
+        {
+          "path": "registry/ui/formatted-text/formatted-text.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "info-label",
+      "type": "registry:ui",
+      "title": "Info Label",
+      "description": "Non-interactive coloured labels with text, icon or number.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/info-label/info-label.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "object-status",
+      "type": "registry:ui",
+      "title": "Object Status",
+      "description": "Status of an object as semantic or indication-coloured text and icon, optionally inverted or clickable.",
+      "registryDependencies": ["utils", "theme", "icon"],
+      "files": [
+        {
+          "path": "registry/ui/object-status/object-status.ts",
           "type": "registry:ui"
         }
       ]

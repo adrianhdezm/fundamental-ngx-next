@@ -18,6 +18,15 @@ const base = (args.find((a) => !a.startsWith('--')) ?? 'http://localhost:6006').
 const theme = args.find((a) => a.startsWith('--theme='))?.split('=')[1] ?? 'sap_horizon';
 const filter = args.find((a) => a.startsWith('--filter='))?.split('=')[1];
 
+/**
+ * Rules skipped per story prefix where the result comes from the SAP theme itself, not from this
+ * library: the tokens are used as designed (high-contrast themes still get the full check).
+ */
+const KNOWN = {
+    // Horizon inverted status backgrounds and informative text are below 4.5:1 by design
+    'components-object-status-': { rules: ['color-contrast'], themes: ['sap_horizon', 'sap_horizon_dark'] }
+};
+
 const index = await (await fetch(`${base}/index.json`)).json();
 const stories = Object.values(index.entries).filter(
     (e) => e.type === 'story' && e.id.startsWith('components-') && (!filter || e.id.includes(filter))
@@ -32,16 +41,20 @@ for (const story of stories) {
     });
     await page.waitForTimeout(300);
     await page.addScriptTag({ content: axeSource });
-    const violations = await page.evaluate(async () => {
+    const skip = Object.entries(KNOWN)
+        .filter(([prefix, known]) => story.id.startsWith(prefix) && known.themes.includes(theme))
+        .flatMap(([, known]) => known.rules);
+    const violations = await page.evaluate(async (skip) => {
+        const rules = Object.fromEntries(skip.map((id) => [id, { enabled: false }]));
         // @ts-ignore axe is injected above
-        const result = await window.axe.run('#storybook-root', { resultTypes: ['violations'] });
+        const result = await window.axe.run('#storybook-root', { resultTypes: ['violations'], rules });
         return result.violations.map((v) => ({
             id: v.id,
             impact: v.impact,
             help: v.help,
             nodes: v.nodes.map((n) => n.target.join(' ')).slice(0, 3)
         }));
-    });
+    }, skip);
     const serious = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
     if (serious.length) failing++;
     if (violations.length) {
