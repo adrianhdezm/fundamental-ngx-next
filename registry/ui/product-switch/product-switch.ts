@@ -76,7 +76,7 @@ const TARGET_LABEL: Record<string, string> = {
  */
 @Component({
     selector: 'fd-product-switch-body',
-    imports: [CdkDropList, CdkDrag, Icon, Avatar, BusyIndicator],
+    imports: [CdkDropList, CdkDrag, NgTemplateOutlet, Icon, Avatar, BusyIndicator],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'block' },
     template: `
@@ -106,47 +106,71 @@ const TARGET_LABEL: Record<string, string> = {
                             (click)="itemClick(product, $event)"
                             (keydown)="onKeydown($event, i)"
                         >
-                            @if (product.avatar; as a) {
-                                <fd-avatar
-                                    size="s"
-                                    [glyph]="a.glyph ?? null"
-                                    [label]="a.label ?? null"
-                                    [image]="a.image ?? null"
-                                    [circle]="!!a.circle"
-                                    [transparent]="!!a.transparent"
-                                    [placeholder]="!!a.placeholder"
-                                    [tile]="!!a.tile"
-                                    [border]="!!a.border"
-                                    [colorAccent]="a.colorAccent ?? null"
-                                    [ariaLabel]="a.ariaLabel ?? null"
-                                />
+                            @if (product.url) {
+                                <!-- a real link for the browser (hover shows the URL); the item handles click and keys -->
+                                <a
+                                    tabindex="-1"
+                                    aria-hidden="true"
+                                    class="contents text-inherit no-underline"
+                                    [href]="product.url"
+                                    [target]="product.target ?? '_blank'"
+                                    (click)="$event.preventDefault()"
+                                >
+                                    <ng-container
+                                        [ngTemplateOutlet]="itemContent"
+                                        [ngTemplateOutletContext]="{ $implicit: product }"
+                                    />
+                                </a>
                             } @else {
-                                <fd-icon
-                                    role="presentation"
-                                    [glyph]="product.icon"
-                                    [font]="product.font ?? 'SAP-icons'"
-                                    class="flex min-h-12 min-w-12 items-center justify-center text-[1.5rem] text-sap-content-icon-color group-active/ps:text-sap-list-active-text-color"
+                                <ng-container
+                                    [ngTemplateOutlet]="itemContent"
+                                    [ngTemplateOutletContext]="{ $implicit: product }"
                                 />
                             }
-                            <div [class]="textClass()">
-                                <div
-                                    class="m-0 p-0 whitespace-normal text-sap-title-color group-active/ps:text-sap-list-active-text-color"
-                                >
-                                    {{ product.title }}
-                                </div>
-                                @if (product.subtitle) {
-                                    <div
-                                        class="m-0 p-0 text-sap-font-small-size whitespace-normal text-sap-content-label-color group-active/ps:text-sap-list-active-text-color"
-                                    >
-                                        {{ product.subtitle }}
-                                    </div>
-                                }
-                            </div>
                         </li>
                     }
                 </ul>
             </div>
         </fd-busy-indicator>
+
+        <ng-template #itemContent let-product>
+            @if (product.avatar; as a) {
+                <fd-avatar
+                    size="s"
+                    [glyph]="a.glyph ?? null"
+                    [label]="a.label ?? null"
+                    [image]="a.image ?? null"
+                    [circle]="!!a.circle"
+                    [transparent]="!!a.transparent"
+                    [placeholder]="!!a.placeholder"
+                    [tile]="!!a.tile"
+                    [border]="!!a.border"
+                    [colorAccent]="a.colorAccent ?? null"
+                    [ariaLabel]="a.ariaLabel ?? null"
+                />
+            } @else {
+                <fd-icon
+                    role="presentation"
+                    [glyph]="product.icon"
+                    [font]="product.font ?? 'SAP-icons'"
+                    class="flex min-h-12 min-w-12 items-center justify-center text-[1.5rem] text-sap-content-icon-color group-active/ps:text-sap-list-active-text-color"
+                />
+            }
+            <div [class]="textClass()">
+                <div
+                    class="m-0 p-0 whitespace-normal text-sap-title-color group-active/ps:text-sap-list-active-text-color"
+                >
+                    {{ product.title }}
+                </div>
+                @if (product.subtitle) {
+                    <div
+                        class="m-0 p-0 text-sap-font-small-size whitespace-normal text-sap-content-label-color group-active/ps:text-sap-list-active-text-color"
+                    >
+                        {{ product.subtitle }}
+                    </div>
+                }
+            </div>
+        </ng-template>
     `
 })
 export class ProductSwitchBody {

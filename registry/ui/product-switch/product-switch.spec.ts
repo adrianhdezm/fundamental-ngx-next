@@ -55,6 +55,35 @@ describe('ProductSwitch', () => {
         expect(focused()).toBe('Product 1');
     });
 
+    it('renders a subtitle only when given and an anchor only for items with a url', async () => {
+        const fixture = TestBed.createComponent(Host);
+        fixture.componentInstance.products.set([
+            { title: 'Default', subtitle: 'New tab', icon: 'home', url: 'https://example.com/a' },
+            { title: 'Same tab', icon: 'home', url: 'https://example.com/b', target: '_self' },
+            { title: 'Callback', icon: 'home', callback: () => undefined }
+        ]);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        await userEvent.click((fixture.nativeElement as HTMLElement).querySelector('button')!);
+        await wait();
+        const items = Array.from(document.querySelectorAll<HTMLElement>('[role=menuitem]'));
+        expect(items.map((item) => item.textContent!.replace(/\s+/g, ' ').trim())).toEqual([
+            'Default New tab',
+            'Same tab',
+            'Callback'
+        ]);
+        const links = items.map((item) => item.querySelector('a'));
+        expect(links[0]!.getAttribute('href')).toBe('https://example.com/a');
+        expect(links[0]!.target).toBe('_blank');
+        expect(links[1]!.target).toBe('_self');
+        expect(links[2]).toBeNull();
+        // the link is for the browser only: the item is the menu item, so it is not focusable or exposed
+        expect(links[0]!.getAttribute('aria-hidden')).toBe('true');
+        expect(links[0]!.tabIndex).toBe(-1);
+        expect(items[0].getAttribute('aria-label')).toBe('Default New tab Opens in a new tab');
+        expect(items[1].getAttribute('aria-label')).toBe('Same tab');
+    });
+
     it('opens a product with Enter and closes, returning the focus', async () => {
         const { host, button } = await open();
         await userEvent.keyboard('{ArrowRight}{Enter}');
