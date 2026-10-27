@@ -125,3 +125,39 @@ describe('TabNav', () => {
         expect(document.activeElement).toBe(links[0]);
     });
 });
+
+@Component({
+    imports: [TabList, TabPanel],
+    template: `
+        <fd-tab-list ariaLabel="Default tab" [defaultTab]="defaultTab()">
+            @for (id of ['a', 'b', 'c']; track id) {
+                <fd-tab [id]="id" [title]="'Tab ' + id">Content {{ id }}</fd-tab>
+            }
+        </fd-tab-list>
+    `
+})
+class DefaultHost {
+    readonly defaultTab = signal('b');
+}
+
+describe('TabList defaultTab', () => {
+    it('selects the default tab first, also when the tab ids are bound', async () => {
+        const fixture = TestBed.createComponent(DefaultHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        await wait();
+        const root = fixture.nativeElement as HTMLElement;
+        const selected = () => root.querySelector('[role=tab][aria-selected=true]')?.id;
+        expect(selected()).toBe('b');
+        expect(panel(root)?.textContent?.trim()).toBe('Content b');
+        // until a tab is chosen, the selection follows the default
+        fixture.componentInstance.defaultTab.set('c');
+        await fixture.whenStable();
+        expect(selected()).toBe('c');
+        await userEvent.click(tabs(root)[0]);
+        await fixture.whenStable();
+        fixture.componentInstance.defaultTab.set('b');
+        await fixture.whenStable();
+        expect(selected()).toBe('a');
+    });
+});

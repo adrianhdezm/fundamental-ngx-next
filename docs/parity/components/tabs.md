@@ -1,7 +1,7 @@
 ## tabs
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/tabs) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/tabs)
-Registry: `registry/ui/tabs/` — 9 stories, 6 tests.
+Registry: `registry/ui/tabs/` — 9 stories, 7 tests.
 
 ### Stories vs. upstream examples
 
@@ -37,10 +37,10 @@ Registry: `registry/ui/tabs/` — 9 stories, 6 tests.
 | TabNav keydown                                              | marks the active link and makes it the tab stop | ✅ covered | ArrowLeft.                                                      |
 | Tab item / link / icon CSS classes                          | —                                               | ➖ n/a     | Class-only checks; selected state is covered via ARIA.          |
 
-Registry-only coverage: one tab stop with arrow wrap and disabled tabs skipped, End + Enter selection, More menu item selection moves the tab into view.
+Registry-only coverage: `defaultTab` with ids bound in a `@for` (the selection follows the default until a tab is chosen), one tab stop with arrow wrap and disabled tabs skipped, End + Enter selection, More menu item selection moves the tab into view.
 
 ### Gaps to fill
 
 - **Stories:** none.
-- **Tests:** "selectTab() selects a tab by id and emits selectedTabChange"; "adding and removing tabs keeps the selected tab selected"; "removing the selected tab selects the default tab with selectDefaultOnTabsChange"; "defaultTab selects that tab first"; "stackContent shows every panel and marks the tab of the panel in view"; "the More menu opens with the keyboard and returns focus to the More button on Escape"; "compact density makes the tabs smaller"; "TabNav updates the tab stop when links are added"; "selecting a tab focuses the first focusable element in its panel"; "Home moves to the first enabled tab".
+- **Tests:** "selectTab() selects a tab by id and emits selectedTabChange"; "adding and removing tabs keeps the selected tab selected"; "removing the selected tab selects the default tab with selectDefaultOnTabsChange"; "stackContent shows every panel and marks the tab of the panel in view"; "the More menu opens with the keyboard and returns focus to the More button on Escape"; "compact density makes the tabs smaller"; "TabNav updates the tab stop when links are added"; "selecting a tab focuses the first focusable element in its panel"; "Home moves to the first enabled tab".
 - **Effort:** M, a second host for dynamic and stacked tabs plus four stories.
