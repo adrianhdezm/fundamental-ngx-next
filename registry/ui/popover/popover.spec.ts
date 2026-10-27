@@ -632,6 +632,188 @@ describe('Popover', () => {
         });
     });
 
+    describe('body options', () => {
+        it('header and footer stay in place while the body scrolls', async () => {
+            const { stable, el, control, surface } = await setupOptions({
+                maxHeight: '200px',
+                contentHeight: '600px'
+            });
+            await userEvent.click(control());
+            await stable();
+            const scroller = el('content').parentElement!;
+            expect(rect(surface()).height).toBeLessThanOrEqual(201);
+            const headerTop = rect(el('header')).top;
+            const footerBottom = rect(el('footer')).bottom;
+            near(headerTop, rect(surface()).top);
+            near(footerBottom, rect(surface()).bottom);
+            scroller.scrollTop = 200;
+            await frame();
+            expect(scroller.scrollTop).toBe(200);
+            near(rect(el('header')).top, headerTop);
+            near(rect(el('footer')).bottom, footerBottom);
+        });
+
+        it('body minWidth, minHeight and maxHeight size the body', async () => {
+            const { fixture, host, stable, control, surface } = await setupOptions({
+                minWidth: '300px',
+                minHeight: '250px'
+            });
+            await userEvent.click(control());
+            await stable();
+            near(rect(surface()).width, 300);
+            near(rect(surface()).height, 250);
+            await userEvent.keyboard('{Escape}');
+            await stable();
+
+            host.minHeight.set(undefined);
+            host.maxHeight.set('150px');
+            host.contentHeight.set('400px');
+            await fixture.whenStable();
+            await userEvent.click(control());
+            await stable();
+            near(rect(surface()).height, 150);
+        });
+
+        it('additionalBodyClass is added to the body', async () => {
+            const { stable, control, surface } = await setupOptions({ bodyClass: 'bg-sap-information-background' });
+            await userEvent.click(control());
+            await stable();
+            expect(surface().classList).toContain('bg-sap-information-background');
+            // it wins over the default surface colour once the transition has run
+            await wait(200);
+            const reference = document.createElement('div');
+            reference.className = 'bg-sap-information-background';
+            document.body.appendChild(reference);
+            expect(getComputedStyle(surface()).backgroundColor).toBe(getComputedStyle(reference).backgroundColor);
+            reference.remove();
+        });
+
+        it('resizable shows a handle that resizes the body', async () => {
+            const { fixture, host, stable, control, surface } = await setupOptions();
+            await userEvent.click(control());
+            await stable();
+            expect(surface().querySelector('[aria-hidden="true"][role="presentation"]')).toBeNull();
+            await userEvent.keyboard('{Escape}');
+            await stable();
+
+            host.resizable.set(true);
+            await fixture.whenStable();
+            await userEvent.click(control());
+            await stable();
+            const handle = surface().querySelector<HTMLElement>('[role="presentation"]')!;
+            expect(handle).not.toBeNull();
+            const before = rect(surface());
+            const h = rect(handle);
+            const start = { clientX: h.left + 4, clientY: h.top + 4, pointerId: 1, bubbles: true, isPrimary: true };
+            handle.dispatchEvent(new PointerEvent('pointerdown', { ...start, buttons: 1 }));
+            handle.dispatchEvent(
+                new PointerEvent('pointermove', {
+                    ...start,
+                    buttons: 1,
+                    clientX: start.clientX + 60,
+                    clientY: start.clientY + 40
+                })
+            );
+            handle.dispatchEvent(new PointerEvent('pointerup', start));
+            await stable();
+            await wait(200);
+            near(rect(surface()).width, before.width + 60);
+            near(rect(surface()).height, before.height + 40);
+        });
+
+        it('disableScrollbar removes the scroll wrapper', async () => {
+            const { fixture, host, stable, el, control, surface } = await setupOptions();
+            await userEvent.click(control());
+            await stable();
+            const wrapper = el('content').parentElement!;
+            expect(wrapper).not.toBe(surface());
+            expect(getComputedStyle(wrapper).overflow).toBe('auto');
+            await userEvent.keyboard('{Escape}');
+            await stable();
+
+            host.disableScrollbar.set(true);
+            await fixture.whenStable();
+            await userEvent.click(control());
+            await stable();
+            expect(el('content').parentElement).toBe(surface());
+        });
+
+        it('bodyRole null renders no role; bodyAriaLabelledBy labels the body', async () => {
+            const { stable, control, surface } = await setupOptions({ bodyRole: null, labelledBy: 'opt-title' });
+            await userEvent.click(control());
+            await stable();
+            expect(surface().hasAttribute('role')).toBe(false);
+            expect(surface().getAttribute('aria-labelledby')).toBe('opt-title');
+            expect(document.getElementById('opt-title')!.textContent).toBe('Details');
+        });
+    });
+
+    describe('control and triggers', () => {
+        it('a non-focusable control becomes tabbable and opens with Enter/Space', async () => {
+            const { host, stable, control, body } = await setupOptions();
+            expect(control().tabIndex).toBe(0);
+            control().focus();
+            await userEvent.keyboard('{Enter}');
+            await stable();
+            expect(body()).not.toBeNull();
+            expect(host.open()).toBe(true);
+            await userEvent.keyboard('{Escape}');
+            await stable();
+            expect(document.activeElement).toBe(control());
+            await userEvent.keyboard(' ');
+            await stable();
+            expect(body()).not.toBeNull();
+        });
+
+        it('setIgnoreTriggers stops triggers until reset', async () => {
+            const { host, stable, control, body } = await setupOptions();
+            host.pop()!.setIgnoreTriggers(true);
+            await userEvent.click(control());
+            await stable();
+            expect(body()).toBeNull();
+            host.pop()!.setIgnoreTriggers(false);
+            await userEvent.click(control());
+            await stable();
+            expect(body()).not.toBeNull();
+        });
+
+        it('changing the trigger moves the listeners', async () => {
+            const { fixture, host, stable, el, control, body } = await setupOptions();
+            host.externalTrigger.set(el('other-trigger'));
+            await stable();
+            // the external trigger replaces the control
+            expect(control()).toBeNull();
+            await userEvent.click(el('outside'));
+            await stable();
+            expect(body()).toBeNull();
+            await userEvent.click(el('other-trigger'));
+            await stable();
+            expect(body()).not.toBeNull();
+            // the popover is positioned against its new trigger
+            near(rect(body()!).top, rect(el('other-trigger')).bottom);
+            await userEvent.keyboard('{Escape}');
+            await stable();
+            expect(document.activeElement).toBe(el('other-trigger'));
+            fixture.destroy();
+        });
+
+        it('closing via focusout does not move focus back', async () => {
+            const { stable, el, control, body } = await setupOptions({
+                triggers: ['focusin', 'focusout'],
+                autoCapture: false
+            });
+            // only click triggers make the control tabbable
+            control().tabIndex = 0;
+            control().focus();
+            await stable();
+            expect(body()).not.toBeNull();
+            el('outside').focus();
+            await stable();
+            expect(body()).toBeNull();
+            expect(document.activeElement).toBe(el('outside'));
+        });
+    });
+
     describe('configuration and lifecycle', () => {
         it('config input sets defaults that inputs override', async () => {
             const { fixture, host, stable, el, control, body, surface } = await setupOptions({
@@ -663,6 +845,134 @@ describe('Popover', () => {
             const { host, body } = await setupOptions({ open: true });
             expect(body()).not.toBeNull();
             expect(host.open()).toBe(true);
+        });
+
+        it('changing closeOnOutsideClick while open takes effect', async () => {
+            const { fixture, host, stable, el, control, body } = await setupOptions({ outsideClick: false });
+            await userEvent.click(control());
+            await stable();
+            await userEvent.click(el('outside'));
+            await stable();
+            expect(body()).not.toBeNull();
+            host.outsideClick.set(true);
+            await fixture.whenStable();
+            await userEvent.click(el('outside'));
+            await stable();
+            expect(body()).toBeNull();
+        });
+
+        it('destroying an open popover removes its overlay', async () => {
+            const { host, stable, control, body } = await setupOptions();
+            await userEvent.click(control());
+            await stable();
+            expect(body()).not.toBeNull();
+            host.show.set(false);
+            await stable();
+            expect(body()).toBeNull();
+            expect(document.querySelector('.cdk-overlay-pane')).toBeNull();
+        });
+
+        it('applyOverlay dims the page only when the popover cannot be dismissed', async () => {
+            const { fixture, host, stable, control } = await setupOptions({ applyOverlay: true });
+            const backdrop = () => document.querySelector<HTMLElement>('.cdk-overlay-backdrop');
+            await userEvent.click(control());
+            await stable();
+            // outside click and Escape still close it: no backdrop
+            expect(backdrop()).toBeNull();
+            await userEvent.keyboard('{Escape}');
+            await stable();
+
+            host.outsideClick.set(false);
+            await fixture.whenStable();
+            await userEvent.click(control());
+            await stable();
+            expect(backdrop()).not.toBeNull();
+            expect(getComputedStyle(backdrop()!).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+            // the trigger stays above the dimmed page
+            expect(control().parentElement!.parentElement!.classList).toContain('z-[1001]');
+            host.pop()!.close();
+            await stable();
+            expect(backdrop()).toBeNull();
+        });
+    });
+
+    describe('position methods', () => {
+        it('cdkPositions and applyNewPosition move the body; refreshPosition follows a moved trigger', async () => {
+            const { host, stable, control, surface } = await setupOptions({
+                cdkPositions: [{ originX: 'end', originY: 'top', overlayX: 'start', overlayY: 'top' }],
+                autoCapture: false
+            });
+            await userEvent.click(control());
+            await stable();
+            near(rect(surface()).left, rect(control()).right);
+            near(rect(surface()).top, rect(control()).top);
+
+            host.pop()!.applyNewPosition([{ originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top' }]);
+            await stable();
+            near(rect(surface()).left, rect(control()).left);
+            near(rect(surface()).top, rect(control()).bottom);
+
+            control().style.marginTop = '50px';
+            host.pop()!.refreshPosition();
+            await stable();
+            near(rect(surface()).top, rect(control()).bottom);
+        });
+    });
+
+    describe('focus restore', () => {
+        it('an outside click on a non-focusable element returns focus to the trigger', async () => {
+            const { stable, el, control, body } = await setupOptions();
+            await userEvent.click(control());
+            await stable();
+            expect(document.activeElement).toBe(el('inside'));
+            await userEvent.click(el('plain'));
+            await stable();
+            expect(body()).toBeNull();
+            expect(document.activeElement).toBe(control());
+        });
+
+        it('setting isOpen false returns focus to the trigger', async () => {
+            const { host, stable, el, control, body } = await setupOptions();
+            await userEvent.click(control());
+            await stable();
+            expect(document.activeElement).toBe(el('inside'));
+            host.open.set(false);
+            await stable();
+            expect(body()).toBeNull();
+            expect(document.activeElement).toBe(control());
+        });
+    });
+
+    describe('in a dialog', () => {
+        it('Escape inside a dialog closes only the popover', async () => {
+            const fixture = TestBed.createComponent(DialogHost);
+            document.body.appendChild(fixture.nativeElement);
+            await fixture.whenStable();
+            const ref = fixture.componentInstance.dialogs.open(fixture.componentInstance.tpl(), {
+                ariaLabel: 'Dialog'
+            });
+            const settle = async () => {
+                await fixture.whenStable();
+                await frame();
+                await frame();
+            };
+            await settle();
+            const trigger = document.querySelector<HTMLElement>('[data-testid="dialog-trigger"]')!;
+            await userEvent.click(trigger);
+            await settle();
+            expect(document.activeElement).toBe(document.querySelector('[data-testid="dialog-inside"]'));
+            await userEvent.keyboard('{Escape}');
+            await settle();
+            expect(document.querySelector('[data-testid="dialog-inside"]')).toBeNull();
+            expect(document.querySelector('fd-dialog')).not.toBeNull();
+            expect(document.activeElement).toBe(trigger);
+            // a second Escape closes the dialog
+            await userEvent.keyboard('{Escape}');
+            await settle();
+            await wait(300);
+            expect(document.querySelector('fd-dialog')).toBeNull();
+            void ref;
+            fixture.destroy();
         });
     });
 });
