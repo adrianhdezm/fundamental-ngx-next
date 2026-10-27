@@ -1,6 +1,7 @@
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { Avatar } from '@/ui/avatar/avatar';
 import { Bar, BarRight, BarElement } from '@/ui/bar/bar';
+import { Breadcrumb, BreadcrumbItem } from '@/ui/breadcrumb/breadcrumb';
 import { Button } from '@/ui/button/button';
 import { Facet, FacetContent, FacetGroup } from '@/ui/facets/facets';
 import { FormLabel } from '@/ui/form/form';
@@ -8,6 +9,7 @@ import { Link } from '@/ui/link/link';
 import { MessageStrip } from '@/ui/message-strip/message-strip';
 import { ObjectNumber } from '@/ui/object-number/object-number';
 import { ObjectStatusComponent } from '@/ui/object-status/object-status';
+import { TabList, TabPanel } from '@/ui/tabs/tabs';
 import { Text } from '@/ui/text/text';
 import {
     DynamicPage,
@@ -43,6 +45,8 @@ const meta: Meta<DynamicPage> = {
                 DynamicPageHeaderSubtitle,
                 DynamicPageTabs,
                 Avatar,
+                Breadcrumb,
+                BreadcrumbItem,
                 Bar,
                 BarRight,
                 BarElement,
@@ -55,6 +59,8 @@ const meta: Meta<DynamicPage> = {
                 MessageStrip,
                 ObjectNumber,
                 ObjectStatusComponent,
+                TabList,
+                TabPanel,
                 Text
             ]
         })
@@ -74,7 +80,11 @@ type Story = StoryObj<DynamicPage>;
 
 const BREADCRUMB = `
     <fd-dynamic-page-breadcrumb>
-        <a fdLink href="#">Men</a> / <a fdLink href="#">Shoes</a> / <a fdLink href="#" aria-current="page">Running shoes</a>
+        <fd-breadcrumb ariaLabel="Breadcrumbs">
+            <fd-breadcrumb-item><a fdLink href="#">Men</a></fd-breadcrumb-item>
+            <fd-breadcrumb-item><a fdLink href="#">Shoes</a></fd-breadcrumb-item>
+            <fd-breadcrumb-item><span aria-current="page">Running shoes</span></fd-breadcrumb-item>
+        </fd-breadcrumb>
     </fd-dynamic-page-breadcrumb>`;
 
 const ACTIONS = `
@@ -175,11 +185,10 @@ export const Collapsed: Story = {
                     <fd-message-strip type="warning">The delivery date is not confirmed yet.</fd-message-strip>
                 </fd-dynamic-page-header>
                 <fd-dynamic-page-subheader [collapsed]="true">${FACETS}</fd-dynamic-page-subheader>
-                <div fd-dynamic-page-tabs class="flex h-11 items-end gap-6">
-                    <span class="border-b-[0.1875rem] border-sap-content-selected-text-color pb-2 text-sap-content-selected-text-color">Items</span>
-                    <span class="pb-2">Notes</span>
-                </div>
-                ${CONTENT}
+                <fd-tab-list ariaLabel="Order sections">
+                    <fd-tab title="Items">${CONTENT}</fd-tab>
+                    <fd-tab title="Notes">${CONTENT}</fd-tab>
+                </fd-tab-list>
             </fd-dynamic-page>`
         )
     })
@@ -201,4 +210,56 @@ export const Small: Story = {
             </fd-dynamic-page>`
         )
     })
+};
+
+const TABS = (stacked: boolean) => `
+    <fd-tab-list ariaLabel="Product sections"${stacked ? ' stackContent' : ''}>
+        ${['General', 'Pricing', 'Stock', 'Suppliers', 'Notes']
+            .map(
+                (tab) => `<fd-tab title="${tab}">
+                    <fd-dynamic-page-content>
+                        <h3 class="m-0 mb-4 text-sap-font-header5-size">${tab}</h3>
+                        ${Array.from({ length: 3 }, () => `<p class="m-0 mb-4">${LOREM.repeat(3)}</p>`).join('')}
+                    </fd-dynamic-page-content>
+                </fd-tab>`
+            )
+            .join('')}
+    </fd-tab-list>`;
+
+const TABS_PAGE = (stacked: boolean) =>
+    FRAME(
+        '100%',
+        `<fd-dynamic-page ariaLabel="Product details" [expandContent]="false" positionRelative>
+            <fd-dynamic-page-header title="Balenciaga Triple S Trainers" subtitle="Oversized multimaterial sneakers with quilted effect">
+                ${BREADCRUMB}
+                ${ACTIONS}
+            </fd-dynamic-page-header>
+            <fd-dynamic-page-subheader pinnable>${FACETS}</fd-dynamic-page-subheader>
+            ${TABS(stacked)}
+            ${FOOTER}
+        </fd-dynamic-page>`
+    );
+
+export const Tabs: Story = {
+    name: 'Tabs',
+    parameters: {
+        docs: {
+            description: {
+                story: 'An `fd-tab-list` between the header and the content: the tab bar follows the page paddings and scrolling the selected tab collapses the header.'
+            }
+        }
+    },
+    render: () => ({ template: TABS_PAGE(false) })
+};
+
+export const StackedTabs: Story = {
+    name: 'Stacked tabs',
+    parameters: {
+        docs: {
+            description: {
+                story: 'With `stackContent` all sections show one below the other; the tabs follow the scrolling and only the last section leaves room for the footer.'
+            }
+        }
+    },
+    render: () => ({ template: TABS_PAGE(true) })
 };

@@ -25,6 +25,7 @@ import {
     output,
     signal,
     untracked,
+    viewChild,
     viewChildren,
     type Signal
 } from '@angular/core';
@@ -46,6 +47,7 @@ export type TabItemState = 'success' | 'error' | 'warning' | 'information' | 'ne
 /** What the parts of tabs know about their container. */
 export interface TabsContext {
     readonly mode: Signal<TabModes | null | undefined>;
+    readonly stackContent?: Signal<boolean>;
 }
 
 export const FD_TABS = new InjectionToken<TabsContext>('FdTabs');
@@ -619,6 +621,7 @@ export class TabList implements TabsContext {
 
     readonly tabs = contentChildren(TabPanel);
     private readonly links = viewChildren(TabLink);
+    private readonly content = viewChild.required<ElementRef<HTMLElement>>('content');
     private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     private readonly injector = inject(Injector);
 
@@ -733,14 +736,18 @@ export class TabList implements TabsContext {
         this.selectedTabIndexChange.emit(this.tabs().indexOf(tab));
     }
 
+    /** The element that scrolls the panels. */
+    scrollElement(): HTMLElement {
+        return this.content().nativeElement;
+    }
+
     private scrollTo(tab: TabPanel): void {
         afterNextRender(
             () => {
-                const container = this.host.querySelector<HTMLElement>('[fdScrollSpy]');
+                const container = this.content().nativeElement;
                 const panel = tab.elementRef.nativeElement;
-                if (!container) return;
                 this.spyPaused.set(true);
-                container.scrollTo({ top: panel.offsetTop - container.offsetTop, behavior: 'smooth' });
+                container.scrollTo({ top: panel.offsetTop, behavior: 'smooth' });
                 setTimeout(() => this.spyPaused.set(false), 600);
                 if (this.focusFirstFocusableElement()) {
                     panel

@@ -11,6 +11,7 @@ import {
     DestroyRef,
     Directive,
     ElementRef,
+    type Signal,
     TemplateRef,
     afterNextRender,
     booleanAttribute,
@@ -27,7 +28,9 @@ import {
     viewChild
 } from '@angular/core';
 import { cn, type ClassValue } from '@/lib/utils';
+import { Breadcrumb } from '@/ui/breadcrumb/breadcrumb';
 import { Button } from '@/ui/button/button';
+import { FD_TABS, TabList } from '@/ui/tabs/tabs';
 
 export type DynamicPageBackgroundType = 'solid' | 'list' | 'transparent';
 export type DynamicPageResponsiveSize = 'small' | 'medium' | 'large' | 'extra-large';
@@ -79,7 +82,10 @@ export class DynamicPageHeaderSubtitle {
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'block' }
 })
-export class DynamicPageBreadcrumb {}
+export class DynamicPageBreadcrumb {
+    /** An `fd-breadcrumb` is a navigation landmark of its own. */
+    readonly breadcrumb = contentChild(Breadcrumb, { descendants: true });
+}
 
 /** Global (business) actions next to the title. */
 @Component({
@@ -150,13 +156,14 @@ export class DynamicPageTitleContent {
                 @if (breadcrumb() || squashed()) {
                     <div class="m-0 flex items-center justify-between p-0">
                         @if (breadcrumb()) {
-                            <nav
-                                [attr.aria-label]="breadcrumbsLabel()"
+                            <div
+                                [attr.role]="breadcrumbNav() ? 'navigation' : null"
+                                [attr.aria-label]="breadcrumbNav() ? breadcrumbsLabel() : null"
                                 [class]="small() ? 'w-full max-w-[60%]' : 'w-full max-w-[60%] pt-2 pb-1'"
                                 (click)="$event.stopPropagation()"
                             >
                                 <ng-content select="fd-dynamic-page-breadcrumb" />
-                            </nav>
+                            </div>
                         }
                         @if (squashed()) {
                             <ng-container [ngTemplateOutlet]="layoutActions" />
@@ -237,6 +244,7 @@ export class DynamicPageHeader {
     protected readonly titleTemplate = contentChild(DynamicPageHeaderTitle);
     protected readonly subtitleTemplate = contentChild(DynamicPageHeaderSubtitle);
 
+    protected readonly breadcrumbNav = computed(() => !this.breadcrumb()?.breadcrumb());
     protected readonly small = computed(() => this.page?.size() === 'small');
     protected readonly squashed = computed(() => (this.page?.width() ?? Infinity) < ACTIONS_SQUASH_WIDTH);
     protected readonly hasSubtitle = computed(() => !!this.subtitle() || !!this.subtitleTemplate());
@@ -393,13 +401,13 @@ export class DynamicPageSubheader {
     selector: 'fd-dynamic-page-content',
     template: `
         <ng-content />
-        @if (page?.footer()) {
+        @if (spacer()) {
             <div class="h-12" aria-hidden="true"></div>
         }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
-        tabindex: '0',
+        '[attr.tabindex]': 'tabs ? null : 0',
         '[attr.id]': 'id()',
         '[class]': 'computedClass()',
         '(scroll)': 'onScroll()'
@@ -412,6 +420,12 @@ export class DynamicPageContent {
     readonly userClass = input<ClassValue>('', { alias: 'class' });
     readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
     protected readonly page = inject(forwardPage(), { optional: true });
+    /** Inside tabs the tab list scrolls the content. */
+    protected readonly tabs = inject(FD_TABS, { optional: true });
+    /** Room for a floating footer; with stacked tabs only below the last content. */
+    protected readonly spacer: Signal<boolean> = computed(
+        (): boolean => !!this.page?.footer() && (!this.tabs?.stackContent?.() || this.page.lastContent() === this)
+    );
 
     protected onScroll(): void {
         this.page?.contentScrolled(this.elementRef.nativeElement.scrollTop);
@@ -422,6 +436,7 @@ export class DynamicPageContent {
         return cn(
             'm-0 box-border block h-full flex-1 overflow-y-auto bg-sap-background-color px-(--dp-px) py-4 scrollbar-sap',
             'outline-none focus-visible:outline-sap focus-visible:-outline-offset-2',
+            this.tabs && 'h-auto overflow-visible',
             background === 'list' && 'bg-sap-group-content-background hc:bg-sap-background-color',
             background === 'transparent' && 'bg-transparent hc:bg-sap-background-color',
             this.userClass()
@@ -542,13 +557,17 @@ export class DynamicPage {
     protected readonly header = contentChild(DynamicPageHeader);
     private readonly subheader = contentChild(DynamicPageSubheader);
     private readonly tabs = contentChild(DynamicPageTabs);
+    private readonly tabList = contentChild(TabList);
     readonly footer = contentChild(DynamicPageFooter);
     private readonly contents = contentChildren(DynamicPageContent, { descendants: true });
     private readonly article = viewChild.required<ElementRef<HTMLElement>>('article');
     protected readonly height = signal<string | null>(null);
 
     readonly collapsible = computed(() => this.subheader()?.collapsible() ?? false);
-    readonly hasTabs = computed(() => !!this.tabs());
+    readonly hasTabs = computed(() => !!this.tabs() || !!this.tabList());
+    readonly lastContent: Signal<DynamicPageContent | null> = computed(
+        (): DynamicPageContent | null => this.contents().at(-1) ?? null
+    );
 
     constructor() {
         const destroyRef = inject(DestroyRef);
@@ -567,6 +586,14 @@ export class DynamicPage {
             });
             update();
         });
+        // with tabs the tab list scrolls the content
+        effect((onCleanup) => {
+            const element = this.tabList()?.scrollElement();
+            if (!element) return;
+            const onScroll = (): void => this.contentScrolled(element.scrollTop);
+            element.addEventListener('scroll', onScroll, { passive: true });
+            onCleanup(() => element.removeEventListener('scroll', onScroll));
+        });
     }
 
     toggleCollapse(): void {
@@ -581,9 +608,9 @@ export class DynamicPage {
         this.updateHeight();
     }
 
-    /** The scroll element of the first content. */
+    /** The scroll element: the tab list content, or the first content. */
     scrollElement(): HTMLElement | null {
-        return this.contents()[0]?.elementRef.nativeElement ?? null;
+        return this.tabList()?.scrollElement() ?? this.contents()[0]?.elementRef.nativeElement ?? null;
     }
 
     contentScrolled(scrollTop: number): void {
@@ -615,7 +642,14 @@ export class DynamicPage {
         cn(
             'm-0 box-border flex h-full flex-col p-0 font-sap-font-family text-sap-font-size text-sap-text-color',
             PADDING[this.size()],
-            this.positionRelative() && 'relative'
+            this.positionRelative() && 'relative',
+            // tabs: the bar follows the page paddings and casts its shadow on the content
+            '[&>fd-tab-list]:min-h-0 [&>fd-tab-list]:flex-1 [&>fd-tab-list>div:first-child]:relative [&>fd-tab-list>div:first-child]:z-1 [&>fd-tab-list>div:first-child]:px-(--dp-px)',
+            '[&>fd-tab-list>div:last-child]:bg-sap-background-color',
+            this.background() === 'list' &&
+                '[&>fd-tab-list>div:last-child]:bg-sap-group-content-background hc:[&>fd-tab-list>div:last-child]:bg-sap-background-color',
+            this.background() === 'transparent' &&
+                '[&>fd-tab-list>div:last-child]:bg-transparent hc:[&>fd-tab-list>div:last-child]:bg-sap-background-color'
         )
     );
 }

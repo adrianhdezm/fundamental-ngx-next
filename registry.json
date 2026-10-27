@@ -706,7 +706,7 @@
       "type": "registry:ui",
       "title": "Dynamic Page",
       "description": "Page with a title area, a collapsible (pinnable) header, scrolling content and a footer.",
-      "registryDependencies": ["utils", "theme", "button"],
+      "registryDependencies": ["utils", "theme", "button", "breadcrumb", "tabs"],
       "files": [
         {
           "path": "registry/ui/dynamic-page/dynamic-page.ts",
