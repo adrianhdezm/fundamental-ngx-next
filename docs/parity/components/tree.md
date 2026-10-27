@@ -1,7 +1,7 @@
 ## tree
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/tree) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/tree)
-Registry: `registry/ui/tree/` — 5 stories, 8 tests.
+Registry: `registry/ui/tree/` — 5 stories, 17 tests.
 
 ### Stories vs. upstream examples
 
@@ -16,21 +16,20 @@ Registry: `registry/ui/tree/` — 5 stories, 8 tests.
 
 ### Tests vs. upstream specs
 
-| Upstream behaviour                                      | Registry test                                                           | Status     | Notes                                                                        |
-| ------------------------------------------------------- | ----------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------- |
-| `should create` (tree, tree item, data source)          | —                                                                       | ➖ n/a     |                                                                              |
-| Tree item appropriate classes                           | —                                                                       | ➖ n/a     | Class only                                                                   |
-| Renders without border (`noBorder`)                     | —                                                                       | ❌ missing | Input exists; no visual check                                                |
-| Renders icon and text from projected directives         | is a tree of items with levels …                                        | 🟡 partial | Text covered; the icon slot is never asserted                                |
-| Creates nested level when expanded                      | expands with the expander and indents the children                      | ✅ covered |                                                                              |
-| Enables selection, marks selected value                 | selects one item as a form value; selects several items with checkboxes | ✅ covered |                                                                              |
-| Renders data source items                               | renders data items and loads children when they expand                  | ✅ covered |                                                                              |
-| Loading skeleton (5 rows) shown, then hidden            | shows loading rows until lazy children arrive                           | ✅ covered |                                                                              |
-| TreeService expanded-level tracking (add/remove levels) | expands with the expander and indents the children                      | 🟡 partial | Only level-1 expansion indent checked; deeper levels and collapsing back not |
+| Upstream behaviour                                      | Registry test                                                                                                                | Status     | Notes                                        |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------- | -------------------------------------------- |
+| `should create` (tree, tree item, data source)          | —                                                                                                                            | ➖ n/a     |                                              |
+| Tree item appropriate classes                           | —                                                                                                                            | ➖ n/a     | Class only                                   |
+| Renders without border (`noBorder`)                     | removes the borders of the top level items with noBorder                                                                     | ✅ covered | Computed border colour                       |
+| Renders icon and text from projected directives         | is a tree of items with levels …; renders the projected icon before the text                                                 | ✅ covered |                                              |
+| Creates nested level when expanded                      | expands with the expander and indents the children                                                                           | ✅ covered |                                              |
+| Enables selection, marks selected value                 | selects one item as a form value; selects several items with checkboxes                                                      | ✅ covered |                                              |
+| Renders data source items                               | renders data items and loads children when they expand                                                                       | ✅ covered |                                              |
+| Loading skeleton (5 rows) shown, then hidden            | shows loading rows until lazy children arrive                                                                                | ✅ covered |                                              |
+| TreeService expanded-level tracking (add/remove levels) | expands with the expander and indents the children; indents by the deepest expanded level and shrinks back when it collapses | ✅ covered | Levels 1 and 2 expanded, and collapsing back |
 
-Registry-only coverage: roles and aria-level/setsize/posinset, roving tab stop with Up/Down/Left/Right/Home/End, Enter on a navigatable item, "No data" text, multi-select with Space, aria-multiselectable.
+Registry-only coverage: roles and aria-level/setsize/posinset, roving tab stop with Up/Down/Left/Right/Home/End, Enter on a navigatable item, "No data" text, multi-select with Space, aria-multiselectable, highlight states, the navigation indicator, `afterExpand`/`right` selection placements, `independentSections`, RTL arrow keys, action buttons reachable with Tab while one item stays in the tab order.
 
 ### Gaps to fill
 
-- **Tests:** "noBorder removes the item borders"; "renders the projected icon"; "indentation follows the deepest expanded level and shrinks when it collapses"; "state shows the highlight indicator"; "navigationIndicator shows the arrow on navigatable items"; "afterExpand and right selection placements"; "independentSections drops the leaf indentation"; "arrow keys are mirrored in RTL"; "action buttons are reachable from the item without leaving the single tab stop".
-- **Effort:** M, one story and about nine tests, mostly visual/ARIA checks.
+- None.
