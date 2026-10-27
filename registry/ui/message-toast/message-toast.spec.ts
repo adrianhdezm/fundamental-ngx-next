@@ -35,14 +35,14 @@ describe('MessageToast', () => {
 
     it('renders components with their data and stays open while hovered', async () => {
         const service = TestBed.inject(MessageToastService);
-        service.open(ToastContent, { data: { text: 'From a component' }, duration: 150 });
-        await wait();
+        service.open(ToastContent, { data: { text: 'From a component' }, duration: 400 });
+        await wait(50);
         expect(toasts()[0].querySelector('.content')!.textContent).toBe('From a component');
         toasts()[0].dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-        await wait(250);
+        await wait(600);
         expect(toasts()).toHaveLength(1);
         toasts()[0].dispatchEvent(new MouseEvent('mouseleave'));
-        await wait(250);
+        await wait(700);
         expect(toasts()).toHaveLength(0);
     });
 

@@ -72,7 +72,7 @@ const TARGET_LABEL: Record<string, string> = {
  */
 @Component({
     selector: 'fd-product-switch-body',
-    imports: [CdkDropList, CdkDrag, Icon, Avatar, BusyIndicator, NgTemplateOutlet],
+    imports: [CdkDropList, CdkDrag, Icon, Avatar, BusyIndicator],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'block' },
     template: `

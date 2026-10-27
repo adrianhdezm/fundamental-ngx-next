@@ -904,6 +904,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "user-menu",
+      "type": "registry:ui",
+      "title": "User Menu",
+      "description": "The signed-in user's details and actions in a popover from an avatar, with submenus, a header bar for the scrolled-away name and a full-screen mobile mode.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "bar", "button", "dialog", "icon", "popover", "title"],
+      "files": [
+        {
+          "path": "registry/ui/user-menu/user-menu.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
