@@ -25,7 +25,9 @@ const filter = args.find((a) => a.startsWith('--filter='))?.split('=')[1];
 const KNOWN = {
     // Horizon inverted status backgrounds and informative text are below 4.5:1 by design
     'components-object-status-': { rules: ['color-contrast'], themes: ['sap_horizon', 'sap_horizon_dark'] },
-    'components-object-number-': { rules: ['color-contrast'], themes: ['sap_horizon', 'sap_horizon_dark'] }
+    'components-object-number-': { rules: ['color-contrast'], themes: ['sap_horizon', 'sap_horizon_dark'] },
+    // inverted status badges and white text on shell category colours
+    'components-card-': { rules: ['color-contrast'], themes: ['sap_horizon', 'sap_horizon_dark'] }
 };
 
 const index = await (await fetch(`${base}/index.json`)).json();

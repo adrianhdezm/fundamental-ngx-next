@@ -523,6 +523,19 @@
         }
       ],
       "dependencies": ["@angular/cdk"]
+    },
+    {
+      "name": "card",
+      "type": "registry:ui",
+      "title": "Card",
+      "description": "Cards with header (title, subtitle, avatar, counter, KPI), content, footer actions, badges, media and banner layouts, loading state and card lists.",
+      "registryDependencies": ["utils", "theme", "object-status", "avatar"],
+      "files": [
+        {
+          "path": "registry/ui/card/card.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
