@@ -863,6 +863,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "notification",
+      "type": "registry:ui",
+      "title": "Notification",
+      "description": "Notifications with title, description, footnotes, status and actions; More/Less for clamped texts; lists, collapsible groups with keyboard navigation and banners opened by a service.",
+      "dependencies": ["@angular/cdk", "rxjs"],
+      "registryDependencies": ["utils", "theme", "icon", "link"],
+      "files": [
+        {
+          "path": "registry/ui/notification/notification.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
