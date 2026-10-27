@@ -242,6 +242,107 @@ describe('MultiCombobox', () => {
     });
 
     describe('options', () => {
+        it('the addon button opens and closes the list', async () => {
+            const { fixture, host, input, addon } = await setupModel();
+            await userEvent.click(addon());
+            await fixture.whenStable();
+            expect(input.getAttribute('aria-expanded')).toBe('true');
+            expect(options()).toHaveLength(4);
+            expect(document.activeElement).toBe(input);
+            await userEvent.click(addon());
+            await fixture.whenStable();
+            expect(input.getAttribute('aria-expanded')).toBe('false');
+            expect(host.addonClicks()).toBe(2);
+        });
+
+        it('openDropdownOnAddOnClicked=false keeps the list closed', async () => {
+            const { fixture, host, input, addon } = await setupModel((h) => h.openOnAddon.set(false));
+            await userEvent.click(addon());
+            await fixture.whenStable();
+            expect(input.getAttribute('aria-expanded')).toBe('false');
+            expect(options()).toHaveLength(0);
+            expect(host.addonClicks()).toBe(1);
+        });
+
+        it('limitless shows every item, otherwise mapLimit', async () => {
+            const many = Array.from({ length: 20 }, (_, i) => `Item ${i + 1}`);
+            const { fixture, host, addon } = await setupModel((h) => h.data.set(many));
+            await userEvent.click(addon());
+            await fixture.whenStable();
+            expect(options()).toHaveLength(12);
+            await userEvent.click(addon());
+            host.limitless.set(true);
+            await fixture.whenStable();
+            await userEvent.click(addon());
+            await fixture.whenStable();
+            expect(options()).toHaveLength(20);
+        });
+
+        it('shows secondary text in a second column', async () => {
+            const { fixture, addon } = await setupModel((h) => h.secondary.set(true));
+            await userEvent.click(addon());
+            await fixture.whenStable();
+            const cells = [...options()[2].querySelectorAll<HTMLElement>('span[title]')];
+            expect(cells.map((c) => c.textContent?.trim())).toEqual(['Red Pepper', 'Vegetable']);
+        });
+
+        it('filters the new items after the dataSource is replaced, and handles an empty one', async () => {
+            const { fixture, host, input, root } = await setupModel();
+            await userEvent.type(input, 'b');
+            await fixture.whenStable();
+            expect(optionTexts()).toEqual(['Banana']);
+            await userEvent.keyboard('{Escape}');
+            host.data.set([
+                { id: 5, name: 'Beetroot', type: 'Vegetable' },
+                { id: 6, name: 'Broccoli', type: 'Vegetable' },
+                { id: 7, name: 'Carrot', type: 'Vegetable' }
+            ]);
+            await fixture.whenStable();
+            await userEvent.type(input, 'b');
+            await fixture.whenStable();
+            expect(optionTexts()).toEqual(['Beetroot', 'Broccoli']);
+            await userEvent.keyboard('r');
+            await fixture.whenStable();
+            expect(optionTexts()).toEqual(['Broccoli']);
+            await userEvent.clear(input);
+            await fixture.whenStable();
+            expect(optionTexts()).toEqual(['Beetroot', 'Broccoli', 'Carrot']);
+
+            await userEvent.keyboard('{Escape}');
+            host.data.set([]);
+            await fixture.whenStable();
+            await userEvent.type(input, 'b');
+            await fixture.whenStable();
+            expect(input.value).toBe('');
+            expect(root.textContent).toContain('Invalid entry');
+            expect(optionTexts()).toEqual([]);
+        });
+
+        it('the selectedItems input adds, replaces and clears tokens and the checked options', async () => {
+            const { fixture, host, addon } = await setupModel();
+            const checked = () => options().filter((o) => o.getAttribute('aria-selected') === 'true');
+            host.selected.set([ITEMS[0], ITEMS[1]]);
+            await fixture.whenStable();
+            expect(tokens()).toEqual(['Apple', 'Banana']);
+
+            host.selected.set([ITEMS[1]]);
+            await fixture.whenStable();
+            expect(tokens()).toEqual(['Banana']);
+            await userEvent.click(addon());
+            await fixture.whenStable();
+            expect(checked().map((o) => o.textContent?.trim())).toEqual(['Banana']);
+            await userEvent.click(addon());
+            await fixture.whenStable();
+
+            host.selected.set([]);
+            await fixture.whenStable();
+            expect(tokens()).toEqual([]);
+            await userEvent.click(addon());
+            await fixture.whenStable();
+            expect(checked()).toEqual([]);
+            expect(host.changes()).toBe(0);
+        });
+
         it('removing a token unchecks it in the open list and keeps the others', async () => {
             const { fixture, host, addon } = await setupModel((h) => h.selected.set([ITEMS[0], ITEMS[2]]));
             await userEvent.click(addon());
@@ -257,6 +358,21 @@ describe('MultiCombobox', () => {
         });
     });
 
+    it('renders the form value once an observable dataSource emits', async () => {
+        const fixture = TestBed.createComponent(ObservableHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        expect(tokens()).toEqual(['Banana']);
+        fixture.componentInstance.source.next(ITEMS);
+        await fixture.whenStable();
+        expect(tokens()).toEqual(['Banana']);
+        const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('input')!;
+        input.focus();
+        await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}');
+        await fixture.whenStable();
+        expect(options().map((o) => o.getAttribute('aria-selected'))).toEqual(['false', 'true', 'false', 'false']);
+    });
+
     describe('mobile', () => {
         const mobileSetup = () =>
             setupModel((h) => {
@@ -270,6 +386,33 @@ describe('MultiCombobox', () => {
             expect(document.querySelector('[role=dialog] [role=listbox]')).not.toBeNull();
         };
 
+        it('Approve commits once and Cancel restores the selection', async () => {
+            const { fixture, host, addon } = await mobileSetup();
+            await openDialog(fixture, addon);
+            await userEvent.click(options()[0]);
+            await userEvent.click(options()[1]);
+            await fixture.whenStable();
+            expect(options()[0].getAttribute('aria-selected')).toBe('true');
+            expect(host.changes()).toBe(0);
+            await userEvent.click(dialogButton('Cancel')!);
+            await fixture.whenStable();
+            await wait(300);
+            expect(document.querySelector('[role=dialog]')).toBeNull();
+            expect(names(host.selected())).toEqual(['Banana']);
+            expect(tokens()).toEqual(['Banana']);
+            expect(host.changes()).toBe(0);
+
+            await openDialog(fixture, addon);
+            expect(options().map((o) => o.getAttribute('aria-selected'))).toEqual(['false', 'true', 'false', 'false']);
+            await userEvent.click(options()[3]);
+            await userEvent.click(dialogButton('OK')!);
+            await fixture.whenStable();
+            await wait(300);
+            expect(document.querySelector('[role=dialog]')).toBeNull();
+            expect(names(host.selected())).toEqual(['Banana', 'Spinach']);
+            expect(host.changes()).toBe(1);
+        });
+
         it('deselecting the last item keeps the focus in the dialog', async () => {
             const { fixture, host, addon } = await mobileSetup();
             await openDialog(fixture, addon);
@@ -281,5 +424,26 @@ describe('MultiCombobox', () => {
             expect(names(host.selected())).toEqual([]);
             expect(document.activeElement).toBe(field);
         });
+    });
+
+    it('inside a dialog, Escape closes the list but not the dialog', async () => {
+        const fixture = TestBed.createComponent(DialogHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        const ref = fixture.componentInstance.open();
+        await fixture.whenStable();
+        await wait();
+        const input = document.querySelector<HTMLInputElement>('[role=dialog] fd-multi-combobox input')!;
+        input.focus();
+        await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}');
+        await fixture.whenStable();
+        expect(input.getAttribute('aria-expanded')).toBe('true');
+        await userEvent.keyboard('{Escape}');
+        await fixture.whenStable();
+        expect(input.getAttribute('aria-expanded')).toBe('false');
+        expect(ref.isClosed()).toBe(false);
+        await userEvent.keyboard('{Escape}');
+        await fixture.whenStable();
+        expect(ref.isClosed()).toBe(true);
     });
 });
