@@ -130,6 +130,19 @@ export const Types: Story = {
     })
 };
 
+export const WithoutIcons: Story = {
+    name: 'Without icons',
+    render: () => ({
+        template: `
+            <div class="${col}">
+                <fd-message-strip type="warning" noIcon>A dismissible warning message strip.</fd-message-strip>
+                <fd-message-strip type="success" [dismissible]="false" noIcon>A non-dismissible success message strip.</fd-message-strip>
+                <fd-message-strip type="information" noIcon>A dismissible information message strip.</fd-message-strip>
+                <fd-message-strip type="error" [dismissible]="false" noIcon>A non-dismissible error message strip.</fd-message-strip>
+            </div>`
+    })
+};
+
 export const Widths: Story = {
     render: () => ({
         template: `

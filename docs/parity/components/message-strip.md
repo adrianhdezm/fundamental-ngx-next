@@ -1,19 +1,19 @@
 ## message-strip
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/message-strip) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/message-strip)
-Registry: `registry/ui/message-strip/` — 7 stories, 17 tests.
+Registry: `registry/ui/message-strip/` — 8 stories, 17 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                       | Registry story     | Status     | Notes                                                                              |
-| -------------------------------------- | ------------------ | ---------- | ---------------------------------------------------------------------------------- |
-| Message Strip Types                    | Types, Playground  | ✅ covered | Incl. dismissible/non-dismissible and long text                                    |
-| Custom Icons                           | IndicationColors   | ✅ covered | Custom icon via `*fdMessageStripIcon`                                              |
-| Message Strips Without Icons           | Types              | 🟡 partial | One `noIcon` strip (warning); upstream shows all four types without icons          |
-| Message Strips With Customizable Width | Widths             | ✅ covered |                                                                                    |
-| Message Strips Indication Colors       | IndicationColors   | ✅ covered | All 20 colours                                                                     |
-| Message Strip Alerts                   | Alerts, OpenAlerts | ✅ covered | "Open: alerts" opens one alert per position in `play`, so the a11y run checks them |
-| Auto Dismiss Message Strip Alerts      | AutoDismiss        | ✅ covered |                                                                                    |
+| Upstream example                       | Registry story                 | Status     | Notes                                                                              |
+| -------------------------------------- | ------------------------------ | ---------- | ---------------------------------------------------------------------------------- |
+| Message Strip Types                    | Types, Playground              | ✅ covered | Incl. dismissible/non-dismissible and long text                                    |
+| Custom Icons                           | IndicationColors               | ✅ covered | Custom icon via `*fdMessageStripIcon`                                              |
+| Message Strips Without Icons           | WithoutIcons ("Without icons") | ✅ covered | All four types with `noIcon`                                                       |
+| Message Strips With Customizable Width | Widths                         | ✅ covered |                                                                                    |
+| Message Strips Indication Colors       | IndicationColors               | ✅ covered | All 20 colours                                                                     |
+| Message Strip Alerts                   | Alerts, OpenAlerts             | ✅ covered | "Open: alerts" opens one alert per position in `play`, so the a11y run checks them |
+| Auto Dismiss Message Strip Alerts      | AutoDismiss                    | ✅ covered |                                                                                    |
 
 ### Tests vs. upstream specs
 
@@ -40,6 +40,5 @@ Registry-only coverage: auto dismiss timer and mousePersist, `open()` re-showing
 
 ### Gaps to fill
 
-- **Stories:** "Without icons" showing all four types with `noIcon`.
 - **Tests:** "dismiss() emits onDismiss and hides the strip"; "ariaLabel sets the aria-label of the strip"; "marginBottom sets the bottom margin"; "dismiss button label follows dismissBtnTitle changes and falls back when it is empty".
 - **Effort:** S — small additions to a strong spec.
