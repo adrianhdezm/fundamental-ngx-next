@@ -1359,6 +1359,31 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "date-picker",
+      "type": "registry:ui",
+      "title": "Date Picker",
+      "description": "A date field with a button that opens a calendar: single dates, ranges and multiple dates or ranges, reading typed dates, with validation states, messages and a mobile dialog.",
+      "registryDependencies": [
+        "utils",
+        "theme",
+        "datetime",
+        "bar",
+        "button",
+        "calendar",
+        "dialog",
+        "form",
+        "input-group",
+        "popover",
+        "title"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/date-picker/date-picker.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
