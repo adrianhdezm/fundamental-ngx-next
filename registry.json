@@ -890,6 +890,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "product-switch",
+      "type": "registry:ui",
+      "title": "Product Switch",
+      "description": "Grid of the user's products in a popover, reorderable by drag and drop, with a list layout on small screens and keyboard navigation.",
+      "dependencies": ["@angular/cdk", "rxjs"],
+      "registryDependencies": ["utils", "theme", "avatar", "busy-indicator", "button", "icon", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/product-switch/product-switch.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
