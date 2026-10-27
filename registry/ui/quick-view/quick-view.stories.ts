@@ -1,4 +1,4 @@
-import { Component, TemplateRef, inject, input, viewChild } from '@angular/core';
+import { Component, TemplateRef, computed, inject, input, viewChild } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Avatar } from '@/ui/avatar/avatar';
@@ -38,6 +38,8 @@ const PARTS = [
     Link
 ];
 
+const LONG = ' Lorem ipsum dolor sit amet consectetur adipisicing elit. Distinctio ipsam cupiditate voluptatibus et.';
+
 const DATA = {
     title: 'Employee',
     subHeader: { title: 'Ann Smith', subtitle: 'Senior sales manager' },
@@ -66,19 +68,27 @@ const DATA = {
     template: `
         <fd-quick-view>
             @if (withTitle()) {
-                <fd-quick-view-title [align]="align()">{{ data.title }}</fd-quick-view-title>
+                <fd-quick-view-title [align]="align()">{{ data.title }}{{ suffix() }}</fd-quick-view-title>
             }
             <fd-quick-view-subheader>
                 <fd-avatar size="s" [label]="data.subHeader.title" />
-                <fd-quick-view-subheader-title>{{ data.subHeader.title }}</fd-quick-view-subheader-title>
-                <fd-quick-view-subheader-subtitle>{{ data.subHeader.subtitle }}</fd-quick-view-subheader-subtitle>
+                <fd-quick-view-subheader-title [allowWrap]="long()"
+                    >{{ data.subHeader.title }}{{ suffix() }}</fd-quick-view-subheader-title
+                >
+                <fd-quick-view-subheader-subtitle [allowWrap]="long()"
+                    >{{ data.subHeader.subtitle }}{{ suffix() }}</fd-quick-view-subheader-subtitle
+                >
             </fd-quick-view-subheader>
             @for (group of data.groups; track group.title) {
                 <fd-quick-view-group>
-                    <fd-quick-view-group-title>{{ group.title }}</fd-quick-view-group-title>
+                    <fd-quick-view-group-title [allowWrap]="long()"
+                        >{{ group.title }}{{ suffix() }}</fd-quick-view-group-title
+                    >
                     @for (item of group.items; track item.label) {
                         <fd-quick-view-group-item>
-                            <fd-quick-view-group-item-label>{{ item.label }}</fd-quick-view-group-item-label>
+                            <fd-quick-view-group-item-label [allowWrap]="long()"
+                                >{{ item.label }}{{ suffix() }}</fd-quick-view-group-item-label
+                            >
                             <fd-quick-view-group-item-content>
                                 @if (item.href) {
                                     <a fdLink fd-quick-view-group-item-content-element [href]="item.href">{{
@@ -98,7 +108,10 @@ const DATA = {
 class StoryQuickView {
     readonly withTitle = input(false);
     readonly align = input<'left' | 'middle' | 'right'>('middle');
+    /** Appends a long text to every title and label, which wrap instead of truncating. */
+    readonly long = input(false);
     protected readonly data = DATA;
+    protected readonly suffix = computed(() => (this.long() ? LONG : ''));
 }
 
 @Component({
@@ -123,6 +136,12 @@ class StoryQuickView {
             <fd-popover-control><button fdButton label="Open in a popover"></button></fd-popover-control>
             <fd-popover-body class="max-w-[37.5rem]">
                 <story-quick-view [withTitle]="true" />
+            </fd-popover-body>
+        </fd-popover>
+        <fd-popover placement="right-start" [noArrow]="false" bodyAriaLabel="Employee">
+            <fd-popover-control><button fdButton label="Open without heading"></button></fd-popover-control>
+            <fd-popover-body class="max-w-[37.5rem]">
+                <story-quick-view />
             </fd-popover-body>
         </fd-popover>
         <button fdButton label="Open in a dialog" (click)="open()"></button>
@@ -175,6 +194,18 @@ export const Overlays: Story = {
     name: 'In a popover or a dialog',
     parameters: { docs: { story: { inline: false, iframeHeight: 560 } } },
     render: () => ({ template: `<story-quick-view-overlays />` })
+};
+
+export const LongTexts: Story = {
+    name: 'Long texts',
+    parameters: {
+        docs: {
+            description: {
+                story: 'With `allowWrap`, the subheader title and subtitle, group titles and labels wrap instead of truncating. The header bar title still truncates.'
+            }
+        }
+    },
+    render: () => ({ template: `<story-quick-view class="block max-w-sm" [withTitle]="true" [long]="true" />` })
 };
 
 /** Clicks the button that opens the overlay and waits for the quick view inside it. */

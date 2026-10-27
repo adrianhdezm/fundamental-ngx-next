@@ -1,15 +1,15 @@
 ## quick-view
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/quick-view) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/quick-view)
-Registry: `registry/ui/quick-view/` — 5 stories, 2 tests.
+Registry: `registry/ui/quick-view/` — 6 stories, 2 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example      | Registry story                        | Status     | Notes                                                                                                                                                              |
-| --------------------- | ------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Basic Quick View      | `Default` ("Quick view"), `WithTitle` | ✅ covered | Subheader with avatar, two groups, tel/mailto links; `WithTitle` adds the header bar.                                                                              |
-| Quick View in Popover | `Overlays`, `Open: In a popover`      | 🟡 partial | Popover with a titled quick view, opened in `play` by the Open story; upstream's long-text `allowWrap` variant and second "without heading" popover are not shown. |
-| Quick View in Dialog  | `Overlays`, `Open: In a dialog`       | ✅ covered | Dialog opened by a button; the Open story opens it in `play` so axe checks the dialog content.                                                                     |
+| Upstream example      | Registry story                                 | Status     | Notes                                                                                                                                            |
+| --------------------- | ---------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Basic Quick View      | `Default` ("Quick view"), `WithTitle`          | ✅ covered | Subheader with avatar, two groups, tel/mailto links; `WithTitle` adds the header bar.                                                            |
+| Quick View in Popover | `Overlays`, `Open: In a popover`, `Long texts` | ✅ covered | A titled quick view and one without heading in popovers, opened in `play` by the Open story; the long-text `allowWrap` variant is its own story. |
+| Quick View in Dialog  | `Overlays`, `Open: In a dialog`                | ✅ covered | Dialog opened by a button; the Open story opens it in `play` so axe checks the dialog content.                                                   |
 
 ### Tests vs. upstream specs
 
@@ -27,6 +27,5 @@ Registry-only coverage: none beyond the above.
 
 ### Gaps to fill
 
-- **Stories:** `Long texts` showing `allowWrap` on subheader title/subtitle, group title and labels.
 - **Tests:** "renders the id on the quick view"; "shows the title in a header bar on the left, middle or right by align"; "allowWrap wraps the titles and labels instead of truncating".
 - **Effort:** S — small static host; the group-naming fix may need a few lines in the source.
