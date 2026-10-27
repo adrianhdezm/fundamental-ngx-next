@@ -1,6 +1,7 @@
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { Avatar } from '@/ui/avatar/avatar';
 import type { Placement } from '@/ui/popover/popover';
@@ -409,5 +410,21 @@ describe('AvatarGroup', () => {
         expect(body()!.getBoundingClientRect().left).toBeGreaterThanOrEqual(avatar.getBoundingClientRect().right - 1);
         await userEvent.keyboard('{Escape}');
         await stable();
+    });
+
+    it('focusing an avatar of an individual group announces its position', async () => {
+        const { group, overflowTrigger } = await setup((h) => {
+            h.width.set(1000);
+            h.max.set(5);
+        });
+        const announce = vi.spyOn(TestBed.inject(LiveAnnouncer), 'announce');
+        const triggers = [...group.querySelectorAll<HTMLElement>('[data-avatar-group-item] [role=button]')];
+        expect(triggers).toHaveLength(4);
+        triggers[1].focus();
+        expect(announce).toHaveBeenLastCalledWith('2 of 5');
+        // the overflow button is the last item of the list
+        overflowTrigger()!.focus();
+        expect(announce).toHaveBeenLastCalledWith('5 of 5');
+        announce.mockRestore();
     });
 });

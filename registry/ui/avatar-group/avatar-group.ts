@@ -4,6 +4,7 @@
  * Modified for fundamental-ngx-registry: rewritten with Angular signals, the Angular CDK and Tailwind CSS.
  * SPDX-License-Identifier: Apache-2.0
  */
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { NgTemplateOutlet } from '@angular/common';
 import {
     ChangeDetectionStrategy,
@@ -189,7 +190,13 @@ export class AvatarGroupOverflowList {
     host: { '[class]': 'computedClass()' },
     template: `
         @if (type() === 'individual') {
-            <div #row role="list" [attr.aria-label]="ariaLabel() || 'Individual avatar group'" [class]="rowClass()">
+            <div
+                #row
+                role="list"
+                [attr.aria-label]="ariaLabel() || 'Individual avatar group'"
+                [class]="rowClass()"
+                (focusin)="announcePosition($event)"
+            >
                 @for (item of visibleItems(); track item) {
                     <div role="listitem" data-avatar-group-item class="flex">
                         @if (item.details()) {
@@ -320,6 +327,7 @@ export class AvatarGroup {
     protected readonly customBody = contentChild(AvatarGroupOverflowBody);
     private readonly row = viewChild<ElementRef<HTMLElement>>('row');
     private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    private readonly announcer = inject(LiveAnnouncer);
 
     /** Measured widths (including spacing) of avatars and the overflow button. */
     private readonly widths = new Map<AvatarGroupItem | 'overflow', number>();
@@ -371,6 +379,14 @@ export class AvatarGroup {
             observer.observe(this.host);
             destroyRef.onDestroy(() => observer.disconnect());
         });
+    }
+
+    /** Announces "2 of 6" when an avatar (or the overflow button) of an individual group gets the focus. */
+    protected announcePosition(event: FocusEvent): void {
+        const row = event.currentTarget as HTMLElement;
+        const items = [...row.querySelectorAll<HTMLElement>(':scope > [role=listitem]')];
+        const index = items.findIndex((item) => item.contains(event.target as Node));
+        if (index >= 0) this.announcer.announce(`${index + 1} of ${items.length}`);
     }
 
     private averageWidth(): number {
