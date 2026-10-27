@@ -496,6 +496,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "layout-grid",
+      "type": "registry:ui",
+      "title": "Layout Grid",
+      "description": "Responsive 12-column grid with md/lg/xl spans, offsets, growing columns and gutters.",
+      "registryDependencies": ["utils", "theme"],
+      "files": [
+        {
+          "path": "registry/ui/layout-grid/layout-grid.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
