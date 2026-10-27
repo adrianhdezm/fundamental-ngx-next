@@ -1,5 +1,10 @@
+import { Component, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { Avatar } from '@/ui/avatar/avatar';
+import { Button } from '@/ui/button/button';
+import { Combobox } from '@/ui/combobox/combobox';
+import { ContentDensityDirective } from '@/ui/content-density/content-density';
 import { Title } from '@/ui/title/title';
 import { Bar, BarElement, BarLeft, BarMiddle, BarRight, ButtonBar } from './bar';
 
@@ -116,4 +121,63 @@ export const PageSizes: Story = {
                 }
             </div>`
     })
+};
+
+/** A neutral placeholder logo. */
+const LOGO =
+    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 30'><rect width='60' height='30' rx='4' fill='%230070f2'/><text x='30' y='20' font-family='Arial' font-size='13' font-weight='bold' fill='white' text-anchor='middle'>ACME</text></svg>";
+
+@Component({
+    selector: 'story-bar-custom-shellbar',
+    imports: [...IMPORTS, Button, Combobox, ContentDensityDirective, FormsModule],
+    template: `
+        <div fd-bar class="[--bar-bg:var(--sapShellColor)] [--bar-px:2rem]" aria-label="Custom Shellbar">
+            <div fd-bar-left>
+                <fd-bar-element>
+                    <fd-combobox
+                        fdCompact
+                        isSearch
+                        ariaLabel="Search"
+                        placeholder="Type some text..."
+                        maxHeight="250px"
+                        [dropdownValues]="searchTerms"
+                        [(ngModel)]="searchTerm"
+                    />
+                </fd-bar-element>
+            </div>
+            <div fd-bar-middle>
+                <fd-bar-element>
+                    <a href="#" class="flex" aria-label="Home" (click)="$event.preventDefault()">
+                        <img class="block h-8" [src]="logo" alt="" />
+                    </a>
+                </fd-bar-element>
+            </div>
+            <div fd-bar-right>
+                <fd-bar-element>
+                    <button fdButton glyph="cart" ariaLabel="Add to Cart" title="Add to Cart"></button>
+                </fd-bar-element>
+                <fd-bar-element>
+                    <fd-avatar circle size="xs" [colorAccent]="1" label="Jane Doe" />
+                </fd-bar-element>
+            </div>
+        </div>
+    `
+})
+class CustomShellbarStory {
+    protected readonly logo = LOGO;
+    protected readonly searchTerms = ['Apple', 'Banana', 'Kiwi', 'Strawberry'];
+    protected readonly searchTerm = signal('');
+}
+
+export const CustomShellbar: Story = {
+    name: 'Custom shellbar',
+    parameters: {
+        docs: {
+            description: {
+                story: 'A plain bar on the shell colour, composed like a shellbar: a search combobox on the left, a logo link in the middle, and a cart button and an avatar on the right.'
+            }
+        }
+    },
+    decorators: [moduleMetadata({ imports: [CustomShellbarStory] })],
+    render: () => ({ template: `<story-bar-custom-shellbar />` })
 };

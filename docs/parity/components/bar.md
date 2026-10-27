@@ -1,22 +1,22 @@
 ## bar
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/bar) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/bar)
-Registry: `registry/ui/bar/` — 4 stories, 17 tests.
+Registry: `registry/ui/bar/` — 5 stories, 17 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                 | Registry story                                | Status     | Notes                                                                                             |
-| -------------------------------- | --------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------- |
-| Default Bar                      | Designs ("Default"), Playground               | ✅ covered | Back button, three sections, avatar                                                               |
-| Bar Design Header                | Designs ("Header")                            | ✅ covered |                                                                                                   |
-| Bar Design SubHeader             | Designs ("Header with subheader"), Playground | ✅ covered | Shown under a header; a standalone subheader is available via the Playground `barDesign` control  |
-| Bar Design Header with SubHeader | Designs ("Header with subheader")             | ✅ covered |                                                                                                   |
-| Bar Design Footer                | Designs ("Footer")                            | ✅ covered |                                                                                                   |
-| Bar Design Floating Footer       | FloatingFooter                                | ✅ covered |                                                                                                   |
-| Bar With Title                   | Designs ("Title")                             | ✅ covered |                                                                                                   |
-| Bar Design in Page               | PageSizes, Playground (`inPage`)              | ✅ covered |                                                                                                   |
-| Page Responsive Behaviour        | PageSizes ("In page, responsive paddings")    | ✅ covered | s, m_l, xl                                                                                        |
-| Custom Shellbar                  | —                                             | ❌ missing | Upstream: search combobox (left), logo link (middle), cart button + avatar (right) in a plain bar |
+| Upstream example                 | Registry story                                | Status     | Notes                                                                                                                    |
+| -------------------------------- | --------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Default Bar                      | Designs ("Default"), Playground               | ✅ covered | Back button, three sections, avatar                                                                                      |
+| Bar Design Header                | Designs ("Header")                            | ✅ covered |                                                                                                                          |
+| Bar Design SubHeader             | Designs ("Header with subheader"), Playground | ✅ covered | Shown under a header; a standalone subheader is available via the Playground `barDesign` control                         |
+| Bar Design Header with SubHeader | Designs ("Header with subheader")             | ✅ covered |                                                                                                                          |
+| Bar Design Footer                | Designs ("Footer")                            | ✅ covered |                                                                                                                          |
+| Bar Design Floating Footer       | FloatingFooter                                | ✅ covered |                                                                                                                          |
+| Bar With Title                   | Designs ("Title")                             | ✅ covered |                                                                                                                          |
+| Bar Design in Page               | PageSizes, Playground (`inPage`)              | ✅ covered |                                                                                                                          |
+| Page Responsive Behaviour        | PageSizes ("In page, responsive paddings")    | ✅ covered | s, m_l, xl                                                                                                               |
+| Custom Shellbar                  | CustomShellbar                                | ✅ covered | Search combobox (left), logo link (middle), cart button + avatar (right) on the shell colour; a neutral placeholder logo |
 
 ### Tests vs. upstream specs
 
@@ -38,6 +38,6 @@ Registry-only coverage: middle area stays centred, truncation priority (titles b
 
 ### Gaps to fill
 
-- **Stories:** "Custom shellbar" — search combobox in the left area, a logo link in the middle, cart button and circle avatar on the right.
+- **Stories:** none.
 - **Tests:** "fullWidth makes a bar element fill its area"; "initialSuggestionTitle and initialSuggestionSubline let the bar grow with their paddings"; "inHomePage paddings follow every size and the default".
 - **Effort:** S, one story and three layout tests.
