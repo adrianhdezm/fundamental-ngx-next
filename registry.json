@@ -469,6 +469,20 @@
         }
       ],
       "dependencies": ["@angular/cdk"]
+    },
+    {
+      "name": "segmented-button",
+      "type": "registry:ui",
+      "title": "Segmented Button",
+      "description": "Group of buttons with single or multiple selection, roving focus and forms support.",
+      "registryDependencies": ["utils", "theme", "button"],
+      "files": [
+        {
+          "path": "registry/ui/segmented-button/segmented-button.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk", "@angular/forms"]
     }
   ]
 }
