@@ -1,27 +1,27 @@
 ## dialog
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/dialog) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/dialog)
-Registry: `registry/ui/dialog/` — 16 stories, 7 tests.
+Registry: `registry/ui/dialog/` — 22 stories, 7 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example              | Registry story                | Status     | Notes                                                                      |
-| ----------------------------- | ----------------------------- | ---------- | -------------------------------------------------------------------------- |
-| Template Based Dialog         | TemplateBased, OpenTemplate   | ✅ covered |                                                                            |
-| Form                          | —                             | ❌ missing | Upstream: dialog with a form-layout grid, required inputs and checkboxes   |
-| Component Based Dialog        | ComponentBased, OpenComponent | ✅ covered | Draggable, resizable, full screen, stacked                                 |
-| Object Based Dialog           | ObjectBased, OpenObject       | ✅ covered |                                                                            |
-| Dialog State                  | States, OpenLoading           | ✅ covered | Close/dismiss/hide/loading                                                 |
-| Dialog Configuration          | Configuration                 | ✅ covered | Draggable, resizable, Escape disabled                                      |
-| Label dialog automatically    | all stories                   | ✅ covered | Every story relies on `fd-dialog-title` auto-labelling; no dedicated story |
-| Dialog Positioning            | Position, OpenPosition        | ✅ covered | Bottom-right only                                                          |
-| Dialog On Mobile Devices      | Mobile, OpenMobile            | ✅ covered |                                                                            |
-| Complex Dialog                | Complex, OpenComplex          | ✅ covered | Bar header, search subheader, selectable list, footer total                |
-| Stacked Dialogs               | ComponentBased                | ✅ covered | "Open another dialog" button                                               |
-| Custom Backdrop and Container | Backdrop                      | ✅ covered | Custom backdrop, container, static dialog                                  |
-| Dialog with inner popovers    | —                             | ❌ missing | Upstream: two `fd-multi-input` overlays inside a dialog                    |
-| Full screen toggler           | ComponentBased                | ✅ covered |                                                                            |
-| Playground Area               | —                             | ❌ missing | No Playground story with config controls                                   |
+| Upstream example              | Registry story                  | Status     | Notes                                                                                                         |
+| ----------------------------- | ------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------- |
+| Template Based Dialog         | TemplateBased, OpenTemplate     | ✅ covered |                                                                                                               |
+| Form                          | Form, OpenForm                  | ✅ covered | Form group with layout-grid rows, required labels, a textarea; checkboxes for responsive and vertical padding |
+| Component Based Dialog        | ComponentBased, OpenComponent   | ✅ covered | Draggable, resizable, full screen, stacked                                                                    |
+| Object Based Dialog           | ObjectBased, OpenObject         | ✅ covered |                                                                                                               |
+| Dialog State                  | States, OpenLoading             | ✅ covered | Close/dismiss/hide/loading                                                                                    |
+| Dialog Configuration          | Configuration                   | ✅ covered | Draggable, resizable, Escape disabled                                                                         |
+| Label dialog automatically    | all stories                     | ✅ covered | Every story relies on `fd-dialog-title` auto-labelling; no dedicated story                                    |
+| Dialog Positioning            | Position, OpenPosition          | ✅ covered | Bottom-right only                                                                                             |
+| Dialog On Mobile Devices      | Mobile, OpenMobile              | ✅ covered |                                                                                                               |
+| Complex Dialog                | Complex, OpenComplex            | ✅ covered | Bar header, search subheader, selectable list, footer total                                                   |
+| Stacked Dialogs               | ComponentBased                  | ✅ covered | "Open another dialog" button                                                                                  |
+| Custom Backdrop and Container | Backdrop                        | ✅ covered | Custom backdrop, container, static dialog                                                                     |
+| Dialog with inner popovers    | InnerPopovers, OpenInnerPopover | ✅ covered | Two `fd-multi-input`s; "Open: inner popover" opens one list and checks it is above the dialog                 |
+| Full screen toggler           | ComponentBased                  | ✅ covered |                                                                                                               |
+| Playground Area               | Playground, OpenPlayground      | ✅ covered | Controls for width, draggable, resizable, mobile, backdrop, Escape and paddings                               |
 
 The "Open: …" stories open their dialog in `play` (they used an `autoOpen` input before).
 
@@ -55,6 +55,5 @@ Registry-only coverage: focus trap (Tab cycling), focus returns to the trigger, 
 
 ### Gaps to fill
 
-- **Stories:** "Form" — dialog with a form-layout grid, required fields and checkboxes, Save/Cancel; "Inner popovers" — dialog with a select/combobox/multi-input whose overlay opens above the dialog, plus "Open: inner popover"; "Playground" — controls for width, draggable, resizable, mobile, backdropClickCloseable.
 - **Tests:** "opens a component and injects its DialogRef and data"; "object dialog without buttons renders no footer"; "dismissAll closes every open dialog"; "close() sets status closed and exposes the result"; "places the dialog at the configured position"; "applies width, height and min/max sizes"; "applies dialogPanelClass and backdropClass"; "mobile mode fills the viewport, mobileOuterSpacing keeps a margin"; "drags by the header when draggable"; "resizes with the handle when resizable and announces it"; "applies ariaLabel and ariaDescribedBy from the config"; "dismisses on router navigation when closeOnNavigation".
 - **Effort:** M, about 12 straightforward config tests plus three stories.
