@@ -213,6 +213,14 @@ describe('NestedList', () => {
         expect(host.expanded()).toBe(true);
         expect(settings.getAttribute('aria-expanded')).toBe('true');
         expect(popoverBody()?.textContent).toContain('Profile');
+        // the overlay is outside the navigation tree: its list is a tree of its own, named by the item
+        const popoverList = popoverBody()!.querySelector('[fd-nested-list]')!;
+        expect(popoverList.getAttribute('role')).toBe('tree');
+        expect(popoverList.getAttribute('aria-label')).toBe('Settings');
+        expect(popoverList.getAttribute('aria-roledescription')).toBe('Navigation List Tree');
+        expect(document.querySelector('[role=tree]')!.getAttribute('aria-roledescription')).toBe(
+            'Navigation List Menu Bar'
+        );
 
         await userEvent.keyboard('{Escape}');
         await wait(150);

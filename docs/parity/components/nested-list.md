@@ -34,7 +34,7 @@ Registry: `registry/ui/nested-list/` — 3 stories, 5 tests (also exercised thro
 | Keyboard service: Up on first focuses last, Down on last focuses first (wrap)    | wraps ArrowUp on the first row to the last and ArrowDown on the last row to the first                                                                                   | ✅ covered | Fixed: `onRowKeydown` now wraps like upstream (`nested-list.spec.ts`)                            |
 | NestedListPopover `should create`                                                | —                                                                                                                                                                       | ➖ n/a     |                                                                                                  |
 
-Registry-only coverage: external `[selected]` / `[(expanded)]` changes and arrow keys without a side navigation (nested-list spec); tree/treeitem roles with roledescription, `aria-describedby` to group header, parent highlighted when a child is selected, `selectable=false` keeps inputs, condensed hides headers (all in the side-navigation spec).
+Registry-only coverage: the list in a condensed popover is a `tree` of its own named by the item (upstream uses `group`, which axe rejects outside a tree); external `[selected]` / `[(expanded)]` changes and arrow keys without a side navigation (nested-list spec); tree/treeitem roles with roledescription, `aria-describedby` to group header, parent highlighted when a child is selected, `selectable=false` keeps inputs, condensed hides headers (all in the side-navigation spec).
 
 ### Gaps to fill
 

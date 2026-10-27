@@ -158,6 +158,7 @@ let nextListId = 0;
         '[attr.id]': 'id()',
         '[attr.role]': 'role()',
         '[attr.aria-roledescription]': 'roleDescription()',
+        '[attr.aria-label]': 'popoverTree ? (popover?.heading() ?? null) : null',
         '[attr.aria-hidden]': 'hidden() || null',
         '[attr.data-level]': 'level()',
         '[attr.data-nested-scope]': 'scope ? "" : null',
@@ -183,10 +184,16 @@ export class NestedList {
         { optional: true }
     );
     /** The popover of the parent item in condensed mode. */
-    readonly inPopover = !!inject(
+    protected readonly popover: NestedListPopover | null = inject(
         forwardRef(() => NestedListPopover),
         { optional: true }
     );
+    readonly inPopover = !!this.popover;
+    /**
+     * The top list of a popover is a tree of its own, named by the popover title: the overlay is outside
+     * the navigation tree, so a group there would have no tree around it.
+     */
+    protected readonly popoverTree = this.inPopover && !this.parentItem?.list.inPopover;
     /** A list at the top of its own navigation handles the arrow keys of its rows. */
     protected readonly scope = !this.parentItem && !inject(NESTED_LIST_SCOPE, { optional: true });
     private readonly projected = contentChildren<NestedItem>(forwardRef(() => NestedItem));
@@ -199,10 +206,10 @@ export class NestedList {
     });
     /** A collapsed parent hides its list. */
     readonly hidden = computed(() => !!this.parentItem && !this.inPopover && !this.parentItem.expanded());
-    protected readonly role = computed(() => (this.level() > 1 || this.inPopover ? 'group' : 'tree'));
+    protected readonly role = computed(() => (this.popoverTree || this.level() === 1 ? 'tree' : 'group'));
     protected readonly roleDescription = computed(() =>
         this.role() === 'tree'
-            ? this.state.condensed()
+            ? this.state.condensed() && !this.popoverTree
                 ? this.ariaRoledescriptionMenuBar()
                 : this.ariaRoledescriptionTree()
             : null
@@ -563,7 +570,7 @@ export class NestedListExpandIcon {
                         aria-hidden="true"
                         class="m-0 box-border flex h-11 items-center truncate rounded-t-sap-popover-border-corner-radius px-4 font-sap-font-family text-sap-font-large-size font-bold text-sap-list-text-color shadow-[0_0_0.25rem_0_var(--sapContent_ShadowColor),inset_0_-0.0625rem_0_0_var(--sapList_BorderColor)] compact:h-8 compact:text-sap-font-size"
                     >
-                        {{ title() || item?.titleText() }}
+                        {{ heading() }}
                     </div>
                     <ng-content select="[fd-nested-list], [fdNestedList], fd-prepared-nested-list" />
                 </div>
@@ -576,6 +583,8 @@ export class NestedListPopover {
     readonly title = input('');
     protected readonly item = inject(NestedItem, { optional: true });
     private readonly direction = inject(Directionality, { optional: true });
+    /** The header text, which also names the list in the popover. */
+    readonly heading = computed(() => this.title() || this.item?.titleText() || '');
     protected readonly placement = computed<Placement>(() =>
         this.direction?.valueSignal() === 'rtl' ? 'left-start' : 'right-start'
     );
