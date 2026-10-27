@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
 import { Title } from '@/ui/title/title';
 import { TabItem, TabLink, TabList, TabNav, TabPanel, TabTag, TabTitle } from './tabs';
@@ -230,3 +231,19 @@ export const Behaviour: Story = {
 };
 export const Stacked: Story = { name: 'Stacked content', render: () => ({ template: `<story-tabs-stacked />` }) };
 export const Navigation: Story = { render: () => ({ template: `<story-tabs-nav />` }) };
+
+export const OpenMore: Story = {
+    name: 'Open: More menu',
+    tags: ['!autodocs'],
+    render: Behaviour.render,
+    play: async ({ canvasElement }) => {
+        const more = await waitFor(() => {
+            const el = canvasElement.querySelector<HTMLElement>('fd-tab-list button[aria-haspopup=menu]');
+            expect(el).not.toBeNull();
+            return el!;
+        });
+        await userEvent.click(more);
+        await waitFor(() => expect(more.getAttribute('aria-expanded')).toBe('true'));
+        await waitFor(() => expect(document.querySelector('.cdk-overlay-container [role=menuitem]')).not.toBeNull());
+    }
+};
