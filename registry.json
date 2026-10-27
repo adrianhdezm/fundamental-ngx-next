@@ -1333,6 +1333,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "time",
+      "type": "registry:ui",
+      "title": "Time",
+      "description": "Picks hours, minutes, seconds and the period in spinbutton columns, with a 12-hour clock, minute steps and spinner buttons.",
+      "registryDependencies": ["utils", "theme", "datetime", "button"],
+      "files": [
+        {
+          "path": "registry/ui/time/time.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
