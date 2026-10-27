@@ -1,8 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, TemplateRef, inject, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
+import { Dialog, DialogBody, DialogService, type DialogRef } from '@/ui/dialog/dialog';
 import { Combobox } from './combobox';
 
 interface Item {
@@ -113,6 +114,27 @@ class GroupHost {
         Fruit: items.filter((i) => i !== 'Carrot'),
         Vegetable: items.filter((i) => i === 'Carrot')
     });
+}
+
+@Component({
+    imports: [Combobox, Dialog, DialogBody],
+    template: `
+        <ng-template #tpl>
+            <fd-dialog>
+                <fd-dialog-body>
+                    <fd-combobox ariaLabel="Fruit" [dropdownValues]="values" />
+                </fd-dialog-body>
+            </fd-dialog>
+        </ng-template>
+    `
+})
+class DialogHost {
+    readonly values = ['Apple', 'Banana'];
+    readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
+    private readonly dialogs = inject(DialogService);
+    open(): DialogRef {
+        return this.dialogs.open(this.tpl(), { ariaLabel: 'Fruits' });
+    }
 }
 
 const wait = (ms = 50) => new Promise((r) => setTimeout(r, ms));
@@ -351,5 +373,26 @@ describe('Combobox', () => {
         ).toEqual(['Fruit', 'Vegetable']);
         expect(groups.map((g) => g.querySelectorAll('[role=option]').length)).toEqual([2, 1]);
         expect(groups[0].parentElement!.getAttribute('role')).toBe('none');
+    });
+
+    it('inside a dialog, Escape closes the list but not the dialog', async () => {
+        const fixture = TestBed.createComponent(DialogHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        const ref = fixture.componentInstance.open();
+        await fixture.whenStable();
+        await wait();
+        const input = document.querySelector<HTMLInputElement>('[role=dialog] fd-combobox input')!;
+        input.focus();
+        await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}');
+        await fixture.whenStable();
+        expect(input.getAttribute('aria-expanded')).toBe('true');
+        await userEvent.keyboard('{Escape}');
+        await fixture.whenStable();
+        expect(input.getAttribute('aria-expanded')).toBe('false');
+        expect(ref.isClosed()).toBe(false);
+        await userEvent.keyboard('{Escape}');
+        await fixture.whenStable();
+        expect(ref.isClosed()).toBe(true);
     });
 });

@@ -665,7 +665,9 @@ export class Combobox<T = unknown> implements ControlValueAccessor {
         }
         if (key === 'Escape') {
             if (this.isOpen() && !dialog) {
+                // closes only the list, not a dialog around the combobox
                 event.preventDefault();
+                event.stopPropagation();
                 field.value = this.inputText();
                 this.close();
             }
