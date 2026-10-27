@@ -82,6 +82,8 @@ const meta: Meta<Card> = {
     component: Card,
     decorators: [moduleMetadata({ imports: IMPORTS })],
     parameters: {
+        // Horizon's inverted badges and white text on shell category colours are below 4.5:1 by design
+        a11y: { config: { rules: [{ id: 'color-contrast', enabled: false }] } },
         docs: {
             description: {
                 component:
@@ -106,7 +108,7 @@ export const Standard: Story = {
                     <fd-card-header>
                         <fd-card-main-header interactive>
                             <fd-avatar circle size="s" label="John Doe" image="assets/person.svg" />
-                            <h2 fd-card-title>Card Title</h2>
+                            <h2 fd-card-title>List card</h2>
                             <h3 fd-card-subtitle>Card Subtitle</h3>
                             <span fd-card-counter status="positive">3 of 10</span>
                         </fd-card-main-header>
@@ -258,7 +260,7 @@ export const Banner: Story = {
                 <fd-card cardType="banner" class="h-72">
                     <fd-card-media>
                         <div fd-card-media-content-container [legendColor]="13">
-                            <div fd-card-media-heading>Get Ready for the AI Learning Days!</div>
+                            <div fd-card-media-heading>AI Learning Days: register now</div>
                             <p fd-card-media-text>Lorem ipsum dolor sit amet consectetur adipisicing elit. At aperiam in incidunt distinctio.</p>
                             <button fdButton variant="emphasized" label="Register"></button>
                         </div>

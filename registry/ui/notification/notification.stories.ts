@@ -141,7 +141,12 @@ class StoryNotificationStates {}
         Title
     ],
     template: `
-        <fd-popover [noArrow]="false" [isOpen]="open()" (isOpenChange)="open.set($event)">
+        <fd-popover
+            [noArrow]="false"
+            [isOpen]="open()"
+            bodyAriaLabelledBy="story-notifications-title"
+            (isOpenChange)="open.set($event)"
+        >
             <fd-popover-control><button fdButton label="Open notification group"></button></fd-popover-control>
             <fd-popover-body>
                 <div fd-notification-popover aria-labelledby="story-notifications-title">

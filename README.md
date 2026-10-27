@@ -26,21 +26,21 @@ scripts/
   build-registry.mjs      builds public/r/*.json and checks each component's imports
   check-styles.mjs        compiles every class and flags unknown SAP tokens / broken var() names
   check-cn.mjs            cn() merge rules for SAP token utilities
-  check-a11y.mjs          axe-core over all stories, per theme
 docs/                     Storybook introduction and foundations pages
 ```
 
 ## Commands
 
-Requires Node `>=22.22.3` (see `.nvmrc`) and pnpm.
+Requires Node `>=22.22.3` (see `.nvmrc`) and pnpm (settings in `pnpm-workspace.yaml`). The tests use the
+Playwright and Chromium of the dev dependencies (`pnpm exec playwright install chromium` once, if Chromium is missing).
 
 ```sh
 pnpm install
 pnpm storybook          # http://localhost:6006
 pnpm build-storybook    # dist/storybook, including the registry under /r
-pnpm check              # typecheck (strict templates), style, cn() and registry checks, tests
+pnpm check              # typecheck (strict templates), style, cn() and registry checks, tests, a11y
 pnpm test               # component tests in Chromium (Vitest browser mode); specs next to each component
-pnpm check:a11y         # axe on every story of a running Storybook (needs Playwright); --theme=sap_horizon_hcb
+pnpm test:a11y          # every story rendered by Vitest and checked with axe, in Horizon and Horizon HC Black
 pnpm tokens             # regenerate the theme layer after bumping theming-base-content
 ```
 

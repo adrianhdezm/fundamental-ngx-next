@@ -258,14 +258,16 @@ export class MessageBoxBody {
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'block' },
     template: `
-        <footer fd-bar barDesign="footer" data-dialog-bar class="${BAR} [&_button[fdButton]]:min-w-16">
-            @if (custom()) {
-                <ng-content
-                    select="[fd-bar-left], [fdBarLeft], [fd-bar-middle], [fdBarMiddle], [fd-bar-right], [fdBarRight]"
-                />
-            } @else {
-                <div fd-bar-right><ng-content /></div>
-            }
+        <footer>
+            <div fd-bar barDesign="footer" data-dialog-bar class="${BAR} [&_button[fdButton]]:min-w-16">
+                @if (custom()) {
+                    <ng-content
+                        select="[fd-bar-left], [fdBarLeft], [fd-bar-middle], [fdBarMiddle], [fd-bar-right], [fdBarRight]"
+                    />
+                } @else {
+                    <div fd-bar-right><ng-content /></div>
+                }
+            </div>
         </footer>
     `
 })

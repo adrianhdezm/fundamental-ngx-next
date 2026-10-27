@@ -215,6 +215,7 @@ export class Menu extends MenuList {
     readonly disabled = input(false, { transform: booleanAttribute });
     readonly closeOnEscapeKey = input(true, { transform: booleanAttribute });
     readonly closeOnOutsideClick = input(true, { transform: booleanAttribute });
+    /** Traps the focus in a mobile menu; a desktop menu closes on Tab instead. */
     readonly focusTrapped = input(true, { transform: booleanAttribute });
     readonly focusAutoCapture = input(true, { transform: booleanAttribute });
     readonly restoreFocusOnClose = input(true, { transform: booleanAttribute });
@@ -283,7 +284,8 @@ export class Menu extends MenuList {
                 disabled: this.disabled(),
                 closeOnEscapeKey: this.closeOnEscapeKey(),
                 closeOnOutsideClick: this.closeOnOutsideClick(),
-                focusTrapped: this.focusTrapped(),
+                // Tab closes a desktop menu, so a trap would only add hidden tab stops around it
+                focusTrapped: this.focusTrapped() && this.mobile(),
                 focusAutoCapture: this.focusAutoCapture(),
                 restoreFocusOnClose: this.restoreFocusOnClose(),
                 fixedPosition: this.fixedPosition(),

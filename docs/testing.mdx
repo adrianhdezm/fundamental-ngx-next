@@ -9,8 +9,9 @@ Components are tested in a real browser with [Vitest browser mode](https://vites
 can check behaviour that depends on layout: focus and keyboard navigation, measured layouts, overflow and resizing.
 
 ```sh
-pnpm test         # run all tests once (also part of pnpm check)
+pnpm test         # run all component tests once (also part of pnpm check)
 pnpm test:watch   # watch mode
+pnpm test:a11y    # accessibility of every story (also part of pnpm check)
 ```
 
 ## Where tests live
@@ -29,7 +30,7 @@ coverage; `pnpm test` lists the remaining todos.
 - Drive it like a user with `userEvent` from `vitest/browser` (keyboard, clicks with modifiers, hover) and assert on
   the DOM: roles and ARIA attributes, `document.activeElement`, positions from `getBoundingClientRect()`.
 - Prefer behaviour over class names. Visual details stay in the Storybook comparison with fundamental-styles; the
-  accessibility rules stay in `pnpm check:a11y`.
+  accessibility rules stay in `pnpm test:a11y`.
 - Set `data-sap-theme`, `data-density` or `dir` on `document.documentElement` to test themes, compact density and RTL.
 
 ```ts
@@ -39,3 +40,19 @@ items()[0].focus();
 await userEvent.keyboard('{ArrowDown}');
 expect(document.activeElement).toBe(items()[3]);
 ```
+
+## Accessibility
+
+`pnpm test:a11y` runs every story as a Vitest test through Storybook's Vitest addon (`@storybook/addon-vitest`):
+the story is rendered, its `play` function runs (stories named "Open: …" open their overlay there), and the a11y
+addon checks the page with axe. Any violation fails the test. The check runs once per theme, in Horizon and in
+Horizon High Contrast Black (the `a11y:<theme>` projects in `vitest.config.ts`); `.storybook/vitest.setup.ts` sets the
+theme and removes overlays left open by the previous story.
+
+```sh
+pnpm exec vitest run --project a11y:sap_horizon registry/ui/menu   # one theme, one component
+```
+
+A story can turn a rule off with `parameters.a11y.config.rules`, for example colour contrast where Horizon's own
+colours are below 4.5:1 by design (inverted object statuses). Colour contrast still runs in the high-contrast theme,
+whatever the story says. In Storybook, the Accessibility panel shows the same results for the story on screen.

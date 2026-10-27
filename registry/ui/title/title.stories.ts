@@ -48,12 +48,12 @@ export const Visual: Story = {
 export const Elision: Story = {
     name: 'Truncation',
     render: () => ({
-        template: `<div class="w-[300px]"><h1 fdTitle>${LONG}</h1><h3 fdTitle>${LONG}</h3><h5 fdTitle>${LONG}</h5></div>`
+        template: `<div class="w-[300px]"><h1 fdTitle>${LONG}</h1><h2 fdTitle headerSize="3">${LONG}</h2><h3 fdTitle headerSize="5">${LONG}</h3></div>`
     })
 };
 
 export const Wrapping: Story = {
     render: () => ({
-        template: `<div class="w-[300px]"><h1 fdTitle wrap>${LONG}</h1><h3 fdTitle wrap>${LONG}</h3><h5 fdTitle twoLineClamp>${LONG} and that is clamped to two lines when it gets even longer than this</h5></div>`
+        template: `<div class="w-[300px]"><h1 fdTitle wrap>${LONG}</h1><h2 fdTitle headerSize="3" wrap>${LONG}</h2><h3 fdTitle headerSize="5" twoLineClamp>${LONG} and that is clamped to two lines when it gets even longer than this</h3></div>`
     })
 };

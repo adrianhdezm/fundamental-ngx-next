@@ -15,6 +15,7 @@ const TEXT = 'font-sap-font-family text-sap-font-size text-sap-text-color';
             [style.width]="width()"
         >
             <fd-breadcrumb
+                [ariaLabel]="label()"
                 [separatorStyle]="separatorStyle()"
                 [reverse]="reverse()"
                 (hiddenItemsCount)="hidden.set($event)"

@@ -72,6 +72,9 @@ importers:
       '@storybook/addon-docs':
         specifier: ^10.6.4
         version: 10.6.4(@types/react@19.3.0)(storybook@10.6.4(@types/react@19.3.0)(prettier@3.9.10)(react@19.3.1))
+      '@storybook/addon-vitest':
+        specifier: 10.6.4
+        version: 10.6.4(@vitest/browser-playwright@5.0.5)(@vitest/browser@5.0.5(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1)(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2))(vitest@5.0.5))(react@19.3.1)(storybook@10.6.4(@types/react@19.3.0)(prettier@3.9.10)(react@19.3.1))(vitest@5.0.5)
       '@storybook/angular':
         specifier: ^10.6.4
         version: 10.6.4(e4275371e4a35ca58c2eaddf770595f2)
@@ -2418,6 +2421,21 @@ packages:
       storybook: ^10.6.4
     peerDependenciesMeta:
       '@types/react':
+        optional: true
+
+  '@storybook/addon-vitest@10.6.4':
+    resolution: {integrity: sha512-ojRolkXhfq/Mvp4GvNESqGlNJG+/xyXVoUHopiIBcSxqKq2cqXgpfisRBOyFN6KS346EAlZK896UrQBjmYmQRA==}
+    peerDependencies:
+      '@vitest/browser': ^4.0.0 || ^5.0.0
+      '@vitest/browser-playwright': ^4.0.0 || ^5.0.0
+      storybook: ^10.6.4
+      vitest: ^4.0.0 || ^5.0.0
+    peerDependenciesMeta:
+      '@vitest/browser':
+        optional: true
+      '@vitest/browser-playwright':
+        optional: true
+      vitest:
         optional: true
 
   '@storybook/angular@10.6.4':
@@ -7597,6 +7615,18 @@ snapshots:
       '@types/react': 19.3.0
     transitivePeerDependencies:
       - '@types/react-dom'
+
+  '@storybook/addon-vitest@10.6.4(@vitest/browser-playwright@5.0.5)(@vitest/browser@5.0.5(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1)(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2))(vitest@5.0.5))(react@19.3.1)(storybook@10.6.4(@types/react@19.3.0)(prettier@3.9.10)(react@19.3.1))(vitest@5.0.5)':
+    dependencies:
+      '@storybook/global': 5.0.0
+      '@storybook/icons': 2.2.0(react@19.3.1)
+      storybook: 10.6.4(@types/react@19.3.0)(prettier@3.9.10)(react@19.3.1)
+    optionalDependencies:
+      '@vitest/browser': 5.0.5(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1)(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2))(vitest@5.0.5)
+      '@vitest/browser-playwright': 5.0.5(playwright@1.63.0)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1)(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2))(vitest@5.0.5)
+      vitest: 5.0.5(@types/node@26.6.5)(@vitest/browser-playwright@5.0.5)(@vitest/ui@5.0.5)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1)(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2))
+    transitivePeerDependencies:
+      - react
 
   '@storybook/angular@10.6.4(e4275371e4a35ca58c2eaddf770595f2)':
     dependencies:

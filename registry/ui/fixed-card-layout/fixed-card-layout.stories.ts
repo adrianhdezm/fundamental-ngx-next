@@ -97,7 +97,8 @@ export const MaxColumns: Story = {
 export const ColumnWidths: Story = {
     name: 'Custom column widths',
     render: () => ({
-        template: `<story-fixed-card-layout [maxColumns]="3" [widthConfig]="{ 1: 2, 2: 1, 3: 1 }" />`
+        props: { widthConfig: { 1: 2, 2: 1, 3: 1 } },
+        template: `<story-fixed-card-layout [maxColumns]="3" [widthConfig]="widthConfig" />`
     })
 };
 

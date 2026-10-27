@@ -16,11 +16,11 @@
     "format:check": "prettier --check .",
     "check:styles": "node scripts/check-styles.mjs",
     "registry:check": "node scripts/build-registry.mjs --check",
-    "check": "pnpm typecheck && pnpm typecheck:tests && pnpm check:styles && pnpm check:cn && pnpm registry:check && pnpm test",
+    "check": "pnpm typecheck && pnpm typecheck:tests && pnpm check:styles && pnpm check:cn && pnpm registry:check && pnpm test && pnpm test:a11y",
     "check:cn": "node scripts/check-cn.mjs",
-    "check:a11y": "node scripts/check-a11y.mjs",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run --project unit",
+    "test:watch": "vitest --project unit",
+    "test:a11y": "node --max-old-space-size=6144 node_modules/vitest/vitest.mjs run --project a11y:sap_horizon && node --max-old-space-size=6144 node_modules/vitest/vitest.mjs run --project a11y:sap_horizon_hcb"
   },
   "dependencies": {
     "@angular/animations": "^22.2.3",
@@ -46,6 +46,7 @@
     "@sap-theming/theming-base-content": "11.36.5",
     "@storybook/addon-a11y": "^10.6.4",
     "@storybook/addon-docs": "^10.6.4",
+    "@storybook/addon-vitest": "10.6.4",
     "@storybook/angular": "^10.6.4",
     "@tailwindcss/oxide": "4.3.3",
     "@tailwindcss/vite": "^4.3.3",

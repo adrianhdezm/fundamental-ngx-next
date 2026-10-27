@@ -2,9 +2,9 @@ import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-an
 import { LayoutGrid, LayoutGridCol, LayoutGridRow } from './layout-grid';
 
 const block =
-    'flex h-16 items-center justify-center rounded-sap-element-border-corner-radius bg-sap-indication-color-5 text-sap-content-contrast-text-color';
+    'flex h-16 items-center justify-center rounded-sap-element-border-corner-radius border border-sap-indication-color-5 bg-sap-indication-color-5-background text-sap-indication-color-5-text-color';
 const alt =
-    'flex h-16 items-center justify-center rounded-sap-element-border-corner-radius bg-sap-indication-color-6 text-sap-content-contrast-text-color';
+    'flex h-16 items-center justify-center rounded-sap-element-border-corner-radius border border-sap-indication-color-6 bg-sap-indication-color-6-background text-sap-indication-color-6-text-color';
 const heading = 'm-0 mt-6 mb-2 text-sap-font-header6-size font-sap-font-header-family text-sap-title-color first:mt-0';
 
 const meta: Meta<LayoutGrid> = {
