@@ -1,17 +1,17 @@
 ## upload-collection
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/upload-collection) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/upload-collection)
-Registry: `registry/ui/upload-collection/` — 3 stories, 6 tests.
+Registry: `registry/ui/upload-collection/` — 7 stories, 6 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                    | Registry story | Status     | Notes                                                                                                                                                     |
-| ----------------------------------- | -------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Upload Collection                   | Default        | ✅ covered | Thumbnail, link title, marker, descriptions, statuses, edit/delete                                                                                        |
-| Upload Collection - Small Mode      | Small          | ✅ covered |                                                                                                                                                           |
-| Upload Collection - Customization   | —              | ❌ missing | No story with hidden (`allowFileNameEdit`/`allowFileDeletion`) or disabled (`disableFileNameEdit`/`disableFileDeletion`) buttons, or without button group |
-| Upload Collection - Complex Example | —              | ❌ missing | Toolbar with count, file uploader, Download/Delete Multiple, `selection` with checkboxes, delete confirmation dialog                                      |
-| Upload Collection - No Data         | Empty          | 🟡 partial | Ours shows a no-data list item; upstream uses a message page (glyph, title, subtitle)                                                                     |
+| Upstream example                    | Registry story                     | Status     | Notes                                                                                                                                                                                                                                    |
+| ----------------------------------- | ---------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Upload Collection                   | Default                            | ✅ covered | Thumbnail, link title, marker, descriptions, statuses, edit/delete                                                                                                                                                                       |
+| Upload Collection - Small Mode      | Small                              | ✅ covered |                                                                                                                                                                                                                                          |
+| Upload Collection - Customization   | Customization                      | ✅ covered | Default buttons, both disabled, rename only, no buttons                                                                                                                                                                                  |
+| Upload Collection - Complex Example | Complex; Open: delete confirmation | ✅ covered | Toolbar with the count, a file uploader, Download and Delete Multiple for the selection, checkboxes (`selection`; items keep `role="listitem"` since they hold buttons), delete confirmation dialog opened in `play()` by the Open story |
+| Upload Collection - No Data         | Empty; No data                     | ✅ covered | No-data list item, and upstream's message page (glyph, title, subtitle)                                                                                                                                                                  |
 
 ### Tests vs. upstream specs
 
@@ -31,6 +31,5 @@ Registry-only coverage: middle truncation keeping the extension (+ full name in 
 
 ### Gaps to fill
 
-- **Stories:** "Customization" — three items: default, edit/delete disabled, edit only; "Complex" — toolbar with count and file uploader, `selection` with checkboxes and Delete Multiple; "No data" variant with a message page.
 - **Tests:** "allowFileNameEdit and allowFileDeletion hide the buttons"; "disableFileNameEdit and disableFileDeletion disable them"; "Cancel discards a rename"; "the form item works as a form control"; "small mode wraps the buttons below the file"; "selection marks items as selected".
 - **Effort:** M, the complex story pulls in toolbar, file uploader and dialog; tests are small.
