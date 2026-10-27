@@ -1,15 +1,15 @@
 ## overflow-layout
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/overflow-layout) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/overflow-layout)
-Registry: `registry/ui/overflow-layout/` — 3 stories, 7 tests.
+Registry: `registry/ui/overflow-layout/` — 7 stories, 7 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                | Registry story                                      | Status     | Notes                                                                                                                                                                                                                   |
-| ------------------------------- | --------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Overflow Layout Standard Usage  | Resizable, "Open: more popover"                     | ✅ covered | Add/remove items, max 3 visible toggle, resizable container; the Open story opens the "N more" popover                                                                                                                  |
-| Forcing visibility of the items | Forced visibility, start position and custom "more" | 🟡 partial | Ours forces one fixed item; upstream lets you click a hidden item in the "More" popover to force it into the visible row                                                                                                |
-| Overflow Layout Complex example | Forced visibility… (custom `fdOverflowExpand` "+N") | 🟡 partial | Upstream is an avatar group: each visible avatar opens a quick-view popover, the custom "+N" button opens a popover listing hidden avatars with a detail stage. Ours only shows a custom "+N" button that opens nothing |
+| Upstream example                | Registry story                                           | Status     | Notes                                                                                                                                                                                                                |
+| ------------------------------- | -------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Overflow Layout Standard Usage  | Resizable, "Open: more popover"                          | ✅ covered | Add/remove items, max 3 visible toggle, resizable container; the Open story opens the "N more" popover                                                                                                               |
+| Forcing visibility of the items | Click to show, "Open: click to show"; Forced visibility… | ✅ covered | A hidden item clicked in the "More" popover gets `forceVisibility` and moves into the row                                                                                                                            |
+| Overflow Layout Complex example | Avatar group, "Open: avatar group"                       | ✅ covered | Visible avatars open a business card popover; the custom "+N" control opens a popover of hidden avatars with a detail stage and Back. Photos and icons only: initials in a button fail `label-content-name-mismatch` |
 
 ### Tests vs. upstream specs
 
@@ -26,6 +26,6 @@ Registry-only coverage: the "N more" popover dialog is named like its control (a
 
 ### Gaps to fill
 
-- **Stories:** "Click to show" — clicking a hidden item in the "More" popover toggles its `forceVisibility`; "Avatar group" — avatars as items, custom "+N" expand opening a popover of hidden avatars (reuse avatar + popover).
+- **Stories:** none.
 - **Tests:** "re-measures automatically when an item grows wider without triggerRecalculation" (or document that it needs `triggerRecalculation`); "clicking a hidden item and forcing its visibility moves it out of the popover".
 - **Effort:** M, the avatar-group story is the bulk; tests are small.
