@@ -1,7 +1,7 @@
 ## time
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/time) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/time)
-Registry: `registry/ui/time/` — 4 stories, 8 tests.
+Registry: `registry/ui/time/` — 4 stories, 15 tests.
 
 ### Stories vs. upstream examples
 
@@ -20,20 +20,19 @@ Registry: `registry/ui/time/` — 4 stories, 8 tests.
 
 ### Tests vs. upstream specs
 
-| Upstream behaviour                                               | Registry test                                                          | Status     | Notes                                                                            |
-| ---------------------------------------------------------------- | ---------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------- |
-| should create (time, time column)                                | —                                                                      | ➖ n/a     |                                                                                  |
-| Column: pick on active change                                    | picks a clicked value and steps with the spinner buttons               | ✅ covered |                                                                                  |
-| Column: scroll up/down, wrapping at both ends                    | changes the active column with Up and Down, wrapping around            | ✅ covered |                                                                                  |
-| Column: change from the carousel (drag), meridian without offset | —                                                                      | ❌ missing | No drag or wheel test.                                                           |
-| Column: margins on first/last item when not looping              | —                                                                      | ➖ n/a     | Internal carousel offset styling.                                                |
-| Builds hours, minutes, seconds and meridian items                | shows spinbutton columns…; splits the day into periods…; steps minutes | ✅ covered |                                                                                  |
-| Keeps active view items up to date                               | writes, reads and disables                                             | ✅ covered | `writeValue` updates the column.                                                 |
-| Period follows hour changes and hour follows period changes      | splits the day into periods with a 12-hour clock                       | 🟡 partial | Period → hour covered; stepping the hour across 11/12 to flip the period is not. |
+| Upstream behaviour                                               | Registry test                                                                                              | Status     | Notes                                                                     |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------- |
+| should create (time, time column)                                | —                                                                                                          | ➖ n/a     |                                                                           |
+| Column: pick on active change                                    | picks a clicked value and steps with the spinner buttons                                                   | ✅ covered |                                                                           |
+| Column: scroll up/down, wrapping at both ends                    | changes the active column with Up and Down, wrapping around                                                | ✅ covered |                                                                           |
+| Column: change from the carousel (drag), meridian without offset | changes the value when a column is dragged; steps the active column with the mouse wheel                   | ✅ covered | Drag up and down by whole values; the wheel only steps the active column. |
+| Column: margins on first/last item when not looping              | —                                                                                                          | ➖ n/a     | Internal carousel offset styling.                                         |
+| Builds hours, minutes, seconds and meridian items                | shows spinbutton columns…; splits the day into periods…; steps minutes                                     | ✅ covered |                                                                           |
+| Keeps active view items up to date                               | writes, reads and disables                                                                                 | ✅ covered | `writeValue` updates the column.                                          |
+| Period follows hour changes and hour follows period changes      | splits the day into periods with a 12-hour clock; switches the period when the hours step across 11 and 12 | ✅ covered |                                                                           |
 
-Registry-only coverage: spinbutton ARIA, Left/Right between columns, typed digits and A/P, minute step window, disabled control blocks keys.
+Registry-only coverage: spinbutton ARIA, Left/Right between columns, typed digits and A/P, minute step window, disabled control blocks keys, Page Up/Page Down/Home/End, `spinnerButtons` false hides the buttons, `tablet` paddings and compact value height, touched when the focus leaves.
 
 ### Gaps to fill
 
-- **Tests:** "stepping hours from 11 to 12 switches AM to PM"; "dragging a column changes the value"; "the mouse wheel steps the active column"; "Page Up, Page Down, Home and End move within a column"; "spinnerButtons=false hides the buttons"; "tablet makes the columns larger"; "marks the control touched when focus leaves".
-- **Effort:** M, pointer/wheel specs.
+- None left: stories and tests are at parity with upstream.
