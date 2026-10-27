@@ -19,6 +19,11 @@ import { ContentDensityDirective, type ContentDensity } from './content-density'
         <div fdCozy data-testid="cozy"></div>
         <div fdContentDensity="condensed" fdCompact data-testid="explicit"></div>
         <div fdContentDensity data-testid="none"></div>
+        <section fdCozy data-testid="cozy-parent">
+            <div fdCompact data-testid="compact-child">
+                <button fdButton label="Compact child" data-testid="compact-child-button"></button>
+            </div>
+        </section>
     `
 })
 class Host {
@@ -96,5 +101,14 @@ describe('ContentDensity', () => {
         expect(height('outer-button')).toBeLessThan(height('root'));
         // a cozy island resets condensed as well
         expect(height('island-button')).toBe(height('root'));
+    });
+
+    // Upstream lets a consumer configured with restrictChildContentDensity force its density on children. Here density
+    // is CSS (the `compact:`/`condensed:` variants), so the nearest data-density always wins; this pins that choice.
+    it('a density set on a child wins over the density of its parent', async () => {
+        const { el, height } = await setup();
+        expect(el('cozy-parent').getAttribute('data-density')).toBe('cozy');
+        expect(el('compact-child').getAttribute('data-density')).toBe('compact');
+        expect(height('compact-child-button')).toBeLessThan(height('root'));
     });
 });

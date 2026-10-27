@@ -1,7 +1,7 @@
 ## content-density
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/content-density) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/content-density)
-Registry: `registry/ui/content-density/` — 0 stories, 5 tests.
+Registry: `registry/ui/content-density/` — 0 stories, 6 tests.
 
 Our port is a single attribute directive that writes `data-density`; components react through the Tailwind `compact:`/`condensed:` variants. All services, storages, observers and provider config are deliberately dropped; the Storybook toolbar density switcher sets `data-density` on the document element.
 
@@ -32,7 +32,7 @@ Our port is a single attribute directive that writes `data-density`; components 
 | UI5 `data-ui5-compact-size` attribute                                                                        | —                                                                         | ➖ n/a     | No UI5 integration                                                                                       |
 | Directive lifecycle / effect cleanup                                                                         | —                                                                         | ➖ n/a     | No effects or subscriptions in our directive                                                             |
 | Priority resolution: local directive over global, nested child keeps its density (nesting regression #14355) | density on the document element…; a cozy island inside a compact subtree… | ✅ covered | CSS nearest-ancestor wins                                                                                |
-| `restrictChildContentDensity` (restricting parent overrides child directive)                                 | —                                                                         | ➖ n/a     | Dropped; note our semantics are the opposite (nearest ancestor always wins)                              |
+| `restrictChildContentDensity` (restricting parent overrides child directive)                                 | a density set on a child wins over the density of its parent              | ➖ n/a     | Dropped; our semantics are the opposite (nearest ancestor always wins), pinned by this test              |
 | DI-island guard (shared vs isolated global service)                                                          | —                                                                         | ➖ n/a     | No DI                                                                                                    |
 | Local / Memory / URL storage providers                                                                       | —                                                                         | ➖ n/a     | Dropped                                                                                                  |
 | ContentDensityObserver signals, observables, modifier classes, debug, consumers                              | —                                                                         | ➖ n/a     | Dropped                                                                                                  |
