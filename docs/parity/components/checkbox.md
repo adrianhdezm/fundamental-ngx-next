@@ -5,15 +5,15 @@ Registry: `registry/ui/checkbox/` — 8 stories, 17 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example             | Registry story                   | Status     | Notes                                                                                                                                                                                            |
-| ---------------------------- | -------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Standard Checkbox            | Default, Playground              | ✅ covered |                                                                                                                                                                                                  |
-| Tristate Checkbox            | Tristate                         | ✅ covered | Selectable and non-selectable third state                                                                                                                                                        |
-| Checkbox custom values       | CustomValues ("Custom values")   | ✅ covered |                                                                                                                                                                                                  |
-| Checkbox with Reactive Forms | ReactiveForms ("Reactive forms") | 🟡 partial | Ours: two controls, one disabled. Upstream: an "Accept all" tristate (not selectable) parent that reflects and drives three child checkboxes in a form group, with touched/dirty/valid read-outs |
-| Checkbox with custom label   | CustomLabel ("Custom label")     | ✅ covered |                                                                                                                                                                                                  |
-| Checkbox with label wrapping | LabelWrapping ("Label wrapping") | ✅ covered | Middle and top alignment                                                                                                                                                                         |
-| Checkbox styling properties  | States                           | ✅ covered | Value states, disabled, readonly, display-only                                                                                                                                                   |
+| Upstream example             | Registry story                   | Status     | Notes                                                                                                                                                         |
+| ---------------------------- | -------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Standard Checkbox            | Default, Playground              | ✅ covered |                                                                                                                                                               |
+| Tristate Checkbox            | Tristate                         | ✅ covered | Selectable and non-selectable third state                                                                                                                     |
+| Checkbox custom values       | CustomValues ("Custom values")   | ✅ covered |                                                                                                                                                               |
+| Checkbox with Reactive Forms | ReactiveForms ("Reactive forms") | ✅ covered | The "Accept all" tristate (not selectable) parent driving three agreements in a form group, with value/touched/dirty/valid read-outs; plus a disabled control |
+| Checkbox with custom label   | CustomLabel ("Custom label")     | ✅ covered |                                                                                                                                                               |
+| Checkbox with label wrapping | LabelWrapping ("Label wrapping") | ✅ covered | Middle and top alignment                                                                                                                                      |
+| Checkbox styling properties  | States                           | ✅ covered | Value states, disabled, readonly, display-only                                                                                                                |
 
 ### Tests vs. upstream specs
 
@@ -36,6 +36,6 @@ Registry-only coverage: Space toggles, `aria-required`, compact density, `wrapLa
 
 ### Gaps to fill
 
-- **Stories:** extend "Reactive forms" with the "Accept all" pattern: a tristate (not selectable) parent bound to a form group of three agreements, showing the raw value, touched, dirty and valid.
+- **Stories:** none.
 - **Tests:** "clearing the state removes the state colour and aria-invalid".
 - **Effort:** S, one story extension and one test.

@@ -1,4 +1,6 @@
 import { JsonPipe } from '@angular/common';
+import { Component, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { Button } from '@/ui/button/button';
@@ -134,8 +136,57 @@ export const States: Story = {
     })
 };
 
+/** Upstream's "Accept all" pattern: a tristate parent that reflects and drives three agreements. */
+@Component({
+    selector: 'story-checkbox-accept-all',
+    imports: [Checkbox, ReactiveFormsModule, JsonPipe],
+    template: `
+        <form [formGroup]="form" class="flex flex-col">
+            <fd-checkbox formControlName="acceptAll" label="Accept all" tristate [tristateSelectable]="false" />
+            <fieldset formGroupName="agreements" class="m-0 flex flex-col border-0 p-0 ps-6">
+                <legend class="sr-only-sap">Agreements</legend>
+                <fd-checkbox formControlName="termsAndConditions" label="I accept Terms and Conditions" />
+                <fd-checkbox formControlName="marketing" label="I want to receive Marketing Materials" />
+                <fd-checkbox formControlName="newsletter" label="I want to sign up for a Newsletter" />
+            </fieldset>
+        </form>
+        <small class="mt-2 block text-sap-font-small-size text-sap-content-label-color">
+            Form value: {{ form.getRawValue() | json }}<br />
+            Form touched: {{ form.touched }}<br />
+            Form dirty: {{ form.dirty }}<br />
+            Form valid: {{ form.valid }}
+        </small>
+    `
+})
+class AcceptAllStory {
+    protected readonly form = new FormGroup({
+        acceptAll: new FormControl<boolean | null>(false),
+        agreements: new FormGroup({
+            termsAndConditions: new FormControl<boolean | null>(false),
+            marketing: new FormControl<boolean | null>(false),
+            newsletter: new FormControl<boolean | null>(false)
+        })
+    });
+
+    constructor() {
+        const { acceptAll, agreements } = this.form.controls;
+        const destroyRef = inject(DestroyRef);
+        acceptAll.valueChanges
+            .pipe(takeUntilDestroyed(destroyRef))
+            .subscribe((accept) =>
+                agreements.setValue({ termsAndConditions: accept, marketing: accept, newsletter: accept })
+            );
+        agreements.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe(() => {
+            const values = Object.values(agreements.getRawValue());
+            const all = values.every(Boolean) ? true : values.some(Boolean) ? null : false;
+            acceptAll.setValue(all, { emitEvent: false });
+        });
+    }
+}
+
 export const ReactiveForms: Story = {
     name: 'Reactive forms',
+    decorators: [moduleMetadata({ imports: [AcceptAllStory] })],
     render: () => {
         const form = new FormGroup({
             accepted: new FormControl(true),
@@ -144,7 +195,8 @@ export const ReactiveForms: Story = {
         return {
             props: { form },
             template: `
-                <form [formGroup]="form" class="flex flex-col">
+                <story-checkbox-accept-all />
+                <form [formGroup]="form" class="mt-6 flex flex-col">
                     <fd-checkbox formControlName="accepted" label="I accept the terms" />
                     <fd-checkbox formControlName="newsletter" label="Newsletter (disabled control)" />
                 </form>
