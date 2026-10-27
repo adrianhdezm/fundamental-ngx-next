@@ -193,7 +193,7 @@ export class AvatarGroupOverflowList {
                 @for (item of visibleItems(); track item) {
                     <div role="listitem" data-avatar-group-item class="flex">
                         @if (item.details()) {
-                            <fd-popover [noArrow]="false" [placement]="placement()">
+                            <fd-popover [noArrow]="false" [placement]="effectivePlacement()">
                                 <fd-popover-control>
                                     <div
                                         role="button"
@@ -215,7 +215,7 @@ export class AvatarGroupOverflowList {
                     <div role="listitem" data-avatar-group-overflow class="flex">
                         <fd-popover
                             [noArrow]="false"
-                            [placement]="placement()"
+                            [placement]="effectivePlacement()"
                             [bodyAriaLabel]="overflowPopoverTitle()"
                         >
                             <fd-popover-control>
@@ -239,7 +239,7 @@ export class AvatarGroupOverflowList {
                 }
             </div>
         } @else {
-            <fd-popover [noArrow]="false" [placement]="placement()" [bodyAriaLabel]="overflowPopoverTitle()">
+            <fd-popover [noArrow]="false" [placement]="effectivePlacement()" [bodyAriaLabel]="overflowPopoverTitle()">
                 <fd-popover-control>
                     <div #row role="button" tabindex="0" aria-haspopup="dialog" [class]="rowClass()">
                         <span class="sr-only-sap">{{
@@ -304,6 +304,7 @@ export class AvatarGroup {
     readonly overflowButtonShape = input<'circle' | 'square'>('square');
     readonly overflowPopoverTitle = input<string | null | undefined>();
     readonly overflowHeadingLevel = input(5);
+    /** Placement of the popovers; by default below the group, or to the right of a vertical group. */
     readonly placement = input<Placement | undefined>(undefined);
     readonly ariaLabel = input<string | null | undefined>();
     readonly userClass = input<ClassValue>('', { alias: 'class' });
@@ -311,6 +312,9 @@ export class AvatarGroup {
     readonly visibleCountChange = output<number>();
 
     protected readonly focusRing = FOCUS_RING;
+    protected readonly effectivePlacement = computed<Placement>(
+        () => this.placement() ?? (this.orientation() === 'vertical' ? 'right' : 'bottom')
+    );
     readonly items = contentChildren(AvatarGroupItem);
     protected readonly customButton = contentChild(AvatarGroupOverflowButton);
     protected readonly customBody = contentChild(AvatarGroupOverflowBody);
@@ -395,7 +399,8 @@ export class AvatarGroup {
     protected readonly computedClass = computed(() =>
         cn(
             'm-0 box-border flex max-w-full p-0',
-            this.orientation() === 'vertical' && 'h-full flex-col',
+            // the column hugs its avatars, so a popover opening to the right sits next to them
+            this.orientation() === 'vertical' && 'h-full flex-col items-start',
             this.userClass()
         )
     );

@@ -3,7 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { Avatar } from '@/ui/avatar/avatar';
-import { AvatarGroup, AvatarGroupItem, type AvatarGroupType } from './avatar-group';
+import type { Placement } from '@/ui/popover/popover';
+import { AvatarGroup, AvatarGroupItem, type AvatarGroupOrientation, type AvatarGroupType } from './avatar-group';
 
 interface Person {
     name: string;
@@ -29,10 +30,12 @@ const NAMES = [
     imports: [AvatarGroup, AvatarGroupItem, Avatar],
     template: `
         <button id="before">Before</button>
-        <div id="wrapper" [style.width.px]="width()">
+        <div id="wrapper" [style.width.px]="width()" [style.padding-top.px]="offset()">
             <fd-avatar-group
                 size="s"
                 [type]="type()"
+                [orientation]="orientation()"
+                [placement]="placement()"
                 [maxVisibleItems]="max()"
                 [ariaLabel]="ariaLabel()"
                 overflowPopoverTitle="Team members"
@@ -60,7 +63,11 @@ const NAMES = [
 })
 class Host {
     readonly width = signal(300);
+    /** Room above the group, for popovers centred next to it. */
+    readonly offset = signal(0);
     readonly type = signal<AvatarGroupType>('individual');
+    readonly orientation = signal<AvatarGroupOrientation>('horizontal');
+    readonly placement = signal<Placement | undefined>(undefined);
     readonly max = signal<number | null>(null);
     readonly ariaLabel = signal<string | null>(null);
     readonly people = signal<Person[]>(NAMES.map((name) => ({ name })));
@@ -363,5 +370,44 @@ describe('AvatarGroup', () => {
         expect(radius(square)).toBeLessThan(square.getBoundingClientRect().width / 2);
         expect(radius(byDefault)).toBe(radius(square));
         fixture.destroy();
+    });
+
+    it('vertical groups open their popovers to the right unless placement is set', async () => {
+        const { group, body, stable, update } = await setup((h) => {
+            h.type.set('group');
+            h.width.set(1000);
+            h.max.set(4);
+            h.offset.set(200);
+        });
+        const trigger = () => group.querySelector<HTMLElement>('[role=button]')!;
+        /** Opens the group popover and returns where it is relative to the trigger. */
+        const side = async () => {
+            await userEvent.click(trigger());
+            await stable();
+            const t = trigger().getBoundingClientRect();
+            const b = body()!.getBoundingClientRect();
+            await userEvent.keyboard('{Escape}');
+            await stable();
+            if (b.left >= t.right - 1) return 'right';
+            if (b.top >= t.bottom - 1) return 'bottom';
+            if (b.bottom <= t.top + 1) return 'top';
+            return 'other';
+        };
+        expect(await side()).toBe('bottom');
+        await update((h) => h.orientation.set('vertical'));
+        expect(await side()).toBe('right');
+        await update((h) => h.placement.set('bottom'));
+        expect(await side()).toBe('bottom');
+        await update((h) => h.placement.set(undefined));
+        expect(await side()).toBe('right');
+
+        // the details popovers of an individual vertical group open to the right as well
+        await update((h) => h.type.set('individual'));
+        const avatar = group.querySelector<HTMLElement>('[data-avatar-group-item] [role=button]')!;
+        await userEvent.click(avatar);
+        await stable();
+        expect(body()!.getBoundingClientRect().left).toBeGreaterThanOrEqual(avatar.getBoundingClientRect().right - 1);
+        await userEvent.keyboard('{Escape}');
+        await stable();
     });
 });
