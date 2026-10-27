@@ -15,7 +15,7 @@ Registry: `registry/ui/slider/` — 7 stories, 6 tests.
 | Disabled                                                                     | `Basic`             | ✅ covered | Disabled slider row.                                                                                                                           |
 | Cozy                                                                         | `Basic`, `Vertical` | ✅ covered |                                                                                                                                                |
 | Slider in a Reactive Form                                                    | `Form`              | ✅ covered | Shows value, touched and dirty; not `valid`.                                                                                                   |
-| Vertical slider (range + editable tooltip + ticks; range with custom values) | `Vertical`          | 🟡 partial | Vertical range exists, but neither the editable tooltip with ticks nor the custom-values range is shown vertically.                            |
+| Vertical slider (range + editable tooltip + ticks; range with custom values) | `Vertical`          | ✅ covered | Also the vertical range with an editable tooltip and ticks, and a range with ten custom day values.                                            |
 | Playground Area                                                              | `Playground`        | ✅ covered |                                                                                                                                                |
 
 ### Tests vs. upstream specs
@@ -36,6 +36,6 @@ Registry-only coverage: ARIA slider attributes, full keyboard map (step, Shift j
 
 ### Gaps to fill
 
-- **Stories:** extend `Vertical` with the custom-values range and an editable tooltip with ticks.
+- **Stories:** none.
 - **Tests:** "cozy makes the handles larger"; "vertical slider is aria-orientation vertical, fills from the bottom and steps with Up/Down"; "dragging the range between the handles moves both"; "a pointer beyond either end clamps to min or max"; "steps of 0.2 produce values without floating point noise"; "shows a tick per step and a label every tickmarksBetweenLabels ticks"; "range handles can cross and the value stays sorted"; "readonly tooltip shows the value on hover and focus"; "editable tooltip sets the value on Enter"; "RTL mirrors the handle position and arrow keys".
 - **Effort:** M, about ten pointer/keyboard specs on an existing host plus one story.

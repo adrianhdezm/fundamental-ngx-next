@@ -128,23 +128,59 @@ class StorySliderRange {
     protected readonly months2 = signal<SliderValue>([MONTHS[1], MONTHS[5]]);
 }
 
+const DAYS: SliderCustomValue[] = Array.from({ length: 10 }, (_, i) => ({ value: i + 1, label: `Jan ${i + 1}` }));
+
 @Component({
     selector: 'story-slider-vertical',
-    imports: [Slider, FormsModule],
+    imports: [Slider, FormsModule, JsonPipe],
     template: `
-        <div class="flex h-80 gap-12">
-            <fd-slider vertical ariaLabel="Volume" [(ngModel)]="one" />
-            <fd-slider vertical ariaLabel="Bass" tooltipMode="readonly" [(ngModel)]="two" />
-            <fd-slider vertical ariaLabel="Range" mode="range" [(ngModel)]="range" />
-            <fd-slider vertical cozy showTicks showTicksLabels ariaLabel="Treble" [step]="10" [(ngModel)]="three" />
+        <div class="flex flex-wrap gap-12">
+            <div class="flex h-80 gap-12">
+                <fd-slider vertical ariaLabel="Volume" [(ngModel)]="one" />
+                <fd-slider vertical ariaLabel="Bass" tooltipMode="readonly" [(ngModel)]="two" />
+                <fd-slider vertical ariaLabel="Range" mode="range" [(ngModel)]="range" />
+                <fd-slider vertical cozy showTicks showTicksLabels ariaLabel="Treble" [step]="10" [(ngModel)]="three" />
+            </div>
+            <div class="flex flex-col gap-2">
+                <p class="${text}" id="sl-v1">Range with an editable tooltip and ticks</p>
+                <div class="h-80">
+                    <fd-slider
+                        vertical
+                        ariaLabelledBy="sl-v1"
+                        mode="range"
+                        showTicks
+                        tooltipMode="editable"
+                        [(ngModel)]="editable"
+                    />
+                </div>
+                <p class="${small}">Min: {{ editable()[0] }}, max: {{ editable()[1] }}</p>
+            </div>
+            <div class="flex flex-col gap-2">
+                <p class="${text}" id="sl-v2">Range with custom values</p>
+                <div class="h-80">
+                    <fd-slider
+                        vertical
+                        ariaLabelledBy="sl-v2"
+                        mode="range"
+                        showTicks
+                        showTicksLabels
+                        [customValues]="days"
+                        [(ngModel)]="dayRange"
+                    />
+                </div>
+                <p class="${small}">Value: {{ dayRange() | json }}</p>
+            </div>
         </div>
     `
 })
 class StorySliderVertical {
+    protected readonly days = DAYS;
     protected readonly one = signal(50);
     protected readonly two = signal(30);
     protected readonly three = signal(70);
     protected readonly range = signal<number[]>([20, 60]);
+    protected readonly editable = signal<number[]>([20, 70]);
+    protected readonly dayRange = signal<SliderValue>([DAYS[4], DAYS[6]]);
 }
 
 @Component({
