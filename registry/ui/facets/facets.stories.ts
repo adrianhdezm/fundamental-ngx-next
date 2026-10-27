@@ -1,5 +1,6 @@
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { Avatar } from '@/ui/avatar/avatar';
+import { Button } from '@/ui/button/button';
 import { FormLabel } from '@/ui/form/form';
 import { Icon } from '@/ui/icon/icon';
 import { Link } from '@/ui/link/link';
@@ -7,6 +8,7 @@ import { ObjectNumber } from '@/ui/object-number/object-number';
 import { ObjectStatusComponent } from '@/ui/object-status/object-status';
 import { Skeleton } from '@/ui/skeleton/skeleton';
 import { Text } from '@/ui/text/text';
+import { Title } from '@/ui/title/title';
 import { Facet, FacetContainer, FacetContent, FacetFormValue, FacetGroup } from './facets';
 
 const meta: Meta<Facet> = {
@@ -27,7 +29,9 @@ const meta: Meta<Facet> = {
                 ObjectNumber,
                 ObjectStatusComponent,
                 Skeleton,
-                Text
+                Text,
+                Button,
+                Title
             ]
         })
     ],
@@ -148,6 +152,93 @@ export const Alignment: Story = {
                     <fd-object-number [number]="579" unit="EUR" large />
                 </fd-facet>
             </fd-facet-group>`
+    })
+};
+
+const EXTENSION_ID = '244e1ebe-c20a-45d3-ae15-0b0ebdb1ce9a';
+const COPY_ID = `<button fdButton variant="transparent" glyph="copy" ariaLabel="Copy ID" title="Copy ID"></button>`;
+
+export const Custom: Story = {
+    name: 'Custom facet',
+    parameters: {
+        docs: {
+            description: {
+                story: 'Custom facets hold any content. `fd-facet-container` lays it out in a column or, with `flexDirection="row"`, in a row, for example a title with a copy button.'
+            }
+        }
+    },
+    render: () => ({
+        template: `
+            <div class="flex flex-col gap-8">
+                <fd-facet-group ariaLabel="Product description">
+                    <fd-facet type="custom" facetTitle="Product Description" headingLevel="3" class="w-1/2">
+                        <div class="flex flex-col">
+                            <span>- Top-design high-quality coffee mug - ideal for a comforting moment; Pack: 6;</span>
+                            <span>- Material: Porcelain - durable dishwasher and microwave-safe porcelain that cleans easily and is ideal for everyday service.</span>
+                            <span class="mb-8">- Comes in two bright colors.</span>
+                            <span fd-object-status status="positive" glyph="message-success" label="In Stock" large></span>
+                        </div>
+                    </fd-facet>
+                </fd-facet-group>
+                <fd-facet-group ariaLabel="Custom facets">
+                    <fd-facet type="custom">
+                        <fd-facet-container flexDirection="row" alignItems="center">
+                            <fd-facet-container>
+                                <h3 fd-title [headerSize]="5">Status</h3>
+                                <span fd-object-status status="positive" label="Delivery" large></span>
+                            </fd-facet-container>
+                            <fd-facet-container>
+                                <button fdButton variant="transparent" glyph="copy" ariaLabel="Copy status" title="Copy status"></button>
+                            </fd-facet-container>
+                        </fd-facet-container>
+                    </fd-facet>
+                    <fd-facet type="custom">
+                        <fd-facet-container>
+                            <fd-facet-container [flexGap]="0.5"><h3 fd-title [headerSize]="5">Extension ID</h3></fd-facet-container>
+                            <fd-facet-container flexDirection="row" alignItems="center" [flexGap]="0.5">
+                                <span>${EXTENSION_ID}</span>
+                                ${COPY_ID}
+                            </fd-facet-container>
+                        </fd-facet-container>
+                    </fd-facet>
+                    <fd-facet type="custom">
+                        <fd-facet-container [flexGap]="0.25">
+                            <fd-facet-container flexDirection="row" alignItems="center" [flexGap]="0.5">
+                                <h3 fd-title [headerSize]="5">Extension ID</h3>
+                                ${COPY_ID}
+                            </fd-facet-container>
+                            <fd-facet-container><span>${EXTENSION_ID}</span></fd-facet-container>
+                        </fd-facet-container>
+                    </fd-facet>
+                    <fd-facet type="custom">
+                        <fd-facet-container flexDirection="row" alignItems="center" [flexGap]="0.25">
+                            <fd-facet-container [flexGap]="0.5">
+                                <h3 fd-title [headerSize]="5">Extension ID</h3>
+                                <span>${EXTENSION_ID}</span>
+                            </fd-facet-container>
+                            <fd-facet-container>${COPY_ID}</fd-facet-container>
+                        </fd-facet-container>
+                    </fd-facet>
+                    <fd-facet type="custom">
+                        <fd-facet-container>
+                            <h3 fd-title [headerSize]="5">Extension ID</h3>
+                            <a fdLink href="#">${EXTENSION_ID} <fd-icon glyph="copy" /></a>
+                        </fd-facet-container>
+                    </fd-facet>
+                    <fd-facet type="custom">
+                        <fd-facet-container [flexGap]="0.5">
+                            <fd-facet-content>
+                                <label fd-form-label colon for="custom-base-unit">Base unit</label>
+                                <fd-text text="Each" id="custom-base-unit" />
+                            </fd-facet-content>
+                            <fd-facet-container flexDirection="row" alignItems="center" [flexGap]="0.5">
+                                <span>${EXTENSION_ID}</span>
+                                ${COPY_ID}
+                            </fd-facet-container>
+                        </fd-facet-container>
+                    </fd-facet>
+                </fd-facet-group>
+            </div>`
     })
 };
 
