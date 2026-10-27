@@ -105,10 +105,11 @@ describe('DatePicker', () => {
     it('reads typed dates while typing, and an unreadable date sets the error state', async () => {
         const { host, input, stable } = await setup();
         await userEvent.clear(input());
-        await userEvent.type(input(), '4/1/2024');
+        await userEvent.type(input(), ' 4/1/2024');
         await stable();
         expect(host.date()!.toDateString()).toBe('2024-04-01');
-        expect(input().value).toBe('4/1/2024');
+        // what was typed stays, spaces included
+        expect(input().value).toBe(' 4/1/2024');
         await userEvent.clear(input());
         await userEvent.type(input(), 'someday');
         await userEvent.tab();

@@ -460,6 +460,7 @@ export class DatePicker<D> implements ControlValueAccessor, Validator {
             if (!this.invalid() && this.readable(this.value())) this.text.set(this.formatValue(this.value()));
             return;
         }
+        const typed = text;
         text = text.trim();
         const value = this.parseValue(text);
         const changed = !this.sameValue(value, this.value());
@@ -469,7 +470,8 @@ export class DatePicker<D> implements ControlValueAccessor, Validator {
             this.setValue(value);
             this.onChange(value);
         }
-        if (typing) this.text.set(text);
+        // keep what was typed, spaces included
+        if (typing) this.text.set(typed);
         else if (!invalid && text) this.text.set(this.formatValue(value));
         if (!invalid) this.calendar()?.setCurrentlyDisplayed(this.firstDate());
     }
