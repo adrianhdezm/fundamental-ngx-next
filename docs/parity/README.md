@@ -39,7 +39,7 @@ with one row per example and per behaviour, is in [`components/`](components/).
 
 |                     | Total | ✅ covered                | 🟡 partial | ❌ missing | ➖ n/a |
 | ------------------- | ----- | ------------------------- | ---------- | ---------- | ------ |
-| Upstream examples   | 627   | 448 (71%)                 | 96 (15%)   | 83 (13%)   | —      |
+| Upstream examples   | 626   | 448 (72%)                 | 96 (15%)   | 82 (13%)   | —      |
 | Upstream behaviours | 953   | 416 (53% of 786 in scope) | 152 (19%)  | 218 (28%)  | 167    |
 
 Main findings:
@@ -54,7 +54,7 @@ Main findings:
   product-switch (12), dynamic-page (11), menu (10), multi-combobox (10), select (10), dialog (9), popover (9),
   notification (8), combobox, date-picker, datetime-picker, grid-list, avatar, message-box and step-input (6–7 each).
   The missing tests cover keyboard, focus return, form/CVA state, mobile dialogs and the programmatic API.
-- **Story gaps are concentrated too.** list (12 missing + 3 partial of 26), popover (7 + 3 of 20), card (6 + 6 of 18),
+- **Story gaps are concentrated too.** list (12 missing + 3 partial of 26), popover (7 + 3 of 20), card (5 + 6 of 17),
   dynamic-page, content-density (no stories at all), combobox, multi-combobox, multi-input, shellbar, tabs, wizard.
 - **Simple components are at parity.** About 40 display components (button, checkbox, icon, object-\*, info-label,
   generic-tag, text, tile, timeline, title, scrollbar, …) need nothing, or at most one or two tests.
@@ -95,7 +95,7 @@ Sorted by priority, then name. "Test coverage" is ✅ over the behaviours in sco
 | [token](components/token.md)                                   | 5/1/0 of 6        | 83%            | 2/7/3/4 of 16                   | 17%           | yes                | M      | high     | Token-level behaviour (close click, disabled/read-only, focus events, Space, externalHiddenCount) is largely untested and the overflow popover has no Open story.                                                             |
 | [user-menu](components/user-menu.md)                           | 2/0/0 of 2        | 100%           | 2/3/2/3 of 10                   | 29%           | —                  | S      | high     | Stories are complete, but focus reset when leaving/reopening the menu and Space on the control are untested.                                                                                                                  |
 | [avatar](components/avatar.md)                                 | 11/1/0 of 12      | 92%            | 10/1/6/1 of 18                  | 59%           | —                  | M      | medium   | Stories are complete, but upstream's large image-loading regression suite (no duplicate requests, stale URL races) and the indication-colour, placeholder, contain and value-state visuals are untested.                      |
-| [card](components/card.md)                                     | 6/6/6 of 18       | 33%            | 6/1/0/2 of 9                    | 86%           | yes                | M      | medium   | Tests are at parity, but a third of the upstream examples (table, bar chart list, calendar, quick view, link list, loading skeletons) have no story and the extended header is never shown.                                   |
+| [card](components/card.md)                                     | 6/6/5 of 17       | 35%            | 6/1/0/2 of 9                    | 86%           | yes                | M      | medium   | Tests are at parity, but a third of the upstream examples (bar chart list, calendar, quick view, link list, loading skeletons) have no story and the extended header is never shown.                                          |
 | [carousel](components/carousel.md)                             | 12/0/0 of 12      | 100%           | 4/4/2/1 of 11                   | 40%           | —                  | S      | medium   | Stories are complete; tests miss the background modifiers, the vertical icons and ARIA/visibility updates after navigation.                                                                                                   |
 | [dialog](components/dialog.md)                                 | 12/0/3 of 15      | 80%            | 6/3/9/3 of 21                   | 33%           | —                  | M      | medium   | Most DialogConfig options (position, size, classes, mobile, draggable, resizable, aria attributes, closeOnNavigation) and component-based opening have no tests.                                                              |
 | [feed-list](components/feed-list.md)                           | 4/1/0 of 5        | 80%            | 4/1/3/1 of 9                    | 50%           | yes                | S      | medium   | The authorLink javascript: XSS guard is untested, and no Open: story checks the action sheet the post actions open.                                                                                                           |
@@ -141,7 +141,7 @@ Sorted by priority, then name. "Test coverage" is ✅ over the behaviours in sco
 | [message-page](components/message-page.md)                     | 5/2/0 of 7        | 71%            | 3/1/1/2 of 7                    | 60%           | —                  | S      | low      | Filter and No Items types are only reachable through a Storybook control, and actions/more slots are untested.                                                                                                                |
 | [micro-process-flow](components/micro-process-flow.md)         | 6/1/0 of 7        | 86%            | 3/0/1/2 of 6                    | 75%           | yes                | S      | low      | Popover example has no Open: story; icon glyph/font is untested.                                                                                                                                                              |
 | [object-attribute](components/object-attribute.md)             | 3/0/0 of 3        | 100%           | 5/0/0/2 of 7                    | 100%          | —                  | S      | low      | Fully covered; registry tests go beyond upstream (keyboard, disabled link).                                                                                                                                                   |
-| [object-identifier](components/object-identifier.md)           | 5/0/0 of 5        | 100%           | 5/0/0/1 of 6                    | 100%          | —                  | S      | low      | Fully covered; only cosmetic difference is a plain table instead of fd-table in the table story.                                                                                                                              |
+| [object-identifier](components/object-identifier.md)           | 5/0/0 of 5        | 100%           | 5/0/0/1 of 6                    | 100%          | —                  | S      | low      | Fully covered; no gaps.                                                                                                                                                                                                       |
 | [object-marker](components/object-marker.md)                   | 4/0/0 of 4        | 100%           | 8/0/1/1 of 10                   | 89%           | —                  | S      | low      | Only the custom glyphFont input is untested.                                                                                                                                                                                  |
 | [object-number](components/object-number.md)                   | 10/0/0 of 10      | 100%           | 8/0/0/1 of 9                    | 100%          | —                  | S      | low      | Fully covered; registry adds locale, RTL and keyboard tests beyond upstream.                                                                                                                                                  |
 | [object-status](components/object-status.md)                   | 3/0/0 of 3        | 100%           | 8/1/0/1 of 10                   | 89%           | —                  | S      | low      | Only the custom ariaRoleDescription override is untested.                                                                                                                                                                     |
@@ -198,12 +198,10 @@ Fix them before Phase 1, so the a11y run is green again and new "Open: …" stor
 
 Pages in the core docs with no registry component. These are out of scope for this report's counts.
 
-- **table**: also blocks the card "Table Card" example and the cosmetic `fd-table` usage in object-identifier.
 - **object-page** (layouts).
 - **truncate**, **global-config**, **theming** (utilities).
 - **datetime-adapters**: the registry has its own date adapter in `lib`, and there's no Moment adapter (calendar's
   Moment example is n/a).
-- **avatar-group-legacy**: deprecated upstream, not planned.
 
 Pieces of a ported component that are missing and block an upstream example:
 
@@ -264,7 +262,7 @@ intended behaviour.
 
 ### Phase 3: missing example stories
 
-One `docs(<name>)` PR per component, biggest first: list (12), popover (7), card (6), content-density (4, no stories
+One `docs(<name>)` PR per component, biggest first: list (12), popover (7), card (5), content-density (4, no stories
 yet), dynamic-page (4), combobox (4), multi-combobox, multi-input, grid-list, dialog, tabs (3 each), then the components
 with one or two missing examples (calendar, fixed-card-layout, input/textarea, scroll-spy, shellbar, upload-collection,
 wizard, menu, …). Skip examples that are [blocked](#not-yet-ported) until the blocker is done.
@@ -278,7 +276,7 @@ go into a single PR per family if the reviewers prefer, but by default it's one 
 ### Phase 5: blocked work (needs a decision)
 
 The [blockers](#not-yet-ported) are features, not story or test gaps. Each needs a design decision (e.g. drag and drop
-via CDK `DragDrop`, a table port, popover mobile mode) and a `feat` PR before its stories and tests can follow.
+via CDK `DragDrop`, popover mobile mode) and a `feat` PR before its stories and tests can follow.
 
 ## Re-running the comparison
 

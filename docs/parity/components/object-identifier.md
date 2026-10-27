@@ -5,13 +5,13 @@ Registry: `registry/ui/object-identifier/` — 4 stories, 10 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example | Registry story                             | Status     | Notes                                                                                 |
-| ---------------- | ------------------------------------------ | ---------- | ------------------------------------------------------------------------------------- |
-| Title            | Title, bold and description; Playground    | ✅ covered |                                                                                       |
-| Bold             | Title, bold and description                | ✅ covered |                                                                                       |
-| Links            | Title as link                              | ✅ covered | Plain and bold link                                                                   |
-| Descriptive      | Title, bold and description; Title as link | ✅ covered | Description with text and link titles, bold and regular                               |
-| Tables           | Medium size in a table                     | ✅ covered | Plain `<table>` instead of `fd-table` with focusable grid; identifier usage identical |
+| Upstream example | Registry story                             | Status     | Notes                                                   |
+| ---------------- | ------------------------------------------ | ---------- | ------------------------------------------------------- |
+| Title            | Title, bold and description; Playground    | ✅ covered |                                                         |
+| Bold             | Title, bold and description                | ✅ covered |                                                         |
+| Links            | Title as link                              | ✅ covered | Plain and bold link                                     |
+| Descriptive      | Title, bold and description; Title as link | ✅ covered | Description with text and link titles, bold and regular |
+| Tables           | Medium size in a table                     | ✅ covered | Identifier usage identical                              |
 
 ### Tests vs. upstream specs
 
@@ -28,6 +28,6 @@ Registry-only coverage: hidden role text with `ariaLabel` override, projected li
 
 ### Gaps to fill
 
-- **Stories:** none (optionally use the registry table component in "Medium size in a table" if one exists).
+- **Stories:** none.
 - **Tests:** none.
 - **Effort:** S, nothing required.

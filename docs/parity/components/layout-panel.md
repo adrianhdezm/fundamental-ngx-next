@@ -29,6 +29,6 @@ Registry-only coverage: slot ordering independent of projection order.
 
 ### Gaps to fill
 
-- **Stories:** split `Default` into one story per upstream example ("Basic", "Edge bleed" with a `fd-table` in a bled body, "Transparent", "Footer variations").
+- **Stories:** split `Default` into one story per upstream example ("Basic", "Edge bleed" with a plain `<table>` in a bled body, "Transparent", "Footer variations").
 - **Tests:** none.
 - **Effort:** S — story restructuring only.

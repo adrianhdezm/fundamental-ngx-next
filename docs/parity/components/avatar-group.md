@@ -3,8 +3,6 @@
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/avatar-group) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/avatar-group)
 Registry: `registry/ui/avatar-group/` — 3 stories, 9 tests.
 
-Upstream also has the deprecated `avatar-group-legacy` (docs: Individual Type, Group Type; specs: class assertions and an overflow check). It is noted here and not counted as gaps.
-
 ### Stories vs. upstream examples
 
 | Upstream example            | Registry story                                 | Status     | Notes                                                                                                       |
