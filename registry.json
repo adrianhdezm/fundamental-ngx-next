@@ -562,6 +562,33 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "infinite-scroll",
+      "type": "registry:ui",
+      "title": "Infinite Scroll",
+      "description": "Emits an event when a scroll container nears its end.",
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/ui/infinite-scroll/infinite-scroll.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["rxjs"]
+    },
+    {
+      "name": "scroll-spy",
+      "type": "registry:ui",
+      "title": "Scroll Spy",
+      "description": "Reports which tracked child of a scroll container is at the top.",
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/ui/scroll-spy/scroll-spy.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
