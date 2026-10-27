@@ -2,6 +2,7 @@ import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
+import type { PopoverConfig } from '@/ui/popover/popover';
 import {
     Menu,
     type MenuMobileConfig,
@@ -156,6 +157,27 @@ class ConfigHost {
     readonly long = 'A very long menu item text that does not fit into the width of the menu and wraps or is truncated';
 }
 
+/** A menu without submenus, so its body keeps the scroll container. */
+@Component({
+    imports: [Menu, MenuItem, MenuInteractive, MenuTitle, MenuTrigger],
+    template: `
+        <button id="trigger" class="w-80" [fdMenuTrigger]="menu">Open</button>
+        <fd-menu #menu ariaLabel="Plain menu" [config]="config()" [disableScrollbar]="noScrollbar()">
+            @for (n of [1, 2, 3]; track n) {
+                <li fd-menu-item>
+                    <a fd-menu-interactive
+                        ><span fd-menu-title>Option {{ n }}</span></a
+                    >
+                </li>
+            }
+        </fd-menu>
+    `
+})
+class PlainHost {
+    readonly config = signal<PopoverConfig>({});
+    readonly noScrollbar = signal(false);
+}
+
 const wait = (ms = 60) => new Promise((r) => setTimeout(r, ms));
 const item = (text: string) =>
     [...document.querySelectorAll<HTMLElement>('[data-menu-link]')].find((e) => e.textContent!.trim() === text)!;
@@ -260,5 +282,26 @@ describe('Menu options', () => {
         await wait();
         expect(host.open()).toBe(false);
         expect(document.querySelector('[role=dialog]')).toBeNull();
+    });
+
+    it('takes options from config unless a direct input sets them', async () => {
+        const fixture = TestBed.createComponent(PlainHost);
+        fixture.componentInstance.config.set({
+            placement: 'top-start',
+            fillControlMode: 'equal',
+            additionalBodyClass: 'config-body'
+        });
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        const trigger = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+        await userEvent.click(trigger);
+        await wait();
+        const menu = document.querySelector<HTMLElement>('[aria-label="Plain menu"]')!;
+        const body = document.querySelector<HTMLElement>('.config-body')!;
+        expect(body).not.toBeNull();
+        // the placement input has a default, so it wins over config.placement
+        expect(menu.getBoundingClientRect().top).toBeGreaterThanOrEqual(trigger.getBoundingClientRect().bottom - 1);
+        // fillControlMode has no value of its own, so config.fillControlMode applies
+        expect(Math.round(body.getBoundingClientRect().width)).toBe(Math.round(trigger.getBoundingClientRect().width));
     });
 });

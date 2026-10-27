@@ -1,7 +1,7 @@
 ## menu
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/menu) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/menu)
-Registry: `registry/ui/menu/` — 18 stories, 6 tests.
+Registry: `registry/ui/menu/` — 18 stories, 7 tests.
 
 ### Stories vs. upstream examples
 
@@ -41,7 +41,7 @@ Registry: `registry/ui/menu/` — 18 stories, 6 tests.
 | Disabled menu does not open                                                                           | a disabled menu does not open from its trigger                             | ✅ covered | Click, ArrowDown and mobile trigger (fixed: ArrowDown and the mobile trigger used to open it) |
 | disableScrollbar                                                                                      | —                                                                          | ❌ missing |                                                                                               |
 | Submenu ARIA: haspopup (not in mobile), expanded, posinset/setsize, activePath                        | opens from its trigger…; opens a submenu with ArrowRight…                  | 🟡 partial | posinset/setsize, expanded, activePath length covered; haspopup + mobile not                  |
-| `config` input; direct inputs win over config                                                         | —                                                                          | ❌ missing |                                                                                               |
+| `config` input; direct inputs win over config                                                         | takes options from config unless a direct input sets them                  | ✅ covered | Fixed: `config.fillControlMode` and `config.additionalBodyClass` used to be ignored           |
 | closeOnNavigation, appendTo, scrollStrategy forwarding                                                | —                                                                          | ➖ n/a     | Not separate inputs in our API                                                                |
 | restoreFocusOnClose default and opt-out                                                               | skips disabled items…                                                      | 🟡 partial | Default (focus back on Escape) only                                                           |
 | fixedPosition default                                                                                 | —                                                                          | ➖ n/a     | Default-value check only                                                                      |
@@ -51,5 +51,5 @@ Registry-only coverage: toggle `aria-checked` / `menuitemcheckbox`, single-choic
 ### Gaps to fill
 
 - **Stories:** none.
-- **Tests:** "open(), close() and toggle() drive isOpen and emit isOpenChange once"; "emits beforeOpen before opening"; "a second trigger click closes the menu"; "Home focuses the first enabled item"; "Space activates the focused item"; "Enter on a submenu parent opens it and focuses its first child"; "hovering a submenu parent opens it and hovering a sibling closes it"; "clicking a disabled item does nothing"; "submenu parents have aria-haspopup except in mobile mode"; "mobile mode opens a dialog with the mobileConfig title and buttons"; "mobile mode navigates into a submenu and back"; "shortcuts are hidden in mobile mode unless hideOnMobile is false"; "addons render before/after the title"; "truncate clips title and subtitle to one line"; "disableScrollbar removes the scroll container"; "restoreFocusOnClose=false leaves focus where it was"; "direct inputs override config".
+- **Tests:** "open(), close() and toggle() drive isOpen and emit isOpenChange once"; "emits beforeOpen before opening"; "a second trigger click closes the menu"; "Home focuses the first enabled item"; "Space activates the focused item"; "Enter on a submenu parent opens it and focuses its first child"; "hovering a submenu parent opens it and hovering a sibling closes it"; "clicking a disabled item does nothing"; "submenu parents have aria-haspopup except in mobile mode"; "mobile mode opens a dialog with the mobileConfig title and buttons"; "mobile mode navigates into a submenu and back"; "shortcuts are hidden in mobile mode unless hideOnMobile is false"; "addons render before/after the title"; "truncate clips title and subtitle to one line"; "disableScrollbar removes the scroll container"; "restoreFocusOnClose=false leaves focus where it was".
 - **Effort:** L — ~18 tests across popover, hover timing and the mobile dialog path, plus three stories.

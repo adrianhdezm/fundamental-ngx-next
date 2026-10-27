@@ -289,10 +289,10 @@ export class Menu extends MenuList {
                 focusAutoCapture: this.focusAutoCapture(),
                 restoreFocusOnClose: this.restoreFocusOnClose(),
                 fixedPosition: this.fixedPosition(),
-                fillControlMode: this.fillControlMode(),
+                fillControlMode: this.fillControlMode() ?? cfg.fillControlMode ?? null,
                 // inline submenus must not be clipped by the scrolling wrapper
                 disableScrollbar: this.disableScrollbar() || this.hasSubmenus(),
-                additionalBodyClass: this.additionalBodyClass(),
+                additionalBodyClass: this.additionalBodyClass() ?? cfg.additionalBodyClass ?? null,
                 noArrow: true,
                 bodyRole: null
             });
