@@ -1041,6 +1041,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "token",
+      "type": "registry:ui",
+      "title": "Token",
+      "description": "Removable tokens and a tokenizer field with keyboard selection and deletion and an overflow link with a popover.",
+      "dependencies": ["@angular/cdk"],
+      "registryDependencies": ["utils", "theme", "button", "icon", "input", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/token/token.ts",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
