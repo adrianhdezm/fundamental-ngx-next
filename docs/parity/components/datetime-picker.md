@@ -1,7 +1,7 @@
 ## datetime-picker
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/datetime-picker) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/datetime-picker)
-Registry: `registry/ui/datetime-picker/` — 5 stories, 10 tests.
+Registry: `registry/ui/datetime-picker/` — 5 stories, 12 tests.
 
 ### Stories vs. upstream examples
 
@@ -41,7 +41,7 @@ No story opens the popover or the mobile dialog in `play`, so axe never checks t
 | Footer: closes on submit; without footer a date pick does not close                                                                                                             | applies at once without the footer                             | 🟡 partial | Value applied, but whether the popover stays open is not asserted                    |
 | `should create`                                                                                                                                                                 | —                                                              | ➖ n/a     |                                                                                      |
 
-Registry-only coverage: aria-valuetext on the time spinners, focus on the selected day when opening, mobile portrait date/time toggling.
+Registry-only coverage: aria-valuetext on the time spinners, focus on the selected day when opening, mobile portrait date/time toggling, `aria-describedby` with the state and the message (added to match the date picker's upstream behaviour), `aria-haspopup="dialog"` on the button (kept deliberately: the popup is a `role="dialog"`).
 
 ### Gaps to fill
 

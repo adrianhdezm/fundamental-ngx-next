@@ -15,6 +15,8 @@ import { DatetimePicker } from './datetime-picker';
             [showFooter]="footer()"
             [processInputOnBlur]="onBlur()"
             [disableFunction]="disable()"
+            [message]="message()"
+            messageType="information"
         />
         <button id="after">After</button>
     `
@@ -24,6 +26,7 @@ class Host {
     readonly footer = signal(true);
     readonly onBlur = signal(false);
     readonly disable = signal<((date: FdDate) => boolean) | null>(null);
+    readonly message = signal<string | null>(null);
 }
 
 async function setup(configure?: (host: Host) => void) {
@@ -147,6 +150,30 @@ describe('DatetimePicker', () => {
         await stable();
         expect(host.date()!.day).toBe(13);
         expect(input.getAttribute('aria-invalid')).toBe('true');
+    });
+
+    it('references the state and the message from aria-describedby', async () => {
+        const { host, input, stable } = await setup();
+        expect(input.hasAttribute('aria-describedby')).toBe(false);
+        host.message.set('Times are local');
+        await stable();
+        const description = () => document.getElementById(input.getAttribute('aria-describedby')!)!;
+        expect(description().textContent).toContain('Times are local');
+        await userEvent.clear(input);
+        await userEvent.type(input, 'tomorrowish');
+        await userEvent.tab();
+        await stable();
+        expect(description().textContent).toContain('Value state Error');
+        expect(description().textContent).toContain('Times are local');
+    });
+
+    it('keeps aria-haspopup "dialog" on the button, as the picker opens in a dialog', async () => {
+        // upstream says "grid" on the date picker input; the popup here is the popover body with role="dialog"
+        const { button, stable } = await setup();
+        expect(button.getAttribute('aria-haspopup')).toBe('dialog');
+        await userEvent.click(button);
+        await stable();
+        expect(document.querySelector('#dt-calendar')!.closest('[role="dialog"]')).not.toBeNull();
     });
 
     it('opens with F4', async () => {

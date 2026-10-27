@@ -82,6 +82,11 @@ export interface DatetimePickerLabels {
     okLabel: string;
     cancelLabel: string;
     closeLabel: string;
+    /** Read with the message, by the state of the field. */
+    successStateLabel: string;
+    informationStateLabel: string;
+    warningStateLabel: string;
+    errorStateLabel: string;
 }
 
 export const DATETIME_PICKER_LABELS: DatetimePickerLabels = {
@@ -93,7 +98,11 @@ export const DATETIME_PICKER_LABELS: DatetimePickerLabels = {
     timeLabel: 'Time',
     okLabel: 'OK',
     cancelLabel: 'Cancel',
-    closeLabel: 'Close'
+    closeLabel: 'Close',
+    successStateLabel: 'Value state Success',
+    informationStateLabel: 'Value state Information',
+    warningStateLabel: 'Value state Warning',
+    errorStateLabel: 'Value state Error'
 };
 
 let nextId = 0;
@@ -218,6 +227,7 @@ let nextId = 0;
                         [attr.aria-labelledby]="ariaLabelledBy() || null"
                         [attr.aria-required]="required() || null"
                         [attr.aria-invalid]="computedState() === 'error' || null"
+                        [attr.aria-describedby]="description() ? id() + '-description' : null"
                         (input)="!processInputOnBlur() && read(field.value, true)"
                         (keydown.enter)="read(field.value, false)"
                         (keydown.f4)="$event.preventDefault(); setOpen(!isOpen())"
@@ -226,6 +236,8 @@ let nextId = 0;
                         (blur)="onFieldBlur(field.value)"
                     />
                     <span fdInputGroupAddon button>
+                        <!-- the picker opens in a dialog (the popover body or the mobile dialog), so
+                             aria-haspopup is "dialog" -->
                         <button
                             fdButton
                             variant="transparent"
@@ -245,6 +257,12 @@ let nextId = 0;
                     <fd-form-message [type]="messageType()">{{ message() }}</fd-form-message>
                 }
             </fd-form-input-message-group>
+            <!-- the state and the message, read as the description of the field, also while the picker is open -->
+            @if (description()) {
+                <div class="hidden" aria-hidden="true">
+                    <div [id]="id() + '-description'">{{ description() }}</div>
+                </div>
+            }
         </ng-template>
 
         <ng-template #pickerTpl>
@@ -457,6 +475,22 @@ export class DatetimePicker<D> implements ControlValueAccessor, Validator {
     protected readonly switcherClass = computed(() =>
         cn('mt-4 w-full justify-center', this.portrait() ? 'flex' : 'hidden max-[60rem]:flex')
     );
+
+    /** The state and the message, the accessible description of the field. */
+    protected readonly description = computed(() => {
+        const state = this.computedState();
+        const labels = this.labels();
+        const stateLabel =
+            state === 'default'
+                ? ''
+                : {
+                      success: labels.successStateLabel,
+                      information: labels.informationStateLabel,
+                      warning: labels.warningStateLabel,
+                      error: labels.errorStateLabel
+                  }[state];
+        return [stateLabel, this.message()].filter(Boolean).join(' ');
+    });
 
     private onChange: (value: D | null) => void = () => {};
     private onTouched: () => void = () => {};
