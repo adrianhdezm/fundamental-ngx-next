@@ -1,16 +1,16 @@
 ## segmented-button
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/segmented-button) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/segmented-button)
-Registry: `registry/ui/segmented-button/` — 3 stories, 11 tests.
+Registry: `registry/ui/segmented-button/` — 5 stories, 11 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                  | Registry story                           | Status     | Notes                                                                                                                                                                          |
-| --------------------------------- | ---------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Default                           | `Default` ("Single selection")           | ✅ covered | Labels, icons and vertical, sharing one model.                                                                                                                                 |
-| Toggle / Multi-select             | `Toggle` ("Multiple selection (toggle)") | ✅ covered | Includes the empty initial state built with `@for`.                                                                                                                            |
-| Complex                           | `Toggle` (empty-state group)             | 🟡 partial | Buttons generated with `@for` exist, but only in toggle mode; upstream's single-select generated list with separate `ngModel`/`ngModelChange` is not shown.                    |
-| Segmented Button in Reactive Form | —                                        | ❌ missing | No `formControlName` story (basic, disabled control, toggled, toggled + disabled, with value/dirty/touched read-out). `Disabled` only uses `[disabled]` and a disabled button. |
+| Upstream example                  | Registry story                           | Status     | Notes                                                                                                                         |
+| --------------------------------- | ---------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Default                           | `Default` ("Single selection")           | ✅ covered | Labels, icons and vertical, sharing one model.                                                                                |
+| Toggle / Multi-select             | `Toggle` ("Multiple selection (toggle)") | ✅ covered | Includes the empty initial state built with `@for`.                                                                           |
+| Complex                           | `Generated` ("Generated buttons")        | ✅ covered | Single-select list generated with `@for`, with separate `ngModel`/`ngModelChange`.                                            |
+| Segmented Button in Reactive Form | `ReactiveForms` ("Reactive form")        | ✅ covered | Basic, disabled control, toggled and toggled + disabled groups, with value/dirty/touched read-out and enable/disable buttons. |
 
 ### Tests vs. upstream specs
 
@@ -35,6 +35,6 @@ Registry-only coverage: roving tabindex (selected or first is the tab stop), Hom
 
 ### Gaps to fill
 
-- **Stories:** `Reactive form` — basic, disabled control, toggled and toggled + disabled groups with value/dirty/touched read-out; `Generated buttons` — single-select list from an array with `ngModel`/`ngModelChange`.
+- **Stories:** none.
 - **Tests:** "an individually disabled button stays disabled after the group is re-enabled"; "a button added after render gets option role, posinset and setsize, and setsize updates on the others".
 - **Effort:** S — two tests on the existing hosts and one forms story.
