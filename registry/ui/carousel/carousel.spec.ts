@@ -188,6 +188,29 @@ describe('Carousel', () => {
         expect(selected()).toEqual(['Slide 1']);
         expect(fixture.nativeElement.querySelectorAll('[role=img]').length).toBe(3);
     });
+
+    it('changing visibleSlidesCount re-pages the slides', async () => {
+        const { fixture, host, root, selected, next, transform } = await setup();
+        expect(root.querySelectorAll('[role=img]').length).toBe(4);
+        host.count.set(2);
+        await fixture.whenStable();
+        expect(selected()).toEqual(['Slide 1', 'Slide 2']);
+        expect(root.querySelectorAll('[role=img]').length).toBe(3);
+        await userEvent.click(next());
+        await fixture.whenStable();
+        expect(selected()).toEqual(['Slide 2', 'Slide 3']);
+
+        host.count.set(4);
+        await fixture.whenStable();
+        expect(selected()).toEqual(['Slide 1', 'Slide 2', 'Slide 3', 'Slide 4']);
+        // one page: no indicators and no navigation
+        expect(root.querySelectorAll('[role=img]').length).toBe(0);
+        expect(next()).toBeNull();
+        expect(transform()).toBe('translateX(0px)');
+        // like upstream, a new count reports the shown slides
+        expect(host.changes.at(-1)!.slideDirection).toBe('None');
+        expect(host.changes.at(-1)!.activeItems.length).toBe(4);
+    });
 });
 
 @Component({

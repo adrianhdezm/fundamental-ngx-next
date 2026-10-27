@@ -667,6 +667,19 @@ export class Carousel {
             this.slideTransitionDuration();
             untracked(() => this.configure());
         });
+        // a new visibleSlidesCount: keep the shown slides in range and report them, like upstream
+        let previousCount: number | 'auto' | undefined;
+        effect(() => {
+            const count = this.visibleSlidesCount();
+            untracked(() => {
+                const changed = previousCount !== undefined && previousCount !== count;
+                previousCount = count;
+                if (!changed || !this.slides().length) return;
+                const last = Math.max(0, this.pages() - 1);
+                if (!this.loop() && this.start() > last) this.moveTo(last);
+                this.notify('None');
+            });
+        });
         // new slides: back to the first
         effect(() => {
             const slides = this.slides();
