@@ -54,6 +54,30 @@ class Host {
     readonly layouts: ResizableCardLayoutConfig[] = [];
 }
 
+@Component({
+    imports: [ResizableCardLayout, ResizableCardItem],
+    template: `
+        <div style="width: 1500px">
+            <fd-resizable-card-layout [layoutConfig]="layoutConfig()" (miniHeaderReached)="miniHeader.push($event)">
+                @for (n of count(); track n) {
+                    <fd-resizable-card-item>
+                        <div class="h-full bg-sap-tile-background">Card {{ n }}</div>
+                    </fd-resizable-card-item>
+                }
+            </fd-resizable-card-layout>
+        </div>
+    `
+})
+class LayoutConfigHost {
+    readonly count = signal([1, 2, 3]);
+    readonly layoutConfig = signal<ResizableCardLayoutConfig>([
+        card('First', { rank: 3, cardWidthColSpan: 2, cardHeightRowSpan: 12 }),
+        card('Second', { rank: 1, cardHeightRowSpan: 20, resizable: false }),
+        card('Third', { rank: 2, cardHeightRowSpan: 12, cardMiniHeaderRowSpan: 4 })
+    ]);
+    readonly miniHeader: ResizedEvent[] = [];
+}
+
 const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
 
 async function setup(config: Partial<{ width: number; cards: ResizableCardItemConfig[] }> = {}) {
@@ -401,5 +425,43 @@ describe('ResizableCardLayout', () => {
         host.width.set(900);
         await stable();
         expect(last().every((c) => c.cardWidthColSpan! <= 2)).toBe(true);
+    });
+
+    it('layoutConfig assigns title, rank, spans and resizable to the cards in content order', async () => {
+        const fixture = TestBed.createComponent(LayoutConfigHost);
+        document.body.appendChild(fixture.nativeElement);
+        const stable = async () => {
+            await fixture.whenStable();
+            await frame();
+            await frame();
+            await fixture.whenStable();
+        };
+        await stable();
+        const root = fixture.nativeElement as HTMLElement;
+        const items = [...root.querySelectorAll<HTMLElement>('fd-resizable-card-item')];
+        expect(items.map((i) => i.getAttribute('aria-label'))).toEqual(['First', 'Second', 'Third']);
+        const box = (el: HTMLElement) => el.querySelector<HTMLElement>('.flex.transition-\\[width\\,height\\]')!;
+        const size = (el: HTMLElement) => [parseFloat(box(el).style.width), parseFloat(box(el).style.height)];
+        const position = (el: HTMLElement) => [parseFloat(el.style.insetInlineStart), parseFloat(el.style.top)];
+        expect(size(items[0])).toEqual([2 * 320 + 16, 192]);
+        expect(size(items[1])).toEqual([320, 320]);
+        expect(size(items[2])).toEqual([320, 192]);
+        // placed by rank: Second, Third, then First (two columns)
+        expect(position(items[1])).toEqual([48, 0]);
+        expect(position(items[2])).toEqual([48 + 336, 0]);
+        expect(position(items[0])).toEqual([48 + 2 * 336, 0]);
+        // resizable=false from the layout configuration
+        expect(items[1].querySelector('.cursor-ew-resize')).toBeNull();
+        expect(items[2].querySelector('.cursor-ew-resize')).not.toBeNull();
+        // mini spans from the layout configuration: shrinking snaps to mini header 4 + mini content 5 rows,
+        // then to the mini header
+        const bottom = () => items[2].querySelector<HTMLElement>('.cursor-ns-resize')!;
+        await drag(bottom(), 0, -100, 10);
+        await stable();
+        expect(size(items[2])[1]).toBe(144);
+        await drag(bottom(), 0, -10, 2);
+        await stable();
+        expect(size(items[2])[1]).toBe(64);
+        expect(fixture.componentInstance.miniHeader.at(-1)?.cardHeightRowSpan).toBe(4);
     });
 });
