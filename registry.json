@@ -589,6 +589,20 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "avatar-group",
+      "type": "registry:ui",
+      "title": "Avatar Group",
+      "description": "Individual or overlapping avatar groups with details popovers and an overflow popover.",
+      "registryDependencies": ["utils", "theme", "avatar", "bar", "popover"],
+      "files": [
+        {
+          "path": "registry/ui/avatar-group/avatar-group.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "dependencies": ["@angular/cdk"]
     }
   ]
 }
