@@ -1,7 +1,7 @@
 ## token
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/token) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/token)
-Registry: `registry/ui/token/` — 4 stories, 10 tests.
+Registry: `registry/ui/token/` — 5 stories, 10 tests.
 
 ### Stories vs. upstream examples
 
@@ -14,7 +14,7 @@ Registry: `registry/ui/token/` — 4 stories, 10 tests.
 | Tokenizer         | TokenizerStory ("Tokenizer"), Overflow | ✅ covered | Read-only token, add on Enter, remove; Overflow shows the "n more" link   |
 | Compact Tokenizer | Compact                                | ✅ covered | Also shows the value-help glyph button                                    |
 
-The "n more" overflow popover has no "Open: …" story, so axe never checks it.
+`Open: overflow` clicks the "n more" link in `play`, so axe checks the overflow popover.
 
 ### Tests vs. upstream specs
 
@@ -41,6 +41,6 @@ Registry-only coverage: Backspace/Delete removal with focus handling, Ctrl+A sel
 
 ### Gaps to fill
 
-- **Stories:** "Compact tokens" — standalone compact `fd-token`s (default, selected, read-only) in a compact density container; "Open: overflow" — narrow tokenizer whose `play` clicks the "n more" link and shows the popover list with remove buttons.
+- **Stories:** "Compact tokens" — standalone compact `fd-token`s (default, selected, read-only) in a compact density container.
 - **Tests:** "disabled tokens do not emit onCloseClick and are aria-disabled"; "read-only tokens have no close icon and are not removed by Backspace"; "emits elementFocused on focus and blur"; "sets aria-roledescription"; "Ctrl click toggles a token without clearing the others"; "tokens expand back when the tokenizer gets wider"; "arrow keys are mirrored in RTL".
 - **Effort:** M, two stories and about eleven focused tests.
