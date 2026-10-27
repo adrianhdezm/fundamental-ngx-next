@@ -1,19 +1,19 @@
 ## nested-list
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/side-navigation) (examples live in the side-navigation page) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/nested-list)
-Registry: `registry/ui/nested-list/` — 3 stories, 5 tests (also exercised through `registry/ui/side-navigation/`: 7 stories, 6 tests).
+Registry: `registry/ui/nested-list/` — 3 stories, 5 tests (also exercised through `registry/ui/side-navigation/`: 9 stories, 6 tests).
 
 ### Stories vs. upstream examples
 
-| Upstream example                               | Registry story                                                    | Status     | Notes                                                                                                               |
-| ---------------------------------------------- | ----------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------- |
-| Side Navigation (one level, text only)         | nested-list Text only                                             | ✅ covered | `[textOnly]="true"` list with no icons, outside a side navigation                                                   |
-| Multiple Levels and Selected Option            | nested-list Default / side-navigation Default / Not selectable    | ✅ covered | Two levels, expanded Settings group, selected link                                                                  |
-| Programmatic State Change                      | —                                                                 | ❌ missing | Upstream: `[selectable]="false"`, external buttons toggle `[(expanded)]` and `[selected]` on content and child link |
-| Side Navigation with Icons                     | side-navigation Default                                           | ✅ covered |                                                                                                                     |
-| Condensed Mode (`fd-nested-list-popover`)      | side-navigation Condensed / Open: condensed popover               | ✅ covered | The Open story opens the child popover for the a11y run                                                             |
-| Generated from Configuration Object            | side-navigation From data / nested-list From data                 | ✅ covered | nested-list From data renders `fd-prepared-nested-list` on its own                                                  |
-| Condensed, Generated from Configuration Object | side-navigation From data, condensed / Open: from data, condensed | ✅ covered |                                                                                                                     |
+| Upstream example                               | Registry story                                                    | Status     | Notes                                                                                            |
+| ---------------------------------------------- | ----------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------ |
+| Side Navigation (one level, text only)         | nested-list Text only                                             | ✅ covered | `[textOnly]="true"` list with no icons, outside a side navigation                                |
+| Multiple Levels and Selected Option            | nested-list Default / side-navigation Default / Not selectable    | ✅ covered | Two levels, expanded Settings group, selected link                                               |
+| Programmatic State Change                      | side-navigation Programmatic state                                | ✅ covered | `[selectable]="false"`, buttons toggle `[(expanded)]` and `[selected]` on content and child link |
+| Side Navigation with Icons                     | side-navigation Default                                           | ✅ covered |                                                                                                  |
+| Condensed Mode (`fd-nested-list-popover`)      | side-navigation Condensed / Open: condensed popover               | ✅ covered | The Open story opens the child popover for the a11y run                                          |
+| Generated from Configuration Object            | side-navigation From data / nested-list From data                 | ✅ covered | nested-list From data renders `fd-prepared-nested-list` on its own                               |
+| Condensed, Generated from Configuration Object | side-navigation From data, condensed / Open: from data, condensed | ✅ covered |                                                                                                  |
 
 ### Tests vs. upstream specs
 
@@ -38,6 +38,5 @@ Registry-only coverage: the list in a condensed popover is a `tree` of its own n
 
 ### Gaps to fill
 
-- **Stories:** "Programmatic state" (side-navigation) — `selectable=false`, buttons "Select child" / "Open" bound to `[selected]` and `[(expanded)]`.
 - **Tests:** none left; `nested-list.spec.ts` covers leaf rows, condensed popover click/Escape/outside click, external `[selected]` / `[(expanded)]`, use without a side navigation and wrap-around.
-- **Effort:** S, the remaining stories live in side-navigation.
+- **Effort:** none left.

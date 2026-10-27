@@ -1,6 +1,7 @@
 import { Component, input, signal } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { expect, userEvent, waitFor } from 'storybook/test';
+import { Button } from '@/ui/button/button';
 import {
     NestedItem,
     NestedLink,
@@ -129,6 +130,116 @@ class StorySideNav {
 }
 
 @Component({
+    selector: 'story-side-nav-text-only',
+    imports: [SideNavigation, SideNavigationMain, SideNavigationUtility, ...NESTED],
+    template: `
+        <div class="flex h-[26rem] gap-4">
+            <div class="w-72 shadow-sap-content-shadow0">
+                <fd-side-nav>
+                    <div fd-side-nav-main>
+                        <ul fd-nested-list textOnly>
+                            <li fd-nested-list-header>Group Header 1</li>
+                            @for (link of ['Link 1', 'Link 2']; track link) {
+                                <li fd-nested-list-item>
+                                    <a fd-nested-list-link [selected]="$first" (click)="chosen.set(link)">
+                                        <span fd-nested-list-title>{{ link }}</span>
+                                    </a>
+                                </li>
+                            }
+                            <li fd-nested-list-header>Group Header 2</li>
+                            @for (link of ['Link 3', 'Link 4']; track link) {
+                                <li fd-nested-list-item>
+                                    <a fd-nested-list-link (click)="chosen.set(link)">
+                                        <span fd-nested-list-title>{{ link }}</span>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <div fd-side-nav-utility>
+                        <ul fd-nested-list textOnly>
+                            @for (link of ['Settings', 'Sign Out']; track link) {
+                                <li fd-nested-list-item>
+                                    <a fd-nested-list-link (click)="chosen.set(link)">
+                                        <span fd-nested-list-title>{{ link }}</span>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </fd-side-nav>
+            </div>
+            <p class="m-0 font-sap-font-family text-sap-font-size text-sap-text-color" aria-live="polite">
+                Chosen: {{ chosen() || 'none' }}
+            </p>
+        </div>
+    `
+})
+class StorySideNavTextOnly {
+    protected readonly chosen = signal('');
+}
+
+@Component({
+    selector: 'story-side-nav-programmatic',
+    imports: [SideNavigation, SideNavigationMain, SideNavigationUtility, Button, ...NESTED],
+    template: `
+        <div class="flex h-[30rem] gap-4">
+            <div class="w-72 shadow-sap-content-shadow0">
+                <fd-side-nav [selectable]="false">
+                    <div fd-side-nav-main>
+                        <ul fd-nested-list textOnly>
+                            <li fd-nested-list-item>
+                                <a fd-nested-list-link><span fd-nested-list-title>Link 1</span></a>
+                            </li>
+                            <li fd-nested-list-item>
+                                <a fd-nested-list-link><span fd-nested-list-title>Link 2</span></a>
+                            </li>
+                            <li fd-nested-list-item [(expanded)]="open">
+                                <div fd-nested-list-content [selected]="selected()">
+                                    <a fd-nested-list-link><span fd-nested-list-title>Link 3</span></a>
+                                    <button fd-nested-list-expand-icon></button>
+                                </div>
+                                <ul fd-nested-list>
+                                    @for (child of ['Child 1', 'Child 2', 'Child 3']; track child) {
+                                        <li fd-nested-list-item>
+                                            <a fd-nested-list-link [selected]="$first && selected()">
+                                                <span fd-nested-list-title>{{ child }}</span>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                            <li fd-nested-list-item>
+                                <a fd-nested-list-link><span fd-nested-list-title>Link 4</span></a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div fd-side-nav-utility>
+                        <ul fd-nested-list textOnly>
+                            <li fd-nested-list-item>
+                                <a fd-nested-list-link><span fd-nested-list-title>Settings</span></a>
+                            </li>
+                        </ul>
+                    </div>
+                </fd-side-nav>
+            </div>
+            <div class="flex items-start gap-2">
+                <button
+                    fdButton
+                    [label]="selected() ? 'Unselect child' : 'Select child'"
+                    (click)="selected.set(!selected())"
+                ></button>
+                <button fdButton [label]="open() ? 'Close' : 'Open'" (click)="open.set(!open())"></button>
+            </div>
+        </div>
+    `
+})
+class StorySideNavProgrammatic {
+    protected readonly open = signal(false);
+    protected readonly selected = signal(false);
+}
+
+@Component({
     selector: 'story-side-nav-model',
     imports: [SideNavigation],
     template: `
@@ -182,7 +293,7 @@ const meta: Meta<SideNavigation> = {
     component: SideNavigation,
     decorators: [
         moduleMetadata({
-            imports: [StorySideNav, StorySideNavModel]
+            imports: [StorySideNav, StorySideNavModel, StorySideNavTextOnly, StorySideNavProgrammatic]
         })
     ],
     parameters: {
@@ -213,6 +324,15 @@ export const FromDataCondensed: Story = {
     name: 'From data, condensed',
     render: () => ({ template: `<story-side-nav-model [condensed]="true" />` })
 };
+export const TextOnly: Story = {
+    name: 'Text only',
+    render: () => ({ template: `<story-side-nav-text-only />` })
+};
+export const Programmatic: Story = {
+    name: 'Programmatic state',
+    render: () => ({ template: `<story-side-nav-programmatic />` })
+};
+
 /** Opens the child list of a condensed first-level row in its popover from the keyboard. */
 async function openChildPopover(canvas: HTMLElement, title: string): Promise<void> {
     const row = await waitFor(() => {
