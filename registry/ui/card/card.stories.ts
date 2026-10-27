@@ -1,8 +1,11 @@
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Avatar } from '@/ui/avatar/avatar';
 import { BusyIndicator } from '@/ui/busy-indicator/busy-indicator';
 import { Button } from '@/ui/button/button';
+import { Link } from '@/ui/link/link';
 import { List, ListItem, ListSecondary, ListTitle } from '@/ui/list/list';
+import { Menu, MenuAddon, MenuInteractive, MenuItem, MenuTitle, MenuTrigger } from '@/ui/menu/menu';
 import { ObjectStatusComponent } from '@/ui/object-status/object-status';
 import { Skeleton } from '@/ui/skeleton/skeleton';
 import {
@@ -66,10 +69,17 @@ const IMPORTS = [
     Avatar,
     BusyIndicator,
     Button,
+    Link,
     List,
     ListItem,
     ListTitle,
     ListSecondary,
+    Menu,
+    MenuAddon,
+    MenuInteractive,
+    MenuItem,
+    MenuTitle,
+    MenuTrigger,
     ObjectStatusComponent,
     Skeleton
 ];
@@ -269,4 +279,55 @@ export const Banner: Story = {
                 </fd-card>
             </div>`
     })
+};
+
+const FOOTER_OVERFLOW = `
+    <div class="${row}">
+        <fd-card class="w-80" cardType="list">
+            <fd-card-header><fd-card-main-header><h2 fd-card-title>Footer actions</h2></fd-card-main-header></fd-card-header>
+            <fd-card-content>${list(4)}</fd-card-content>
+            <fd-card-footer>
+                <button *fdCardFooterActionItem fdButton variant="positive" label="Start"></button>
+                <button *fdCardFooterActionItem fdButton variant="positive" label="Center"></button>
+                <button *fdCardFooterActionItem fdButton variant="negative" label="End"></button>
+            </fd-card-footer>
+        </fd-card>
+        <fd-card class="w-80" cardType="list">
+            <fd-card-header><fd-card-main-header><h2 fd-card-title>Footer actions with overflow</h2></fd-card-main-header></fd-card-header>
+            <fd-card-content>${list(4)}</fd-card-content>
+            <fd-card-footer>
+                <button *fdCardFooterActionItem fdButton variant="positive" label="Start"></button>
+                <button *fdCardFooterActionItem fdButton variant="negative" label="End"></button>
+                <ng-template fdCardFooterActionItem>
+                    <button fdButton variant="transparent" glyph="overflow" ariaLabel="More actions" [fdMenuTrigger]="overflow"></button>
+                    <fd-menu #overflow ariaLabel="More actions">
+                        <li fd-menu-item><a fd-menu-interactive><fd-menu-addon position="before" glyph="cart" /><span fd-menu-title>Option 1</span></a></li>
+                        <li fd-menu-item><a fd-menu-interactive><fd-menu-addon position="before" glyph="accept" /><span fd-menu-title>Option 2</span></a></li>
+                        <li fd-menu-item><a fd-menu-interactive><span fd-menu-title>Option 3</span><fd-menu-addon glyph="menu" /></a></li>
+                    </fd-menu>
+                </ng-template>
+            </fd-card-footer>
+        </fd-card>
+        <fd-card class="w-80" cardType="list">
+            <fd-card-header><fd-card-main-header><h2 fd-card-title>Footer with a link</h2></fd-card-main-header></fd-card-header>
+            <fd-card-content>${list(4)}</fd-card-content>
+            <fd-card-footer><a fdLink href="#">Link to some action or details page</a></fd-card-footer>
+        </fd-card>
+    </div>`;
+
+export const FooterOverflow: Story = {
+    name: 'Footer with overflow and link',
+    render: () => ({ template: FOOTER_OVERFLOW })
+};
+
+export const OpenFooterOverflow: Story = {
+    name: 'Open: footer overflow menu',
+    tags: ['!autodocs'],
+    render: () => ({ template: FOOTER_OVERFLOW }),
+    play: async ({ canvasElement }) => {
+        const trigger = canvasElement.querySelector<HTMLElement>('[aria-label="More actions"][aria-haspopup]')!;
+        await userEvent.click(trigger);
+        await waitFor(() => expect(trigger.getAttribute('aria-expanded')).toBe('true'));
+        await waitFor(() => expect(document.querySelector('.cdk-overlay-container [role=menuitem]')).not.toBeNull());
+    }
 };
