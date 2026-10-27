@@ -8,7 +8,10 @@ import { Token, Tokenizer, TokenizerInput } from './token';
     imports: [Token, Tokenizer, TokenizerInput],
     template: `
         <div [style.width]="width()">
-            <fd-tokenizer>
+            <fd-tokenizer
+                [externalHiddenCount]="externalHiddenCount()"
+                (moreClickedEvent)="moreClicks = moreClicks + 1"
+            >
                 @for (value of values(); track value) {
                     <fd-token (onCloseClick)="remove(value)">{{ value }}</fd-token>
                 }
@@ -21,6 +24,8 @@ import { Token, Tokenizer, TokenizerInput } from './token';
 class Host {
     readonly width = signal('40rem');
     readonly values = signal(['Apple', 'Banana', 'Cherry']);
+    readonly externalHiddenCount = signal(0);
+    moreClicks = 0;
     remove(value: string): void {
         this.values.update((v) => v.filter((x) => x !== value));
     }
@@ -206,5 +211,48 @@ describe('Tokenizer', () => {
         await wait();
         expect(root.querySelector('[data-tokenizer-more]')).toBeNull();
         expect(options().every((o) => o.offsetParent !== null)).toBe(true);
+    });
+
+    it('counts externalHiddenCount in the n more link and leaves the hidden tokens to the owner', async () => {
+        const { fixture, host, root } = await setup();
+        const more = () => root.querySelector<HTMLElement>('[data-tokenizer-more]');
+        const popoverList = () => document.querySelector('.cdk-overlay-container [role=list]');
+        expect(more()).toBeNull();
+
+        // shown with no width-hidden tokens
+        host.externalHiddenCount.set(5);
+        await fixture.whenStable();
+        await wait();
+        expect(more()?.textContent?.trim()).toBe('5 more');
+        await userEvent.click(more()!);
+        await fixture.whenStable();
+        await wait();
+        expect(host.moreClicks).toBe(1);
+        // the owner shows the hidden tokens: no popover of its own
+        expect(popoverList()).toBeNull();
+        more()!.focus();
+        await userEvent.keyboard(' ');
+        await userEvent.keyboard('{Enter}');
+        expect(host.moreClicks).toBe(3);
+
+        // added to the tokens hidden for lack of room
+        (document.activeElement as HTMLElement).blur();
+        host.width.set('14rem');
+        host.values.set(['Apple', 'Banana', 'Cherry', 'Dragon fruit', 'Elderberry']);
+        await fixture.whenStable();
+        await wait(100);
+        const hidden = options().filter((o) => o.offsetParent === null).length;
+        expect(hidden).toBeGreaterThan(0);
+        expect(more()?.textContent?.trim()).toBe(`${hidden + 5} more`);
+
+        // back to 0: only the width-hidden tokens count, and the popover is back
+        host.externalHiddenCount.set(0);
+        await fixture.whenStable();
+        await wait();
+        expect(more()?.textContent?.trim()).toBe(`${hidden} more`);
+        await userEvent.click(more()!);
+        await fixture.whenStable();
+        await wait();
+        expect(popoverList()).not.toBeNull();
     });
 });

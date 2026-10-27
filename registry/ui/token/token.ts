@@ -213,7 +213,7 @@ export class TokenizerInput {
                     <ng-content select="fd-token" />
                 </div>
                 @if (hiddenCount() > 0) {
-                    @if (showOverflowPopover()) {
+                    @if (showOverflowPopover() && externalHiddenCount() === 0) {
                         <fd-popover placement="bottom-start" [noArrow]="false" [(isOpen)]="overflowOpen">
                             <fd-popover-control>
                                 <span
@@ -256,6 +256,7 @@ export class TokenizerInput {
                             [class]="moreClass"
                             (click)="moreClickedEvent.emit()"
                             (keydown.enter)="moreClickedEvent.emit()"
+                            (keydown.space)="$event.preventDefault(); moreClickedEvent.emit()"
                             >{{ moreText() }}</span
                         >
                     }
@@ -306,7 +307,10 @@ export class Tokenizer {
     readonly moreTerm = input('{count} more');
     /** Lists the hidden tokens in a popover; otherwise only `moreClickedEvent` emits. */
     readonly showOverflowPopover = input(true, { transform: booleanAttribute });
-    /** Tokens hidden by the owner (e.g. a multi-input), counted in the overflow link. */
+    /**
+     * Tokens hidden by the owner (e.g. a multi-input), counted in the overflow link. While it is above 0 the
+     * owner shows the hidden tokens: the link only emits `moreClickedEvent`, without the popover.
+     */
     readonly externalHiddenCount = input(0);
     /** Keeps the tokens expanded, e.g. while a value help is open. */
     readonly open = input(false, { transform: booleanAttribute });
