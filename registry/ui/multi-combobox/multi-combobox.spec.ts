@@ -241,7 +241,21 @@ describe('MultiCombobox', () => {
         );
     });
 
-    describe('options', () => {});
+    describe('options', () => {
+        it('removing a token unchecks it in the open list and keeps the others', async () => {
+            const { fixture, host, addon } = await setupModel((h) => h.selected.set([ITEMS[0], ITEMS[2]]));
+            await userEvent.click(addon());
+            await fixture.whenStable();
+            const token = [...document.querySelectorAll<HTMLElement>('fd-token')].find((t) =>
+                t.textContent?.includes('Apple')
+            )!;
+            await userEvent.click(token.querySelector<HTMLElement>('span[aria-hidden=true]')!);
+            await fixture.whenStable();
+            expect(tokens()).toEqual(['Red Pepper']);
+            expect(names(host.selected())).toEqual(['Red Pepper']);
+            expect(options().map((o) => o.getAttribute('aria-selected'))).toEqual(['false', 'false', 'true', 'false']);
+        });
+    });
 
     describe('mobile', () => {
         const mobileSetup = () =>

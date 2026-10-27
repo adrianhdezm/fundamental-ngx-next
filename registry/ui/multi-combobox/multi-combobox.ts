@@ -836,12 +836,27 @@ export class MultiCombobox<T = unknown> implements ControlValueAccessor {
     protected onFocusout(event: FocusEvent): void {
         if (this.mobile()) return;
         const next = event.relatedTarget as Node | null;
-        if (
-            next &&
-            (this.elementRef.nativeElement.contains(next) || (next as Element).closest?.('.cdk-overlay-container'))
-        )
+        if (!next) {
+            // a focused token that is removed (its close button) blurs while it leaves the DOM:
+            // the focus goes back to the field and the list stays open
+            const target = event.target as Node;
+            queueMicrotask(() => {
+                if (this.destroyed) return;
+                if (!target.isConnected && this.elementRef.nativeElement.isConnected) {
+                    this.field()?.nativeElement.focus();
+                    return;
+                }
+                this.leave();
+            });
             return;
-        // a text that names exactly one item chooses it
+        }
+        if (this.elementRef.nativeElement.contains(next) || (next as Element).closest?.('.cdk-overlay-container'))
+            return;
+        this.leave();
+    }
+
+    /** The focus left the field: a text that names exactly one item chooses it, and the list closes. */
+    private leave(): void {
         const text = this.inputText();
         const match = text ? this.suggestions().filter((s) => s.label === text) : [];
         if (match.length === 1 && !this.isSelected(match[0])) this.toggle(match[0], true);

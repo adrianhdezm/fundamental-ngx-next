@@ -1,7 +1,7 @@
 ## multi-combobox
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/multi-combobox) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/multi-combobox)
-Registry: `registry/ui/multi-combobox/` — 15 stories, 8 tests.
+Registry: `registry/ui/multi-combobox/` — 15 stories, 9 tests.
 
 ### Stories vs. upstream examples
 
@@ -40,7 +40,7 @@ Registry: `registry/ui/multi-combobox/` — 15 stories, 8 tests.
 | Programmatic `[selectedItems]` add / replace / clear, reopen state             | shows the chosen items as tokens                        | 🟡 partial | Covered through FormControl only; the `selectedItems` model and checked state after reopen are not |
 | FormControl.setValue() renders tokens                                          | shows the chosen items as tokens                        | ✅ covered |                                                                                                    |
 | Mobile draft: cancel restores selection, approve commits once, grouped objects | —                                                       | ❌ missing |                                                                                                    |
-| Token removal deselects in the open menu                                       | —                                                       | ❌ missing |                                                                                                    |
+| Token removal deselects in the open menu                                       | removing a token unchecks it in the open list…          | ✅ covered | The list stays open (`fix(multi-combobox)`)                                                        |
 | FormControl initial value renders once an async dataSource arrives             | shows the chosen items as tokens                        | 🟡 partial | Sync array only                                                                                    |
 
 Open stories: "Open: select all", "Open: groups", "Open: two columns", "Open: custom item template", "Open: state message", "Open: inside a dialog" and "Open: mobile" open the list (or dialog) in `play`.
