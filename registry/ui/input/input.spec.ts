@@ -13,6 +13,7 @@ import { FormControl, type FormState } from './input';
         <input fdFormControl id="model" aria-label="Model" [(ngModel)]="model" [state]="state()" />
         <input fdFormControl id="reactive" aria-label="Reactive" [formControl]="control" />
         <textarea fdFormControl id="area" aria-label="Area" rows="3"></textarea>
+        <textarea fdFormControl id="reactive-area" aria-label="Reactive area" [formControl]="areaControl"></textarea>
         <input fdFormControl id="readonly" aria-label="Read-only" readonly value="Fixed" />
         <input fdFormControl id="disabled" aria-label="Disabled" disabled value="Off" />
         <input fdFormControl id="number" aria-label="Number" type="number" [noNumberSpinner]="noSpinner()" />
@@ -23,6 +24,7 @@ class Host {
     readonly state = signal<FormState | null>(null);
     readonly noSpinner = signal(false);
     readonly control = new NgFormControl('Initial');
+    readonly areaControl = new NgFormControl('First line');
 }
 
 @Component({
@@ -86,6 +88,29 @@ describe('Input', () => {
         await stable();
         expect(input.disabled).toBe(true);
         expect(Number(getComputedStyle(input).opacity)).toBeLessThan(1);
+    });
+
+    it('textarea works with reactive forms, including disable()', async () => {
+        const { host, field, stable } = await render(Host);
+        const area = field<HTMLTextAreaElement>('reactive-area');
+        expect(area.value).toBe('First line');
+        await userEvent.click(area);
+        await userEvent.keyboard('{End}{Enter}Second line');
+        expect(host.areaControl.value).toBe('First line\nSecond line');
+        expect(host.areaControl.dirty).toBe(true);
+        await userEvent.tab();
+        expect(host.areaControl.touched).toBe(true);
+        host.areaControl.setValue('Reset');
+        await stable();
+        expect(area.value).toBe('Reset');
+        host.areaControl.disable();
+        await stable();
+        expect(area.disabled).toBe(true);
+        expect(Number(getComputedStyle(area).opacity)).toBeLessThan(1);
+        host.areaControl.enable();
+        await stable();
+        expect(area.disabled).toBe(false);
+        expect(getComputedStyle(area).opacity).toBe('1');
     });
 
     it('styles textareas as multi-line fields', async () => {
