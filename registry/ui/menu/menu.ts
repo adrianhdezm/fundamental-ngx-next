@@ -306,7 +306,8 @@ export class Menu extends MenuList {
         effect((onCleanup) => {
             const trigger = this.trigger();
             if (!trigger || !this.mobile()) return;
-            const toggle = () => this.toggle();
+            // a disabled menu ignores its trigger, like the popover does on desktop
+            const toggle = () => !this.disabled() && this.toggle();
             trigger.addEventListener('click', toggle);
             onCleanup(() => trigger.removeEventListener('click', toggle));
         });
@@ -1175,7 +1176,7 @@ export class MenuTrigger {
 
     protected openFromKeyboard(event: Event): void {
         const menu = this.menu();
-        if (!menu || menu.isOpen()) return;
+        if (!menu || menu.isOpen() || menu.disabled()) return;
         event.preventDefault();
         menu.open();
     }
