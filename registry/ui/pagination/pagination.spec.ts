@@ -93,6 +93,25 @@ describe('Pagination', () => {
         expect(host.page()).toBe(42);
     });
 
+    it('shows the "Page:" and "of" labels of the input in the mobile layout only, naming the input in both', async () => {
+        const { fixture, host, root } = await setup({ page: 30 });
+        const labels = () => [...root.querySelectorAll<HTMLElement>('nav span[id]')];
+        const input = () => root.querySelector<HTMLInputElement>('input[type=number]')!;
+        const name = () =>
+            input()
+                .getAttribute('aria-labelledby')!
+                .split(' ')
+                .map((id) => document.getElementById(id)?.textContent?.trim())
+                .join(' ');
+        expect(labels().map((el) => el.textContent?.trim())).toEqual(['Page:', 'of 50']);
+        expect(labels().every((el) => getComputedStyle(el).display === 'none')).toBe(true);
+        expect(name()).toBe('Page: of 50');
+        host.mobile.set(true);
+        await fixture.whenStable();
+        expect(labels().every((el) => getComputedStyle(el).display !== 'none')).toBe(true);
+        expect(name()).toBe('Page: of 50');
+    });
+
     it('moves between the controls with the arrow keys as one tab stop', async () => {
         const { fixture, root } = await setup({ total: 50, page: 2 });
         const tabbable = [...root.querySelectorAll('nav [tabindex="0"]')];
@@ -118,6 +137,23 @@ describe('Pagination', () => {
         await fixture.whenStable();
         expect(host.size()).toBe(25);
         expect(host.page()).toBe(20);
+    });
+
+    it('centres the mobile nav, and puts it at the end after an items per page select', async () => {
+        const { fixture, host, root } = await setup({ mobile: true });
+        const nav = () => root.querySelector('nav')!;
+        const offsets = () => {
+            const box = nav().getBoundingClientRect();
+            const outer = (root.querySelector('fd-pagination') as HTMLElement).getBoundingClientRect();
+            return { start: box.left - outer.left, end: outer.right - box.right };
+        };
+        const withSelect = offsets();
+        expect(withSelect.end).toBeLessThan(withSelect.start);
+        expect(withSelect.end).toBeCloseTo(16, 0);
+        host.options.set([]);
+        await fixture.whenStable();
+        const alone = offsets();
+        expect(Math.abs(alone.start - alone.end)).toBeLessThan(2);
     });
 
     it('shows first and last buttons in mobile mode', async () => {

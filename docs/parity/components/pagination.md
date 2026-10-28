@@ -1,17 +1,19 @@
 ## pagination
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/pagination) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/pagination)
-Registry: `registry/ui/pagination/` — 3 stories, 12 tests.
+Registry: `registry/ui/pagination/` — 6 stories, 14 tests.
 
 ### Stories vs. upstream examples
 
-| Upstream example                | Registry story                                        | Status     | Notes                                                                        |
-| ------------------------------- | ----------------------------------------------------- | ---------- | ---------------------------------------------------------------------------- |
-| Basic Pagination                | Examples ("More than nine pages", "Up to nine pages") | ✅ covered |                                                                              |
-| Pagination showing items        | Examples ("Showing text")                             | ✅ covered | Via `displayTextTemplate`                                                    |
-| Pagination with per page select | Examples ("Items per page"), "Open: items per page"   | ✅ covered | The Open story opens the items-per-page `fd-select` listbox for the a11y run |
-| Mobile                          | Examples ("Mobile")                                   | ✅ covered |                                                                              |
-| Playground Area                 | Playground                                            | ✅ covered |                                                                              |
+| Upstream example                | Registry story                         | Status     | Notes                                                                                                                                                                                 |
+| ------------------------------- | -------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Basic Pagination                | Basic                                  | ✅ covered | 50 items without the total, page set after a simulated request started by `pageChangeStart`, "Go to page 1" button                                                                    |
+| Pagination showing items        | Showing items                          | ✅ covered | `displayTextTemplate` "From … to …. Total items …"                                                                                                                                    |
+| Pagination with per page select | Items per page, "Open: items per page" | ✅ covered | `itemsPerPage` 15 (10 pages, so the page input shows), the default select with `[4, 8, 16]`, and a custom segmented button template; the Open story opens the select for the a11y run |
+| Mobile                          | Mobile                                 | ✅ covered | 50 items, 4 per page, options `[4, 8, 16]`                                                                                                                                            |
+| Playground Area                 | Playground                             | ✅ covered |                                                                                                                                                                                       |
+
+Until the stories were split per upstream example, a single "Examples" story stood in for all of them and this table rated it covered; the custom items per page template, `itemsPerPage` 15 and the basic example's request flow were in fact missing. The desktop layout also showed "Page:" and "of N" around the page input, which fundamental-styles shows in the mobile layout only; fixed with the stories.
 
 ### Tests vs. upstream specs
 
