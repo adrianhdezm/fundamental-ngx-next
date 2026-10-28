@@ -77,6 +77,7 @@
           "target": "src/styles/themes/sap_horizon_hcw.css"
         }
       ],
+      "css": { "@import \"./styles/fundamental.css\"": {} },
       "dependencies": ["@angular/cdk"]
     },
     {

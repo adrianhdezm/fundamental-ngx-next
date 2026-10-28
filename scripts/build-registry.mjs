@@ -123,7 +123,9 @@ for (const item of registry.items) {
         ...(item.registryDependencies && {
             registryDependencies: item.registryDependencies.map((d) => `${registryUrl}/${d}.json`)
         }),
-        files: files.filter(Boolean)
+        files: files.filter(Boolean),
+        // CSS rules the CLI adds to the app's stylesheet (`tailwind.css` in components.json)
+        ...(item.css && { css: item.css })
     });
 }
 
