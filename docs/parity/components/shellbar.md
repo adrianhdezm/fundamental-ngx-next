@@ -1,7 +1,7 @@
 ## shellbar
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/shellbar) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/shellbar)
-Registry: `registry/ui/shellbar/` — 11 stories, 13 tests.
+Registry: `registry/ui/shellbar/` — 12 stories, 13 tests.
 
 ### Stories vs. upstream examples
 
@@ -16,7 +16,7 @@ Registry: `registry/ui/shellbar/` — 11 stories, 13 tests.
 | Context Area Overflow                            | `ContextAreaOverflow` ("Context area overflow")                                   | ✅ covered | Narrow width hides items; an overflow button (priority 0) opens a popover listing the hidden items from `contentItemVisibilityChange`. Upstream clones the hidden elements into the popover; the story lists their names, so no ids are duplicated. |
 | Shellbar with complex search results             | —                                                                                 | ❌ missing | Our `fd-shellbar-search` has no suggestions/suggestion footer/loading inputs: feature not ported, so this needs source work first.                                                                                                                  |
 
-"Open: user menu", "Open: product switch", "Open: product menu" and "Open: simple user menu" open them in `play`. No story opens the actions overflow menu: opened, the action sheet's CDK focus-trap anchors (`aria-hidden` with `tabindex="0"`) fail axe `aria-hidden-focus`, which needs a fix in action-sheet/popover first.
+"Open: user menu", "Open: product switch", "Open: product menu", "Open: simple user menu" and "Open: overflow menu" open them in `play`; the overflow story narrows the shellbar to 340px so the actions collapse into the action sheet, which passes axe now that the popover focus-trap fix has landed.
 
 ### Tests vs. upstream specs
 
@@ -29,6 +29,6 @@ Registry-only coverage: size from width, search placement and opening per size, 
 
 ### Gaps to fill
 
-- **Stories:** `Open: Overflow menu` once the action sheet passes `aria-hidden-focus` when open. Complex search results only after porting suggestions.
+- **Stories:** complex search results only after porting suggestions.
 - **Tests:** none.
-- **Effort:** the overflow open story is S after the action sheet fix; complex search is L (feature missing).
+- **Effort:** complex search is L (feature missing).

@@ -589,3 +589,9 @@ export const OpenSimpleUserMenu: Story = {
     render: () => ({ template: `<story-shellbar-simple />` }),
     play: openFrom('William Wallingham')
 };
+export const OpenOverflowMenu: Story = {
+    name: 'Open: overflow menu',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-shellbar [width]="340" />` }),
+    play: openFrom(/^Collapsed Item Menu/)
+};
