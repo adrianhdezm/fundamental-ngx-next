@@ -139,6 +139,23 @@ describe('Pagination', () => {
         expect(host.page()).toBe(20);
     });
 
+    it('centres the mobile nav, and puts it at the end after an items per page select', async () => {
+        const { fixture, host, root } = await setup({ mobile: true });
+        const nav = () => root.querySelector('nav')!;
+        const offsets = () => {
+            const box = nav().getBoundingClientRect();
+            const outer = (root.querySelector('fd-pagination') as HTMLElement).getBoundingClientRect();
+            return { start: box.left - outer.left, end: outer.right - box.right };
+        };
+        const withSelect = offsets();
+        expect(withSelect.end).toBeLessThan(withSelect.start);
+        expect(withSelect.end).toBeCloseTo(16, 0);
+        host.options.set([]);
+        await fixture.whenStable();
+        const alone = offsets();
+        expect(Math.abs(alone.start - alone.end)).toBeLessThan(2);
+    });
+
     it('shows first and last buttons in mobile mode', async () => {
         const { fixture, host, root } = await setup({ mobile: true, page: 3 });
         expect(button(root, 'Page 2')).toBeNull();

@@ -444,8 +444,12 @@ export class Pagination {
         )
     );
 
+    /** Centred; in the compact layout after an items per page control, at the end. */
     protected readonly navClass = computed(() =>
-        cn('mx-auto flex items-center justify-center gap-1', this.compact() && 'me-0')
+        cn(
+            'mx-auto flex items-center justify-center gap-1',
+            this.compact() && (this.itemsPerPageTemplate() || this.itemsPerPageOptions().length) && 'me-0'
+        )
     );
 
     protected readonly iconButtonClass = 'rtl:[&_fd-icon]:rotate-180';
