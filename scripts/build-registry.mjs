@@ -40,12 +40,6 @@ for (const dir of readdirSync(join(root, 'registry/ui'))) {
 
 const BUILTIN = /^(@angular\/|rxjs|tslib)/;
 
-function targetOf(item, file) {
-    if (file.target) return file.target;
-    // registry/ui/<name>/<file> -> src/components/ui/<name>/<file>
-    return file.path.replace(/^registry\/ui\//, 'src/components/ui/');
-}
-
 /**
  * The shadcn CLI drops the comment above the first statement of an installed file, which would lose the
  * attribution header. In the registry copy the header goes after the imports (or after the first statement of a
@@ -111,7 +105,9 @@ for (const item of registry.items) {
                 return `url('${FONT_CDN}/${dir}/${f}')`;
             });
         }
-        return { path: file.path, type: file.type, target: targetOf(item, file), content };
+        // Components and libs carry no target, so the CLI places them where the app's `ui` and `lib` aliases
+        // point; only the styles, which have no alias, keep the target set in registry.json.
+        return { path: file.path, type: file.type, target: file.target, content };
     });
     out.push({
         $schema: 'https://ui.shadcn.com/schema/registry-item.json',

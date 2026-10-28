@@ -78,6 +78,8 @@ with the components each one uses, the theme (`src/styles/`), `src/lib/utils.ts`
    - `"css"` names the global stylesheet that imports Tailwind. The CLI adds the theme import to it.
    - `"tsx": true` keeps the files in TypeScript (`false` makes the CLI transpile them to JavaScript).
    - `"cssVariables": true` keeps the class names as they are (`false` makes the CLI rewrite them).
+   - The `ui` and `lib` aliases decide where the components and `utils.ts` go, and the CLI rewrites their imports to
+     match. To keep them inside `src/app/`, map `@/*` to `./src/app/*` in step 2; the aliases stay the same.
 4. Add components (pass several URLs to add them at once):
    ```sh
    npx shadcn add https://adrianhdezm.github.io/fundamental-ngx-registry/r/button.json

@@ -12,8 +12,7 @@
       "files": [
         {
           "path": "registry/lib/utils.ts",
-          "type": "registry:lib",
-          "target": "src/lib/utils.ts"
+          "type": "registry:lib"
         }
       ]
     },
@@ -25,8 +24,7 @@
       "files": [
         {
           "path": "registry/lib/datetime.ts",
-          "type": "registry:lib",
-          "target": "src/lib/datetime.ts"
+          "type": "registry:lib"
         }
       ]
     },
