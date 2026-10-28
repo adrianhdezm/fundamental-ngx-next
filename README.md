@@ -54,9 +54,6 @@ The registry is published at `https://adrianhdezm.github.io/fundamental-ngx-regi
 is the component's folder name (`button`, `date-picker`, ...). The CLI copies the source files into your app, along
 with the components each one uses, the theme (`src/styles/`), `src/lib/utils.ts` and the npm packages.
 
-[fundamental-ngx-registry-sample](https://github.com/adrianhdezm/fundamental-ngx-registry-sample) is a plain `ng new`
-app set up this way, one commit per step.
-
 1. Add Tailwind CSS v4, if the app doesn't have it yet:
    ```sh
    npx ng add tailwindcss
@@ -73,24 +70,25 @@ app set up this way, one commit per step.
      "style": "new-york",
      "rsc": false,
      "tsx": true,
-     "tailwind": { "config": "", "css": "", "baseColor": "neutral", "cssVariables": true },
+     "tailwind": { "config": "", "css": "src/styles.css", "baseColor": "neutral", "cssVariables": true },
      "aliases": { "components": "@/components", "ui": "@/components/ui", "utils": "@/lib/utils", "lib": "@/lib" }
    }
    ```
-   Keep these two settings:
+   Keep these settings:
+   - `"css"` names the global stylesheet that imports Tailwind. The CLI adds the theme import to it.
    - `"tsx": true` keeps the files in TypeScript (`false` makes the CLI transpile them to JavaScript).
    - `"cssVariables": true` keeps the class names as they are (`false` makes the CLI rewrite them).
 4. Add components (pass several URLs to add them at once):
    ```sh
    npx shadcn add https://adrianhdezm.github.io/fundamental-ngx-registry/r/button.json
    ```
-5. Import the theme after Tailwind in `src/styles.css`, and set a theme on `<html>` (see
-   [Theme and usage](#theme-and-usage)):
+   The first one also adds the theme import after Tailwind in `src/styles.css`:
    ```css
    @import 'tailwindcss';
    @import './styles/fundamental.css';
    ```
-6. Raise the `initial` budget in `angular.json`, for example to `"maximumError": "3MB"`. The four themes and the icon
+   Horizon is the default theme; to pick another one or compact density, see [Theme and usage](#theme-and-usage).
+5. Raise the `initial` budget in `angular.json`, for example to `"maximumError": "3MB"`. The four themes and the icon
    glyph map put the initial bundle at about 1.3 MB raw (about 210 kB transferred), which is over the 1 MB error
    budget of a new app.
 
