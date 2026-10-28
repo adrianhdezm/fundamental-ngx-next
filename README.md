@@ -48,6 +48,56 @@ pnpm tokens             # regenerate the theme layer after bumping theming-base-
 
 ## Using the components in an app
 
+### With the shadcn CLI
+
+The registry is published at `https://adrianhdezm.github.io/fundamental-ngx-registry/r/<name>.json`, where `<name>`
+is the component's folder name (`button`, `date-picker`, ...). The CLI copies the source files into your app, along
+with the components each one uses, the theme (`src/styles/`), `src/lib/utils.ts` and the npm packages.
+
+[fundamental-ngx-registry-sample](https://github.com/adrianhdezm/fundamental-ngx-registry-sample) is a plain `ng new`
+app set up this way, one commit per step.
+
+1. Add Tailwind CSS v4, if the app doesn't have it yet:
+   ```sh
+   npx ng add tailwindcss
+   ```
+2. Map `@/*` to `src/*` in the `compilerOptions` of `tsconfig.json`. The components import each other through it, and
+   the CLI resolves the aliases below with it:
+   ```json
+   "paths": { "@/*": ["./src/*"] }
+   ```
+3. Add a `components.json` at the project root:
+   ```json
+   {
+     "$schema": "https://ui.shadcn.com/schema.json",
+     "style": "new-york",
+     "rsc": false,
+     "tsx": true,
+     "tailwind": { "config": "", "css": "", "baseColor": "neutral", "cssVariables": true },
+     "aliases": { "components": "@/components", "ui": "@/components/ui", "utils": "@/lib/utils", "lib": "@/lib" }
+   }
+   ```
+   Keep these two settings:
+   - `"tsx": true` keeps the files in TypeScript (`false` makes the CLI transpile them to JavaScript).
+   - `"cssVariables": true` keeps the class names as they are (`false` makes the CLI rewrite them).
+4. Add components (pass several URLs to add them at once):
+   ```sh
+   npx shadcn add https://adrianhdezm.github.io/fundamental-ngx-registry/r/button.json
+   ```
+5. Import the theme after Tailwind in `src/styles.css`, and set a theme on `<html>` (see
+   [Theme and usage](#theme-and-usage)):
+   ```css
+   @import 'tailwindcss';
+   @import './styles/fundamental.css';
+   ```
+6. Raise the `initial` budget in `angular.json`, for example to `"maximumError": "3MB"`. The four themes and the icon
+   glyph map put the initial bundle at about 1.3 MB raw (about 210 kB transferred), which is over the 1 MB error
+   budget of a new app.
+
+Installed components import each other from `@/components/ui/...`. To update a component, run its `npx shadcn add`
+again with `--overwrite` and review the diff. The registry copy of `fonts.css` loads the fonts from the
+`@sap-theming/theming-base-content` package on jsDelivr. To self-host them, copy the `.woff2` files instead.
+
 ### By copying the files
 
 ```sh
@@ -66,37 +116,6 @@ pnpm add @angular/cdk clsx tailwind-merge class-variance-authority
    ```
 4. Copy the component folders you need to `src/components/ui/`. A component's `registryDependencies` in
    `registry.json` lists the other folders it needs.
-
-### With the shadcn CLI
-
-The registry is published at `https://adrianhdezm.github.io/fundamental-ngx-registry/r/<name>.json`. A component
-brings its dependencies along, including `theme` (the styles) and `utils`, and the CLI adds the npm packages.
-
-1. Map `@/*` to `src/*` in `tsconfig.json` (the CLI resolves the aliases below through it):
-   ```json
-   "paths": { "@/*": ["./src/*"] }
-   ```
-2. Add a `components.json` at the project root:
-   ```json
-   {
-     "$schema": "https://ui.shadcn.com/schema.json",
-     "style": "new-york",
-     "rsc": false,
-     "tsx": true,
-     "tailwind": { "config": "", "css": "", "baseColor": "neutral", "cssVariables": true },
-     "aliases": { "components": "@/components", "ui": "@/components/ui", "utils": "@/lib/utils", "lib": "@/lib" }
-   }
-   ```
-   Keep `"tsx": true` (TypeScript files, not transpiled JavaScript) and `"cssVariables": true` (with `false` the CLI
-   rewrites class names).
-3. Add components, then import `src/styles/fundamental.css` after Tailwind as above:
-   ```sh
-   npx shadcn add https://adrianhdezm.github.io/fundamental-ngx-registry/r/date-picker.json
-   ```
-
-Installed components import each other from `@/components/ui/...`. The registry copy of `fonts.css` loads the fonts
-from the `@sap-theming/theming-base-content` package on jsDelivr; self-host them by copying the `.woff2` files
-instead.
 
 ### Theme and usage
 
