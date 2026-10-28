@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { Icon } from '@/ui/icon/icon';
 import {
@@ -66,6 +66,8 @@ async function setup(condensed = false) {
 }
 
 describe('VerticalNavigation', () => {
+    afterEach(() => document.documentElement.removeAttribute('dir'));
+
     it('renders a tree with one tab stop and second-level groups', async () => {
         const { root } = await setup();
         expect(root.querySelector('nav')!.getAttribute('aria-label')).toBe('Main Navigation');
@@ -139,5 +141,66 @@ describe('VerticalNavigation', () => {
         document.body.click();
         await wait();
         expect(host.expanded()).toBe(false);
+    });
+
+    it('Right and Left are mirrored in RTL', async () => {
+        document.documentElement.setAttribute('dir', 'rtl');
+        const { host } = await setup();
+        item('Calendar').focus();
+        await userEvent.keyboard('{ArrowRight}');
+        await wait();
+        expect(host.expanded()).toBe(false);
+        expect(focusedName()).toBe('Calendar');
+        await userEvent.keyboard('{ArrowLeft}');
+        await wait();
+        expect(host.expanded()).toBe(true);
+        expect(focusedName()).toBe('Today');
+        await userEvent.keyboard('{ArrowRight}');
+        await wait();
+        expect(host.expanded()).toBe(false);
+        expect(focusedName()).toBe('Calendar');
+    });
+
+    it('group headers are not focusable and are skipped by the arrow keys', async () => {
+        const { root } = await setup();
+        const header = root.querySelector<HTMLElement>('[fd-vertical-navigation-group-header]')!;
+        expect(header.getAttribute('role')).toBe('none');
+        expect(header.hasAttribute('tabindex')).toBe(false);
+        item('Calendar').focus();
+        await userEvent.keyboard('{ArrowDown}');
+        expect(focusedName()).toBe('Support');
+        await userEvent.keyboard('{ArrowUp}');
+        expect(focusedName()).toBe('Calendar');
+        // the header is not in the tab order either: Tab leaves the tree
+        await userEvent.keyboard('{ArrowDown}');
+        await userEvent.tab({ shift: true });
+        expect(document.activeElement).not.toBe(header);
+        expect(root.contains(document.activeElement)).toBe(false);
+    });
+
+    it('switching condensed at runtime keeps the current item and tab stop', async () => {
+        const { fixture, host, root } = await setup();
+        item('Overview').focus();
+        await userEvent.keyboard('{End}');
+        expect(focusedName()).toBe('Support');
+        const support = item('Support');
+        const tabStops = () =>
+            [...root.querySelectorAll<HTMLElement>('[role=treeitem]')].filter((i) => i.tabIndex === 0);
+        expect(tabStops()).toEqual([support]);
+        host.condensed.set(true);
+        await fixture.whenStable();
+        await wait();
+        expect(root.querySelector('fd-vertical-navigation > div')!.className).toContain('w-[3.25rem]');
+        expect(item('Support')).toBe(support);
+        expect(document.activeElement).toBe(support);
+        expect(tabStops()).toEqual([support]);
+        host.condensed.set(false);
+        await fixture.whenStable();
+        await wait();
+        expect(root.querySelector('fd-vertical-navigation > div')!.className).toContain('w-60');
+        expect(document.activeElement).toBe(support);
+        expect(tabStops()).toEqual([support]);
+        await userEvent.keyboard('{ArrowUp}');
+        expect(focusedName()).toBe('Calendar');
     });
 });
