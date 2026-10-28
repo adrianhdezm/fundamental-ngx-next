@@ -36,7 +36,7 @@ import { SideNavigation, SideNavigationMain, SideNavigationUtility, type SideNav
                 <ul fd-nested-list>
                     <li fd-nested-list-header>Overview</li>
                     <li fd-nested-list-item>
-                        <a fd-nested-list-link [selected]="true" (click)="chosen.set('Home')">
+                        <a fd-nested-list-link [selected]="selectedLink() === 'Home'" (click)="chosen.set('Home')">
                             <i fd-nested-list-icon glyph="home"></i><span fd-nested-list-title>Home</span>
                         </a>
                     </li>
@@ -80,7 +80,9 @@ import { SideNavigation, SideNavigationMain, SideNavigationUtility, type SideNav
             <div fd-side-nav-utility>
                 <ul fd-nested-list>
                     <li fd-nested-list-item>
-                        <a fd-nested-list-link><span fd-nested-list-title>Help</span></a>
+                        <a fd-nested-list-link [selected]="selectedLink() === 'Help'"
+                            ><span fd-nested-list-title>Help</span></a
+                        >
                     </li>
                 </ul>
             </div>
@@ -92,6 +94,7 @@ class Host {
     readonly selectable = signal(true);
     readonly expanded = signal(false);
     readonly chosen = signal('');
+    readonly selectedLink = signal('Home');
 }
 
 @Component({
@@ -125,7 +128,8 @@ const row = (name: string) =>
     )!;
 const focused = () => document.activeElement?.textContent?.trim();
 
-async function setup(options: { condensed?: boolean; selectable?: boolean } = {}) {
+async function setup(options: { condensed?: boolean; selectable?: boolean; rtl?: boolean } = {}) {
+    if (options.rtl) document.documentElement.setAttribute('dir', 'rtl');
     const fixture = TestBed.createComponent(Host);
     fixture.componentInstance.condensed.set(!!options.condensed);
     fixture.componentInstance.selectable.set(options.selectable ?? true);
@@ -219,5 +223,67 @@ describe('SideNavigation', () => {
         expect(row('Link 2').getAttribute('aria-expanded')).toBe('true');
         await userEvent.click(row('Sublink'));
         expect(fixture.componentInstance.chosen()).toBe('Sublink');
+    });
+
+    it('mirrors the arrow keys that expand and collapse in RTL', async () => {
+        try {
+            const { host } = await setup({ rtl: true });
+            row('Settings').focus();
+            await userEvent.keyboard('{ArrowRight}');
+            await wait();
+            expect(host.expanded()).toBe(false);
+            await userEvent.keyboard('{ArrowLeft}');
+            await wait();
+            expect(host.expanded()).toBe(true);
+            expect(row('Settings').getAttribute('aria-expanded')).toBe('true');
+            await userEvent.keyboard('{ArrowDown}');
+            expect(focused()).toBe('Profile');
+            await userEvent.keyboard('{ArrowUp}{ArrowRight}');
+            await wait();
+            expect(host.expanded()).toBe(false);
+            expect(row('Settings').getAttribute('aria-expanded')).toBe('false');
+        } finally {
+            document.documentElement.removeAttribute('dir');
+        }
+    });
+
+    it('opens and closes the child list when [expanded] changes from outside', async () => {
+        const { fixture, host, root } = await setup();
+        const group = root.querySelector('[role=group]')!;
+        host.expanded.set(true);
+        await fixture.whenStable();
+        expect(row('Settings').getAttribute('aria-expanded')).toBe('true');
+        expect(group.hasAttribute('aria-hidden')).toBe(false);
+        expect(row('Profile')).toBeTruthy();
+        host.expanded.set(false);
+        await fixture.whenStable();
+        expect(row('Settings').getAttribute('aria-expanded')).toBe('false');
+        expect(group.getAttribute('aria-hidden')).toBe('true');
+        expect(row('Profile')).toBeUndefined();
+    });
+
+    it('moves the selection when [selected] changes from outside and items are not selectable', async () => {
+        const { fixture, host } = await setup({ selectable: false });
+        expect(row('Home').getAttribute('aria-label')).toBe('Home, Selected');
+        expect(row('Help').getAttribute('aria-label')).toBe('Help');
+        host.selectedLink.set('Help');
+        await fixture.whenStable();
+        expect(row('Home').getAttribute('aria-label')).toBe('Home');
+        expect(row('Help').getAttribute('aria-label')).toBe('Help, Selected');
+        expect(row('Help').className).toContain('border-b-sap-list-selection-border-color');
+        expect(row('Home').className).not.toContain('border-b-sap-list-selection-border-color');
+    });
+
+    it('moves from the main list into the utility list and back with the arrow keys', async () => {
+        await setup();
+        row('Settings').focus();
+        await userEvent.keyboard('{ArrowDown}');
+        expect(focused()).toBe('Help');
+        expect(document.activeElement!.closest('[fd-side-nav-utility]')).not.toBeNull();
+        await userEvent.keyboard('{ArrowUp}');
+        expect(focused()).toBe('Settings');
+        expect(document.activeElement!.closest('[fd-side-nav-main]')).not.toBeNull();
+        await userEvent.keyboard('{End}{ArrowDown}');
+        expect(focused()).toBe('Home');
     });
 });

@@ -16,6 +16,8 @@ import { Time } from './time';
             [minuteStep]="step()"
             [displaySeconds]="seconds()"
             [keepTwoDigits]="twoDigits()"
+            [spinnerButtons]="spinners()"
+            [tablet]="tablet()"
         />
     `
 })
@@ -25,6 +27,8 @@ class Host {
     readonly step = signal(1);
     readonly seconds = signal(true);
     readonly twoDigits = signal(false);
+    readonly spinners = signal(true);
+    readonly tablet = signal(false);
 }
 
 async function setup(configure?: (host: Host) => void) {
@@ -141,11 +145,114 @@ describe('Time', () => {
         await stable();
         expect(host.time().minute).toBe(30);
     });
+
+    it('switches the period when the hours step across 11 and 12', async () => {
+        const { host, column, stable } = await setup((h) => {
+            h.meridian.set(true);
+            h.time.set(new FdDate(2024, 3, 9, 11, 0, 0));
+        });
+        expect(column('period').textContent!.trim()).toBe('AM');
+        column('hours').focus();
+        await userEvent.keyboard('{ArrowDown}');
+        await stable();
+        expect(host.time().hour).toBe(12);
+        expect(column('hours').getAttribute('aria-valuetext')).toBe('12');
+        expect(column('period').getAttribute('aria-valuetext')).toBe('PM');
+        await userEvent.keyboard('{ArrowUp}');
+        await stable();
+        expect(host.time().hour).toBe(11);
+        expect(column('period').getAttribute('aria-valuetext')).toBe('AM');
+    });
+
+    it('moves within a column with Page Up, Page Down, Home and End', async () => {
+        const { host, column, stable } = await setup((h) => h.time.set(new FdDate(2024, 3, 9, 10, 0, 0)));
+        column('hours').focus();
+        await userEvent.keyboard('{PageDown}');
+        await stable();
+        // a page is the seven values shown
+        expect(host.time().hour).toBe(17);
+        await userEvent.keyboard('{PageUp}{PageUp}');
+        await stable();
+        expect(host.time().hour).toBe(3);
+        await userEvent.keyboard('{End}');
+        await stable();
+        expect(host.time().hour).toBe(23);
+        await userEvent.keyboard('{Home}');
+        await stable();
+        expect(host.time().hour).toBe(0);
+    });
+
+    it('steps the active column with the mouse wheel', async () => {
+        const { host, column, stable } = await setup();
+        const wheel = (target: HTMLElement, deltaY: number) => {
+            const event = new WheelEvent('wheel', { deltaY, bubbles: true, cancelable: true });
+            target.dispatchEvent(event);
+            return event;
+        };
+        expect(wheel(column('hours'), 100).defaultPrevented).toBe(true);
+        await stable();
+        expect(host.time().hour).toBe(15);
+        wheel(column('hours'), -100);
+        wheel(column('hours'), -100);
+        await stable();
+        expect(host.time().hour).toBe(13);
+        // an inactive column leaves the wheel to the page
+        expect(wheel(column('minutes'), 100).defaultPrevented).toBe(false);
+        await stable();
+        expect(host.time().minute).toBe(30);
+    });
+
+    it('changes the value when a column is dragged', async () => {
+        const { host, column, stable } = await setup();
+        const hours = column('hours');
+        const itemHeight = hours.querySelector<HTMLElement>('[data-displayed-value]')!.getBoundingClientRect().height;
+        const { left, top } = hours.getBoundingClientRect();
+        const pointer = (type: string, target: EventTarget, clientY: number) =>
+            target.dispatchEvent(
+                new PointerEvent(type, { button: 0, clientX: left + 10, clientY, bubbles: true, pointerId: 1 })
+            );
+        const start = top + 3 * itemHeight + 10;
+        pointer('pointerdown', hours, start);
+        // dragging up by two values shows later hours
+        pointer('pointermove', document, start - 2 * itemHeight - 1);
+        pointer('pointerup', document, start - 2 * itemHeight - 1);
+        await stable();
+        expect(host.time().hour).toBe(16);
+        pointer('pointerdown', hours, start);
+        pointer('pointermove', document, start + itemHeight + 1);
+        pointer('pointerup', document, start + itemHeight + 1);
+        await stable();
+        expect(host.time().hour).toBe(15);
+    });
+
+    it('hides the spinner buttons with spinnerButtons false', async () => {
+        const { root, stable, fixture } = await setup();
+        expect(root.querySelectorAll('fd-time-column button')).toHaveLength(2);
+        fixture.componentInstance.spinners.set(false);
+        await stable();
+        expect(root.querySelectorAll('fd-time-column button')).toHaveLength(0);
+    });
+
+    it('uses smaller paddings and larger compact values for tablets', async () => {
+        const { root, column, fixture, stable } = await setup();
+        const time = root.querySelector<HTMLElement>('fd-time')!;
+        const itemHeight = () =>
+            column('hours').querySelector<HTMLElement>('[data-displayed-value]')!.getBoundingClientRect().height;
+        expect(getComputedStyle(time).paddingTop).toBe('16px');
+        time.setAttribute('data-density', 'compact');
+        await stable();
+        expect(itemHeight()).toBe(32);
+        fixture.componentInstance.tablet.set(true);
+        await stable();
+        expect(getComputedStyle(time).paddingTop).toBe('8px');
+        // tablets keep touch-sized values in compact density
+        expect(itemHeight()).toBe(46);
+    });
 });
 
 @Component({
     imports: [Time, ReactiveFormsModule],
-    template: `<fd-time [formControl]="control" />`
+    template: `<fd-time [formControl]="control" /><button id="after">After</button>`
 })
 class FormHost {
     readonly control = new FormControl<FdDate | null>(new FdDate(2024, 1, 1, 8, 15, 0));
@@ -167,5 +274,21 @@ describe('Time forms', () => {
         expect(hours.getAttribute('aria-disabled')).toBe('true');
         await userEvent.keyboard('{ArrowDown}');
         expect(fixture.componentInstance.control.value!.hour).toBe(9);
+    });
+
+    it('marks the control touched when the focus leaves the time', async () => {
+        const fixture = TestBed.createComponent(FormHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        const root = fixture.nativeElement as HTMLElement;
+        const control = fixture.componentInstance.control;
+        root.querySelector<HTMLElement>('[role=spinbutton]')!.focus();
+        // moving between the columns stays inside
+        await userEvent.keyboard('{ArrowRight}');
+        await fixture.whenStable();
+        expect(control.touched).toBe(false);
+        root.querySelector<HTMLElement>('#after')!.focus();
+        await fixture.whenStable();
+        expect(control.touched).toBe(true);
     });
 });

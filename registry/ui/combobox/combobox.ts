@@ -4,7 +4,7 @@
  * Modified for fundamental-ngx-registry: rewritten with Angular signals, the Angular CDK and Tailwind CSS.
  * SPDX-License-Identifier: Apache-2.0
  */
-import { NgTemplateOutlet } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
@@ -265,18 +265,19 @@ let nextId = 0;
                 <ng-content select="[fd-list-message], [fdListMessage]" />
                 @for (group of groups(); track group.key; let g = $index) {
                     @if (group.key !== null) {
-                        <li
-                            role="group"
-                            class="m-0 list-none p-0"
-                            [attr.aria-labelledby]="comboboxId() + '-group-' + g"
-                        >
-                            <div
-                                class="flex h-sap-element-line-height items-end border-b-(length:--sapList_BorderWidth) border-solid border-sap-list-group-header-border-color bg-sap-list-group-header-background px-[0.9375rem] py-0 font-sap-font-family text-sap-font-size font-bold text-sap-list-group-header-text-color"
-                                [id]="comboboxId() + '-group-' + g"
+                        <li role="none" class="m-0 list-none p-0">
+                            <ul
+                                role="group"
+                                class="m-0 list-none p-0"
+                                [attr.aria-labelledby]="comboboxId() + '-group-' + g"
                             >
-                                {{ group.key }}
-                            </div>
-                            <ul role="none" class="m-0 list-none p-0">
+                                <li
+                                    role="presentation"
+                                    class="flex h-sap-element-line-height items-end border-b-(length:--sapList_BorderWidth) border-solid border-sap-list-group-header-border-color bg-sap-list-group-header-background px-[0.9375rem] py-0 font-sap-font-family text-sap-font-size font-bold text-sap-list-group-header-text-color"
+                                    [id]="comboboxId() + '-group-' + g"
+                                >
+                                    {{ group.key }}
+                                </li>
                                 @for (entry of group.items; track entry.index) {
                                     <ng-container
                                         [ngTemplateOutlet]="optionTpl"
@@ -453,7 +454,10 @@ export class Combobox<T = unknown> implements ControlValueAccessor {
     protected readonly disabledState = linkedSignal(() => this.disabled());
     protected readonly activeIndex = signal(-1);
     private dialogRef: DialogRef | null = null;
-    private snapshot: { text: string; value: unknown } | null = null;
+    private snapshot: { text: string; value: unknown; confirmed: { text: string; value: unknown } | null } | null =
+        null;
+    /** The last chosen or written value, restored when invalid text is left with Tab or an outside click. */
+    private confirmed: { text: string; value: unknown } | null = null;
     private destroyed = false;
 
     protected readonly dialogLabelledBy = computed(
@@ -501,6 +505,11 @@ export class Combobox<T = unknown> implements ControlValueAccessor {
             this.destroyed = true;
             this.dialogRef?.dismiss();
         });
+        // an outside click leaves the field like Tab: invalid text reverts to the last choice
+        const doc = inject(DOCUMENT);
+        const onMousedown = (event: MouseEvent) => this.onDocumentMousedown(event);
+        doc.addEventListener('mousedown', onMousedown, true);
+        inject(DestroyRef).onDestroy(() => doc.removeEventListener('mousedown', onMousedown, true));
         // list messages are presentational in the listbox
         effect(() => {
             for (const message of this.messages()) {
@@ -530,7 +539,7 @@ export class Combobox<T = unknown> implements ControlValueAccessor {
         this.isOpen.set(true);
         this.openChange.emit(true);
         if (this.mobile()) {
-            this.snapshot = { text: this.inputText(), value: this.modelValue() };
+            this.snapshot = { text: this.inputText(), value: this.modelValue(), confirmed: this.confirmed };
             this.searchTerm.set('');
             this.openDialog();
         }
@@ -572,6 +581,9 @@ export class Combobox<T = unknown> implements ControlValueAccessor {
         this.inputText.set(text);
         this.searchTerm.set('');
         this.modelValue.set(this.communicateByObject() ? (value ?? null) : text);
+        this.confirmed = { text, value: this.modelValue() };
+        // a value written while a mobile draft is open is what Cancel goes back to
+        if (this.snapshot) this.snapshot = { text, value: this.modelValue(), confirmed: this.confirmed };
         const field = this.field()?.nativeElement;
         if (field) field.value = text;
     }
@@ -639,7 +651,7 @@ export class Combobox<T = unknown> implements ControlValueAccessor {
         const open = dialog || this.listShown();
         const values = this.flatValues();
         if (key === 'Tab') {
-            if (this.isOpen() && !dialog) this.tabOut(field);
+            if (this.isOpen() && !dialog) this.leave(field);
             return;
         }
         if (key === 'Enter') {
@@ -655,7 +667,9 @@ export class Combobox<T = unknown> implements ControlValueAccessor {
         }
         if (key === 'Escape') {
             if (this.isOpen() && !dialog) {
+                // closes only the list, not a dialog around the combobox
                 event.preventDefault();
+                event.stopPropagation();
                 field.value = this.inputText();
                 this.close();
             }
@@ -731,6 +745,7 @@ export class Combobox<T = unknown> implements ControlValueAccessor {
 
     protected dialogApprove(): void {
         this.snapshot = null;
+        this.confirm();
         this.propagate();
         this.close();
     }
@@ -739,6 +754,7 @@ export class Combobox<T = unknown> implements ControlValueAccessor {
         if (this.snapshot) {
             this.inputText.set(this.snapshot.text);
             this.modelValue.set(this.snapshot.value);
+            this.confirmed = this.snapshot.confirmed;
             const field = this.field()?.nativeElement;
             if (field) field.value = this.snapshot.text;
             this.snapshot = null;
@@ -755,7 +771,10 @@ export class Combobox<T = unknown> implements ControlValueAccessor {
             this.inputText.set(text);
             this.inputTextChange.emit(text);
             this.modelValue.set(this.communicateByObject() ? this.toValue(item) : text);
-            if (!this.approveMode()) this.propagate();
+            if (!this.approveMode()) {
+                this.confirm();
+                this.propagate();
+            }
         }
         this.itemClicked.emit({ item, index });
         if (close && this.closeOnSelect() && !this.approveMode()) {
@@ -789,22 +808,75 @@ export class Combobox<T = unknown> implements ControlValueAccessor {
 
     /** Takes over an inline completion as the text. */
     private acceptCompletion(field: HTMLInputElement): void {
-        if (field.value === this.inputText()) return;
         const text = field.value;
-        field.setSelectionRange(text.length, text.length);
         const match = (this.dropdownValues() ?? []).filter((item) => item != null && this.display(item) === text);
-        this.setText(text);
-        if (match.length === 1) this.searchTerm.set(text);
+        if (text !== this.inputText()) {
+            field.setSelectionRange(text.length, text.length);
+            this.setText(text);
+            if (match.length === 1) this.searchTerm.set(text);
+        }
+        // a text that names one value is a choice
+        if (match.length === 1 && !(this.approveMode() && this.isOpen())) this.confirm();
     }
 
-    private tabOut(field: HTMLInputElement): void {
-        if (this.tabOutStrategy() === 'closeAndSelect') {
-            const values = this.flatValues();
-            const active = values[this.activeIndex()];
-            if (field.value !== this.inputText()) this.acceptCompletion(field);
-            else if (active !== undefined && !this.inputText()) this.choose(active, field, false);
+    /**
+     * Leaving the field with Tab or an outside click: a unique inline completion is taken over;
+     * otherwise free text stays in text mode with `closeAndSelect` and without `autoComplete`, and
+     * any other text that is not the last choice reverts to it.
+     */
+    private leave(field: HTMLInputElement): void {
+        const closeAndSelect = this.tabOutStrategy() === 'closeAndSelect';
+        if (closeAndSelect && this.completedCandidate(field) !== undefined) {
+            this.acceptCompletion(field);
+        } else if (closeAndSelect && !this.communicateByObject()) {
+            field.value = this.inputText();
+        } else if (!this.autoComplete()) {
+            this.confirm();
+        } else {
+            this.revert(field);
+            const active = this.flatValues()[this.activeIndex()];
+            if (closeAndSelect && active !== undefined && !this.inputText()) this.choose(active, field, false);
         }
         this.close();
+    }
+
+    /** The one value named by the input text, or by the text with its inline completion. */
+    private completedCandidate(field: HTMLInputElement): T | undefined {
+        const value = field.value;
+        const completing =
+            value !== this.inputText() &&
+            field.selectionStart === this.inputText().length &&
+            field.selectionEnd === value.length;
+        if (value !== this.inputText() && !completing) return undefined;
+        const matches = (this.dropdownValues() ?? []).filter((item) => item != null && this.display(item) === value);
+        return matches.length === 1 ? matches[0] : undefined;
+    }
+
+    private onDocumentMousedown(event: MouseEvent): void {
+        if (this.mobile() || !this.closeOnOutsideClick() || this.disabledState() || this.readOnly()) return;
+        const target = event.target as Node | null;
+        if (!target || this.elementRef.nativeElement.contains(target)) return;
+        const list = document.getElementById(this.listId());
+        if (list && (list.closest('.cdk-overlay-pane') ?? list).contains(target)) return;
+        const field = this.field()?.nativeElement;
+        if (!field || this.inputText() === (this.confirmed?.text ?? '')) return;
+        this.leave(field);
+    }
+
+    private confirm(): void {
+        this.confirmed = { text: this.inputText(), value: this.modelValue() };
+    }
+
+    /** Puts the last choice back in the input and the value. */
+    private revert(field: HTMLInputElement): void {
+        const text = this.confirmed?.text ?? '';
+        field.value = text;
+        if (text === this.inputText() && this.modelValue() === (this.confirmed?.value ?? null)) return;
+        this.inputText.set(text);
+        this.inputTextChange.emit(text);
+        this.searchTerm.set('');
+        this.modelValue.set(this.confirmed ? this.confirmed.value : this.communicateByObject() ? null : '');
+        this.propagate();
     }
 
     private setText(text: string): void {

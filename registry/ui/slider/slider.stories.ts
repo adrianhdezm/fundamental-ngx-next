@@ -7,6 +7,7 @@ import {
     ReactiveFormsModule
 } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, waitFor } from 'storybook/test';
 import { Slider, type SliderCustomValue, type SliderValue } from './slider';
 
 const text = 'm-0 font-sap-font-family text-sap-font-size text-sap-text-color';
@@ -127,23 +128,59 @@ class StorySliderRange {
     protected readonly months2 = signal<SliderValue>([MONTHS[1], MONTHS[5]]);
 }
 
+const DAYS: SliderCustomValue[] = Array.from({ length: 10 }, (_, i) => ({ value: i + 1, label: `Jan ${i + 1}` }));
+
 @Component({
     selector: 'story-slider-vertical',
-    imports: [Slider, FormsModule],
+    imports: [Slider, FormsModule, JsonPipe],
     template: `
-        <div class="flex h-80 gap-12">
-            <fd-slider vertical ariaLabel="Volume" [(ngModel)]="one" />
-            <fd-slider vertical ariaLabel="Bass" tooltipMode="readonly" [(ngModel)]="two" />
-            <fd-slider vertical ariaLabel="Range" mode="range" [(ngModel)]="range" />
-            <fd-slider vertical cozy showTicks showTicksLabels ariaLabel="Treble" [step]="10" [(ngModel)]="three" />
+        <div class="flex flex-wrap gap-12">
+            <div class="flex h-80 gap-12">
+                <fd-slider vertical ariaLabel="Volume" [(ngModel)]="one" />
+                <fd-slider vertical ariaLabel="Bass" tooltipMode="readonly" [(ngModel)]="two" />
+                <fd-slider vertical ariaLabel="Range" mode="range" [(ngModel)]="range" />
+                <fd-slider vertical cozy showTicks showTicksLabels ariaLabel="Treble" [step]="10" [(ngModel)]="three" />
+            </div>
+            <div class="flex flex-col gap-2">
+                <p class="${text}" id="sl-v1">Range with an editable tooltip and ticks</p>
+                <div class="h-80">
+                    <fd-slider
+                        vertical
+                        ariaLabelledBy="sl-v1"
+                        mode="range"
+                        showTicks
+                        tooltipMode="editable"
+                        [(ngModel)]="editable"
+                    />
+                </div>
+                <p class="${small}">Min: {{ editable()[0] }}, max: {{ editable()[1] }}</p>
+            </div>
+            <div class="flex flex-col gap-2">
+                <p class="${text}" id="sl-v2">Range with custom values</p>
+                <div class="h-80">
+                    <fd-slider
+                        vertical
+                        ariaLabelledBy="sl-v2"
+                        mode="range"
+                        showTicks
+                        showTicksLabels
+                        [customValues]="days"
+                        [(ngModel)]="dayRange"
+                    />
+                </div>
+                <p class="${small}">Value: {{ dayRange() | json }}</p>
+            </div>
         </div>
     `
 })
 class StorySliderVertical {
+    protected readonly days = DAYS;
     protected readonly one = signal(50);
     protected readonly two = signal(30);
     protected readonly three = signal(70);
     protected readonly range = signal<number[]>([20, 60]);
+    protected readonly editable = signal<number[]>([20, 70]);
+    protected readonly dayRange = signal<SliderValue>([DAYS[4], DAYS[6]]);
 }
 
 @Component({
@@ -217,3 +254,25 @@ export const TicksAndLabels: Story = {
 export const Range: Story = { render: () => ({ template: `<story-slider-range />` }) };
 export const Vertical: Story = { render: () => ({ template: `<story-slider-vertical />` }) };
 export const Form: Story = { render: () => ({ template: `<story-slider-form />` }) };
+
+export const OpenEditableTooltip: Story = {
+    name: 'Open: Editable tooltip',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { value: 60, range: [20, 70] },
+        template: `
+            <div class="flex max-w-xl flex-col gap-12 pt-12">
+                <fd-slider ariaLabel="Value" tooltipMode="editable" [(value)]="value" />
+                <fd-slider ariaLabel="Range" mode="range" showTicks tooltipMode="editable" [step]="5" [(value)]="range" />
+            </div>`
+    }),
+    play: async ({ canvasElement }) => {
+        let handle: HTMLElement | null = null;
+        await waitFor(() => {
+            handle = canvasElement.querySelector<HTMLElement>('fd-slider [role=slider]');
+            expect(handle).not.toBeNull();
+        });
+        handle!.focus();
+        await waitFor(() => expect(canvasElement.querySelector('fd-slider input')).not.toBeNull());
+    }
+};

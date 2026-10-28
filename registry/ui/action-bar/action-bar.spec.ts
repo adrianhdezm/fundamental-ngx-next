@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { Button } from '@/ui/button/button';
+import { Menu, MenuInteractive, MenuItem, MenuTitle, MenuTrigger } from '@/ui/menu/menu';
 import {
     ActionBar,
     ActionBarActions,
@@ -56,6 +57,49 @@ class Host {
     readonly width = signal('800px');
     readonly title = signal('Page Title');
     backClicks = 0;
+}
+
+@Component({
+    imports: [
+        ActionBar,
+        ActionBarHeader,
+        ActionBarTitle,
+        ActionBarActions,
+        Button,
+        Menu,
+        MenuItem,
+        MenuInteractive,
+        MenuTitle,
+        MenuTrigger
+    ],
+    template: `
+        <div fd-action-bar>
+            <div fd-action-bar-header>
+                <div fd-action-bar-title>Page Title</div>
+                <div fd-action-bar-actions>
+                    <button
+                        fdButton
+                        variant="transparent"
+                        glyph="overflow"
+                        ariaLabel="More"
+                        [fdMenuTrigger]="menu"
+                    ></button>
+                    <fd-menu #menu ariaLabel="Page actions" placement="bottom-end">
+                        @for (action of actions; track action) {
+                            <li fd-menu-item>
+                                <div fd-menu-interactive>
+                                    <span fd-menu-title>{{ action }}</span>
+                                </div>
+                            </li>
+                        }
+                    </fd-menu>
+                </div>
+            </div>
+        </div>
+    `
+})
+class MenuHost {
+    readonly actions = ['Edit', 'Delete', 'Assign', 'Expire', 'Archive'];
 }
 
 const LONG = 'A very long page title that will never fit into the action bar of this narrow test container';
@@ -190,5 +234,24 @@ describe('ActionBar', () => {
             await page.viewport(1280, 800);
         }
         expect(getComputedStyle(description()).display).not.toBe('none');
+    });
+
+    it('the overflow button in the actions opens its menu and gets the focus back on Escape', async () => {
+        const fixture = TestBed.createComponent(MenuHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        const more = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('button[aria-label=More]')!;
+        await userEvent.click(more);
+        await new Promise((r) => setTimeout(r, 60));
+        expect(more.getAttribute('aria-expanded')).toBe('true');
+        const menu = document.getElementById(more.getAttribute('aria-controls')!)!;
+        expect(menu.getAttribute('role')).toBe('menu');
+        // placement bottom-end: the menu ends under the end of the button
+        expect(Math.abs(menu.getBoundingClientRect().right - more.getBoundingClientRect().right)).toBeLessThan(2);
+        expect(document.activeElement!.textContent!.trim()).toBe('Edit');
+        await userEvent.keyboard('{Escape}');
+        await new Promise((r) => setTimeout(r, 60));
+        expect(more.getAttribute('aria-expanded')).toBe('false');
+        expect(document.activeElement).toBe(more);
     });
 });

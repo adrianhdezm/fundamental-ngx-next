@@ -1,12 +1,46 @@
 import { JsonPipe } from '@angular/common';
 import { FormControl as NgFormControl, FormGroup as NgFormGroup, ReactiveFormsModule } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { ContentDensityDirective } from '@/ui/content-density/content-density';
 import { Fieldset, FormHeader, FormItem, FormLabel } from '@/ui/form/form';
 import { FormInputMessageGroup } from '@/ui/form/form-input-message-group';
 import { FormMessage } from '@/ui/form/form-message';
 import { Link } from '@/ui/link/link';
 import { FormControl } from './input';
+
+/** Fields with value state messages, shared by the story and its open variant. */
+const VALUE_STATE_MESSAGES = `
+            <div class="flex max-w-md flex-col gap-4">
+                <div fdFormItem>
+                    <label fdFormLabel for="input-success">Email Address</label>
+                    <fd-form-input-message-group>
+                        <input fdFormControl id="input-success" placeholder="your.name&#64;company.com" state="success" />
+                        <fd-form-message type="success">Email format is valid and the domain is verified. You will receive notifications at this address.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="input-error">VAT Number - Message appears on hover</label>
+                    <fd-form-input-message-group [triggers]="['mouseenter', 'mouseleave']">
+                        <input fdFormControl id="input-error" placeholder="DE123456789" state="error" />
+                        <fd-form-message type="error">Invalid VAT number format. Must start with <b>country code</b> (2 letters) followed by <b>9-12 digits</b>. See <a fdLink href="#">validation rules</a>.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="input-warning">Purchase Order Amount</label>
+                    <fd-form-input-message-group>
+                        <input fdFormControl id="input-warning" placeholder="0.00" state="warning" />
+                        <fd-form-message type="warning">The amount exceeds your approval limit and needs a second approval.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="input-info">Cost Center</label>
+                    <fd-form-input-message-group>
+                        <input fdFormControl id="input-info" placeholder="CC-1000" state="information" />
+                        <fd-form-message type="information">The cost center is taken from your user profile.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+            </div>`;
 
 const meta: Meta<FormControl> = {
     title: 'Components/Input',
@@ -118,39 +152,7 @@ export const ValueStateMessages: Story = {
             }
         }
     },
-    render: () => ({
-        template: `
-            <div class="flex max-w-md flex-col gap-4">
-                <div fdFormItem>
-                    <label fdFormLabel for="input-success">Email Address</label>
-                    <fd-form-input-message-group>
-                        <input fdFormControl id="input-success" placeholder="your.name&#64;company.com" state="success" />
-                        <fd-form-message type="success">Email format is valid and the domain is verified. You will receive notifications at this address.</fd-form-message>
-                    </fd-form-input-message-group>
-                </div>
-                <div fdFormItem>
-                    <label fdFormLabel for="input-error">VAT Number - Message appears on hover</label>
-                    <fd-form-input-message-group [triggers]="['mouseenter', 'mouseleave']">
-                        <input fdFormControl id="input-error" placeholder="DE123456789" state="error" />
-                        <fd-form-message type="error">Invalid VAT number format. Must start with <b>country code</b> (2 letters) followed by <b>9-12 digits</b>. See <a fdLink href="#">validation rules</a>.</fd-form-message>
-                    </fd-form-input-message-group>
-                </div>
-                <div fdFormItem>
-                    <label fdFormLabel for="input-warning">Purchase Order Amount</label>
-                    <fd-form-input-message-group>
-                        <input fdFormControl id="input-warning" placeholder="0.00" state="warning" />
-                        <fd-form-message type="warning">The amount exceeds your approval limit and needs a second approval.</fd-form-message>
-                    </fd-form-input-message-group>
-                </div>
-                <div fdFormItem>
-                    <label fdFormLabel for="input-info">Cost Center</label>
-                    <fd-form-input-message-group>
-                        <input fdFormControl id="input-info" placeholder="CC-1000" state="information" />
-                        <fd-form-message type="information">The cost center is taken from your user profile.</fd-form-message>
-                    </fd-form-input-message-group>
-                </div>
-            </div>`
-    })
+    render: () => ({ template: VALUE_STATE_MESSAGES })
 };
 
 export const InlineHelp: Story = {
@@ -225,4 +227,113 @@ export const Textarea: Story = {
                 </div>
             </div>`
     })
+};
+
+export const TextareaInlineHelp: Story = {
+    name: 'Textarea inline help',
+    render: () => ({
+        template: `
+            <div class="flex max-w-md flex-col gap-2">
+                <div fdFormItem>
+                    <label fdFormLabel colon for="textarea-31" inlineHelpContent="Inline Help">Textarea with inline help</label>
+                    <textarea fdFormControl id="textarea-31" placeholder="Field placeholder text"></textarea>
+                </div>
+            </div>`
+    })
+};
+
+export const TextareaStates: Story = {
+    name: 'Textarea states',
+    parameters: {
+        docs: {
+            description: {
+                story: 'Textareas with value state messages (shown on focus), plus disabled and read-only textareas.'
+            }
+        }
+    },
+    render: () => ({
+        template: `
+            <div class="flex max-w-md flex-col gap-4">
+                <div fdFormItem>
+                    <label fdFormLabel colon for="textarea-state-success">Project Description</label>
+                    <fd-form-input-message-group>
+                        <textarea fdFormControl id="textarea-state-success" state="success" placeholder="Describe the project scope and objectives"></textarea>
+                        <fd-form-message type="success">Description meets the <b>minimum requirement</b> of 100 characters. You can submit the form.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel colon for="textarea-state-error">Security Policy</label>
+                    <fd-form-input-message-group>
+                        <textarea fdFormControl id="textarea-state-error" state="error" aria-errormessage="textarea-state-error-message" placeholder="Define security requirements and compliance standards"></textarea>
+                        <fd-form-message type="error" id="textarea-state-error-message">Policy must include <code>authentication</code>, <code>authorization</code>, and <code>data encryption</code> sections. See <a fdLink href="#">template</a>.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel colon for="textarea-state-warning">Customer Feedback</label>
+                    <fd-form-input-message-group>
+                        <textarea fdFormControl id="textarea-state-warning" state="warning" placeholder="Enter customer comments and concerns"></textarea>
+                        <fd-form-message type="warning">This feedback contains <b>potentially sensitive information</b>. Ensure proper data handling before submission.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel colon for="textarea-state-info">Release Notes</label>
+                    <fd-form-input-message-group>
+                        <textarea fdFormControl id="textarea-state-info" state="information" placeholder="List new features, improvements, and bug fixes"></textarea>
+                        <fd-form-message type="information">Use <code>markdown</code> formatting for better readability. Include ticket references in format <code>JIRA-1234</code>.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel colon disabled for="textarea-state-disabled">System Logs (Processing)</label>
+                    <textarea fdFormControl id="textarea-state-disabled" disabled placeholder="Logs are being processed..."></textarea>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel colon for="textarea-state-readonly">Terms and Conditions</label>
+                    <textarea fdFormControl id="textarea-state-readonly" readonly>Standard terms (non-editable)</textarea>
+                </div>
+            </div>`
+    })
+};
+
+export const TextareaReactiveForms: Story = {
+    name: 'Textarea reactive forms',
+    render: () => {
+        const form = new NgFormGroup({
+            textAreaControl: new NgFormControl(''),
+            disabledTextAreaControl: new NgFormControl({ value: 'Disabled value', disabled: true })
+        });
+        return {
+            props: { form },
+            template: `
+                <form [formGroup]="form" class="max-w-md">
+                    <fieldset fdFieldset>
+                        <div fdFormItem>
+                            <label fdFormLabel colon for="textarea-21">Textarea</label>
+                            <textarea fdFormControl formControlName="textAreaControl" id="textarea-21" placeholder="Field placeholder text"></textarea>
+                        </div>
+                        <div fdFormItem>
+                            <label fdFormLabel colon for="textarea-22">Disabled Textarea</label>
+                            <textarea fdFormControl formControlName="disabledTextAreaControl" id="textarea-22" placeholder="Field placeholder text"></textarea>
+                        </div>
+                    </fieldset>
+                </form>
+                <pre class="text-sap-font-small-size">Value: {{ form.getRawValue() | json }}
+Touched: {{ form.touched }}  Dirty: {{ form.dirty }}  Valid: {{ form.valid }}</pre>`
+        };
+    }
+};
+
+/** Points at the error field (its message opens on hover) so axe checks the open message popover with rich content. */
+export const OpenValueStateMessage: Story = {
+    name: 'Open: value state message',
+    tags: ['!autodocs'],
+    render: () => ({ template: VALUE_STATE_MESSAGES }),
+    play: async ({ canvasElement }) => {
+        const input = canvasElement.querySelector<HTMLInputElement>('#input-error')!;
+        await userEvent.click(input);
+        await waitFor(() =>
+            expect(document.querySelector('.cdk-overlay-container fd-form-message')?.textContent).toContain(
+                'Invalid VAT number format'
+            )
+        );
+    }
 };

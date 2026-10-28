@@ -1,5 +1,6 @@
 import { Component, input } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { ActionSheet, ActionSheetBody, ActionSheetControl, ActionSheetItem } from '@/ui/action-sheet/action-sheet';
 import { Avatar } from '@/ui/avatar/avatar';
 import { Button } from '@/ui/button/button';
@@ -44,6 +45,8 @@ const LONG =
                         [text]="post.text"
                         [maxChars]="maxChars()"
                         [isRichText]="!!post.rich"
+                        [moreLabel]="moreLabel()"
+                        [lessLabel]="lessLabel()"
                     >
                         @if (avatars()) {
                             <fd-feed-list-avatar>
@@ -103,6 +106,8 @@ class StoryFeedList {
     readonly avatars = input(true);
     readonly actions = input(false);
     readonly maxChars = input<number | null>(120);
+    readonly moreLabel = input('{count} more');
+    readonly lessLabel = input('Less');
     protected readonly posts = [
         { author: 'John Doe', link: 'https://example.com/', text: LONG, date: 'Aug 20, 2020' },
         {
@@ -150,4 +155,30 @@ export const NoAvatars: Story = {
 export const Borderless: Story = { render: () => ({ template: `<story-feed-list [borderLess]="true" />` }) };
 export const Mobile: Story = {
     render: () => ({ template: `<story-feed-list [mobile]="true" [actions]="true" [maxChars]="null" />` })
+};
+export const CustomLabels: Story = {
+    name: 'Custom more/less labels',
+    render: () => ({ template: `<story-feed-list moreLabel="Show {count} more" lessLabel="Show less" />` })
+};
+
+/** Opens the action sheet of the first post. */
+const openFirstActions = async (canvasElement: HTMLElement) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Actions for the post of John Doe' }));
+    await waitFor(() => expect(document.querySelector('fd-action-sheet-body [role=menuitem]')).not.toBeNull());
+};
+export const OpenActions: Story = {
+    name: 'Open: actions',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-feed-list [actions]="true" />` }),
+    play: ({ canvasElement }) => openFirstActions(canvasElement)
+};
+export const OpenMobileActions: Story = {
+    name: 'Open: mobile actions',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-feed-list [mobile]="true" [actions]="true" [maxChars]="null" />` }),
+    play: async ({ canvasElement }) => {
+        await openFirstActions(canvasElement);
+        const containers = [...document.querySelectorAll<HTMLElement>('fd-dialog-container')];
+        await Promise.all(containers.flatMap((c) => c.getAnimations().map((a) => a.finished)));
+    }
 };

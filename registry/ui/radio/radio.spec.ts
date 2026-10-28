@@ -165,6 +165,17 @@ describe('RadioButton', () => {
         expect(host.model()).toBe('m');
     });
 
+    it('a radio that is not read-only has no aria-description', async () => {
+        const { host, inputs, stable } = await render(NgModelHost);
+        expect(inputs.every((i) => !i.hasAttribute('aria-description') && !i.hasAttribute('readonly'))).toBe(true);
+        host.readOnly.set(true);
+        await stable();
+        expect(inputs[0].getAttribute('aria-description')).toContain('read-only');
+        host.readOnly.set(false);
+        await stable();
+        expect(inputs[0].hasAttribute('aria-description')).toBe(false);
+    });
+
     it('readOnly keeps the value, stays focusable and is described as read-only', async () => {
         const { host, inputs, labels, stable } = await render(NgModelHost, (h) => h.readOnly.set(true));
         expect(inputs[0].hasAttribute('readonly')).toBe(true);

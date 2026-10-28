@@ -34,6 +34,37 @@ async function setup(mobile = false) {
     return { fixture, root: fixture.nativeElement as HTMLElement };
 }
 
+@Component({
+    imports: [FeedList, FeedListItem],
+    template: `
+        <fd-feed-list ariaLabel="Posts" [borderLess]="borderLess()">
+            <fd-feed-list-item
+                authorTitle="Jane"
+                [authorLink]="link()"
+                [text]="text"
+                [maxChars]="10"
+                [moreLabel]="moreLabel()"
+                [lessLabel]="lessLabel()"
+            />
+            <fd-feed-list-item authorTitle="Cruz" text="Second" />
+        </fd-feed-list>
+    `
+})
+class OptionsHost {
+    readonly borderLess = signal(false);
+    readonly link = signal<string | null>('https://example.com/jane');
+    readonly moreLabel = signal('Show {count} more');
+    readonly lessLabel = signal('Show less');
+    readonly text = TEXT;
+}
+
+async function setupOptions() {
+    const fixture = TestBed.createComponent(OptionsHost);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    return { fixture, host: fixture.componentInstance, root: fixture.nativeElement as HTMLElement };
+}
+
 describe('FeedList', () => {
     it('renders a list of posts with the author as a link', async () => {
         const { root } = await setup();
@@ -70,5 +101,43 @@ describe('FeedList', () => {
         expect(header.querySelector('fd-feed-list-footer')).not.toBeNull();
         expect(header.querySelector('fd-feed-list-action')).not.toBeNull();
         expect(item.querySelector('p')!.textContent).not.toContain('John Doe');
+    });
+
+    it('renders the author as text without authorLink', async () => {
+        const { root } = await setup();
+        const plain = root.querySelectorAll('fd-feed-list-item')[1];
+        expect(plain.querySelector('a')).toBeNull();
+        expect(plain.textContent).toContain('Cruz');
+    });
+
+    it('uses custom moreLabel and lessLabel', async () => {
+        const { root, fixture } = await setupOptions();
+        const more = () =>
+            [...root.querySelector('fd-feed-list-item')!.querySelectorAll('a')].find((a) =>
+                a.textContent!.includes('Show')
+            )!;
+        expect(more().textContent!.trim()).toBe('Show 30 more');
+        await userEvent.click(more());
+        await fixture.whenStable();
+        expect(more().textContent!.trim()).toBe('Show less');
+    });
+
+    it('does not render a javascript: authorLink as a live link', async () => {
+        const { root, fixture, host } = await setupOptions();
+        const author = () => root.querySelector<HTMLAnchorElement>('fd-feed-list-item a[title="Jane"]')!;
+        expect(author().getAttribute('href')).toBe('https://example.com/jane');
+        host.link.set('javascript:alert(1)');
+        await fixture.whenStable();
+        expect(author().getAttribute('href')).not.toMatch(/^javascript:/);
+        expect(author().protocol).not.toBe('javascript:');
+    });
+
+    it('removes the borders between items with borderLess', async () => {
+        const { root, fixture, host } = await setupOptions();
+        const second = root.querySelectorAll('fd-feed-list-item')[1];
+        expect(getComputedStyle(second).borderTopWidth).toBe('1px');
+        host.borderLess.set(true);
+        await fixture.whenStable();
+        expect(getComputedStyle(second).borderTopWidth).toBe('0px');
     });
 });

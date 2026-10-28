@@ -190,10 +190,60 @@ class GridListMore {
     }
 }
 
+@Component({
+    selector: 'story-grid-list-group',
+    imports: [GRID_LIST],
+    template: `
+        <fd-grid-list ariaLabel="Products by company">
+            <fd-grid-list-title-bar title="Products">
+                <span fd-grid-list-title-bar-additional-title-item>({{ companyA.length + companyB.length }})</span>
+            </fd-grid-list-title-bar>
+            @if (grouped()) {
+                <fd-grid-list-filter-bar (close)="grouped.set(false)">
+                    Grouped by: Company (Company A, Company B)
+                </fd-grid-list-filter-bar>
+                <fd-grid-list-group-header>Company: Company A</fd-grid-list-group-header>
+            }
+            @for (n of companyA; track n) {
+                <fd-grid-list-item [title]="'Title ' + n" [description]="'Description ' + n">
+                    <fd-grid-list-item-toolbar>Custom text</fd-grid-list-item-toolbar>
+                    <fd-avatar
+                        fd-grid-list-item-image
+                        size="s"
+                        image="assets/landscape.svg"
+                        ariaLabel="Product image"
+                    />
+                    <div fd-grid-list-item-body>781 Main Street, Anytown</div>
+                </fd-grid-list-item>
+            }
+            @if (grouped()) {
+                <fd-grid-list-group-header>Company: Company B</fd-grid-list-group-header>
+            }
+            @for (n of companyB; track n) {
+                <fd-grid-list-item [title]="'Title ' + n" [description]="'Description ' + n">
+                    <fd-grid-list-item-toolbar>Custom text</fd-grid-list-item-toolbar>
+                    <fd-avatar
+                        fd-grid-list-item-image
+                        size="s"
+                        image="assets/landscape.svg"
+                        ariaLabel="Product image"
+                    />
+                    <div fd-grid-list-item-body>781 Main Street, Anytown</div>
+                </fd-grid-list-item>
+            }
+        </fd-grid-list>
+    `
+})
+class GridListGroup {
+    protected readonly companyA = [1, 2, 3, 4];
+    protected readonly companyB = [5, 6, 7];
+    protected readonly grouped = signal(true);
+}
+
 const meta: Meta<GridList> = {
     title: 'Components/Grid List',
     component: GridList,
-    decorators: [moduleMetadata({ imports: [...GRID_LIST, GridListModes, GridListMore] })],
+    decorators: [moduleMetadata({ imports: [...GRID_LIST, GridListModes, GridListMore, GridListGroup] })],
     parameters: {
         docs: {
             description: {
@@ -281,4 +331,55 @@ export const Layout: Story = {
 export const More: Story = {
     name: 'Filter bar, more button and footer',
     render: () => ({ template: `<story-grid-list-more />` })
+};
+
+export const Group: Story = {
+    name: 'Groups',
+    render: () => ({ template: `<story-grid-list-group />` })
+};
+
+export const FocusProgrammatically: Story = {
+    name: 'Focusing an item programmatically',
+    render: () => ({
+        props: { products: PRODUCTS },
+        template: `
+            <fd-grid-list #list ariaLabel="Products">
+                <fd-grid-list-title-bar title="Products">
+                    <span fd-grid-list-title-bar-additional-title-item>({{ products.length }})</span>
+                    <fd-grid-list-title-bar-spacer />
+                    <button fdButton variant="transparent" label="Focus first" (click)="list.items()[0].focus()"></button>
+                    <button fdButton variant="transparent" label="Focus last" (click)="list.items()[list.items().length - 1].focus()"></button>
+                </fd-grid-list-title-bar>
+                @for (product of products; track product.id) {
+                    <fd-grid-list-item
+                        [type]="product.type"
+                        [counter]="product.counter"
+                        [title]="product.name"
+                        [description]="product.vendor"
+                    >
+                        <fd-avatar fd-grid-list-item-image size="s" image="assets/landscape.svg" ariaLabel="Product image" />
+                        ${BODY}
+                    </fd-grid-list-item>
+                }
+            </fd-grid-list>`
+    })
+};
+
+export const HeadingLevel: Story = {
+    name: 'Heading level',
+    render: () => ({
+        props: { products: PRODUCTS },
+        template: `
+            <fd-grid-list ariaLabel="Products">
+                <fd-grid-list-title-bar title="Products (heading level 3)" [headingLevel]="3">
+                    <span fd-grid-list-title-bar-additional-title-item>({{ products.length }})</span>
+                </fd-grid-list-title-bar>
+                <fd-grid-list-group-header [headingLevel]="4">Group (heading level 4)</fd-grid-list-group-header>
+                @for (product of products; track product.id) {
+                    <fd-grid-list-item [title]="product.name" [description]="product.vendor" [titleLevel]="5">
+                        <fd-avatar fd-grid-list-item-image size="s" image="assets/landscape.svg" ariaLabel="Product image" />
+                    </fd-grid-list-item>
+                }
+            </fd-grid-list>`
+    })
 };

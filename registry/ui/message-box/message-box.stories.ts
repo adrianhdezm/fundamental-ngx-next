@@ -1,5 +1,6 @@
-import { Component, TemplateRef, afterNextRender, inject, input, signal, viewChild } from '@angular/core';
+import { Component, TemplateRef, inject, input, signal, viewChild } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { BarElement, BarLeft, BarRight, ButtonBar } from '@/ui/bar/bar';
 import { Button } from '@/ui/button/button';
 import { Title } from '@/ui/title/title';
@@ -62,7 +63,6 @@ function report(ref: MessageBoxRef, set: (text: string) => void): void {
 })
 class StoryMessageBox {
     readonly kind = input<'template' | 'types' | 'position' | 'mobile'>('template');
-    readonly autoOpen = input<number | null>(null);
     private readonly service = inject(MessageBoxService);
     private readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
     protected readonly status = signal('');
@@ -109,13 +109,6 @@ class StoryMessageBox {
                     { label: 'Open from template', config: { width: '24rem', data: { title: 'Pineapples', text } } }
                 ];
         }
-    }
-
-    constructor() {
-        afterNextRender(() => {
-            const action = this.actions()[this.autoOpen() ?? -1];
-            if (action) this.open(action.config);
-        });
     }
 
     protected open(config: MessageBoxConfig): void {
@@ -190,15 +183,8 @@ class StoryMessageBoxComplex {
     `
 })
 class StoryMessageBoxOther {
-    readonly autoOpen = input<'component' | 'object' | 'complex' | null>(null);
     private readonly service = inject(MessageBoxService);
     protected readonly status = signal('');
-    constructor() {
-        afterNextRender(() => {
-            const which = this.autoOpen();
-            if (which) this[which]();
-        });
-    }
     protected component(): void {
         report(this.service.open(StoryMessageBoxContent, { data: { count: 3 }, width: '22rem' }), (t) =>
             this.status.set(t)
@@ -257,28 +243,74 @@ export const Position: Story = {
 };
 export const Mobile: Story = { name: 'Mobile', render: () => ({ template: `<story-message-box kind="mobile" />` }) };
 
+/** Clicks the button with this label and waits until the message box has faded in. */
+async function openMessageBox(canvasElement: HTMLElement, label: string): Promise<void> {
+    const button = [...canvasElement.querySelectorAll<HTMLElement>('button')].find(
+        (b) => b.textContent!.trim() === label
+    )!;
+    await userEvent.click(button);
+    await waitFor(() => expect(document.querySelector('fd-dialog-container [role=alertdialog]')).not.toBeNull());
+    const container = document.querySelector<HTMLElement>('fd-dialog-container')!;
+    await Promise.all(container.getAnimations().map((a) => a.finished));
+}
+
+export const OpenConfirmation: Story = {
+    name: 'Open: confirmation',
+    tags: ['!autodocs'],
+    render: Types.render,
+    play: ({ canvasElement }) => openMessageBox(canvasElement, 'Confirmation')
+};
 export const OpenError: Story = {
     name: 'Open: error',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-message-box kind="types" [autoOpen]="1" />` })
+    render: Types.render,
+    play: ({ canvasElement }) => openMessageBox(canvasElement, 'Error')
 };
 export const OpenSuccess: Story = {
     name: 'Open: success',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-message-box kind="types" [autoOpen]="2" />` })
+    render: Types.render,
+    play: ({ canvasElement }) => openMessageBox(canvasElement, 'Success')
+};
+export const OpenWarning: Story = {
+    name: 'Open: warning',
+    tags: ['!autodocs'],
+    render: Types.render,
+    play: ({ canvasElement }) => openMessageBox(canvasElement, 'Warning')
+};
+export const OpenInformation: Story = {
+    name: 'Open: information',
+    tags: ['!autodocs'],
+    render: Types.render,
+    play: ({ canvasElement }) => openMessageBox(canvasElement, 'Information')
 };
 export const OpenObject: Story = {
     name: 'Open: object',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-message-box-other autoOpen="object" />` })
+    render: Others.render,
+    play: ({ canvasElement }) => openMessageBox(canvasElement, 'Open from object')
 };
 export const OpenComponent: Story = {
     name: 'Open: component',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-message-box-other autoOpen="component" />` })
+    render: Others.render,
+    play: ({ canvasElement }) => openMessageBox(canvasElement, 'Open from component')
 };
 export const OpenComplex: Story = {
     name: 'Open: custom header and footer',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-message-box-other autoOpen="complex" />` })
+    render: Others.render,
+    play: ({ canvasElement }) => openMessageBox(canvasElement, 'Open with custom header and footer')
+};
+export const OpenPosition: Story = {
+    name: 'Open: position',
+    tags: ['!autodocs'],
+    render: Position.render,
+    play: ({ canvasElement }) => openMessageBox(canvasElement, 'Open at the top')
+};
+export const OpenMobile: Story = {
+    name: 'Open: mobile',
+    tags: ['!autodocs'],
+    render: Mobile.render,
+    play: ({ canvasElement }) => openMessageBox(canvasElement, 'Open in mobile mode')
 };

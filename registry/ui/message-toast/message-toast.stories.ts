@@ -1,5 +1,6 @@
-import { Component, ElementRef, inject, viewChild } from '@angular/core';
+import { Component, ElementRef, booleanAttribute, inject, input, viewChild } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
 import {
     MessageToastRef,
@@ -30,12 +31,17 @@ const TEXT = 'm-0 w-full font-sap-font-family text-sap-font-size text-sap-text-c
             <button
                 fdButton
                 label="Open from template"
-                (click)="toasts.open(tpl, { data: { content: 'Message toast created from a template.' } })"
+                (click)="
+                    toasts.open(tpl, {
+                        data: { content: 'Message toast created from a template.' },
+                        duration: duration(3000)
+                    })
+                "
             ></button>
             <button
                 fdButton
                 label="Open animated toast"
-                (click)="toasts.open('An animated message toast.', { animated: true, duration: 5000 })"
+                (click)="toasts.open('An animated message toast.', { animated: true, duration: duration(5000) })"
             ></button>
             <button fdButton variant="emphasized" label="Hide all" (click)="toasts.hideAll()"></button>
         </div>
@@ -50,6 +56,8 @@ const TEXT = 'm-0 w-full font-sap-font-family text-sap-font-size text-sap-text-c
     `
 })
 class StoryMessageToast {
+    /** Keeps the toasts open (duration 0), for the Open stories. */
+    readonly keepOpen = input(false, { transform: booleanAttribute });
     protected readonly toasts = inject(MessageToastService);
     private readonly bound = viewChild.required('bound', { read: ElementRef });
     protected readonly placements: MessageToastPlacement[] = [
@@ -60,12 +68,17 @@ class StoryMessageToast {
         'bottom-center',
         'bottom-right'
     ];
+    protected duration(ms: number): number {
+        return this.keepOpen() ? 0 : ms;
+    }
     protected fromString(): void {
-        this.toasts.open('Message toast created from a string. It disappears after 5000 ms.', { duration: 5000 });
+        this.toasts.open('Message toast created from a string. It disappears after 5000 ms.', {
+            duration: this.duration(5000)
+        });
     }
     protected fromComponent(): void {
         this.toasts.open(StoryToastContent, {
-            duration: 7500,
+            duration: this.duration(7500),
             maxWidth: '25rem',
             data: {
                 content:
@@ -77,7 +90,7 @@ class StoryMessageToast {
         position: MessageToastPosition,
         label = typeof position === 'string' ? position : 'a custom position'
     ): void {
-        this.toasts.open(`Message toast at ${label}.`, { position });
+        this.toasts.open(`Message toast at ${label}.`, { position, duration: this.duration(3000) });
     }
     protected atButton(): void {
         this.at(
@@ -111,3 +124,35 @@ const meta: Meta = {
 export default meta;
 
 export const Default: StoryObj = { name: 'Message toast', render: () => ({ template: `<story-message-toast />` }) };
+
+/** Clicks the buttons with these labels and waits until that many toasts are open. */
+async function openToasts(canvasElement: HTMLElement, labels: string[]): Promise<void> {
+    const buttons = [...canvasElement.querySelectorAll<HTMLElement>('button')];
+    for (const label of labels) await userEvent.click(buttons.find((b) => b.textContent!.trim() === label)!);
+    await waitFor(() => expect(document.querySelectorAll('fd-message-toast')).toHaveLength(labels.length));
+}
+
+/** The toasts stay open (duration 0), so the a11y run checks them. */
+export const OpenMessageToast: StoryObj = {
+    name: 'Open: message toast',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-message-toast keepOpen />` }),
+    play: ({ canvasElement }) =>
+        openToasts(canvasElement, ['Open from string', 'Open from component', 'Open from template'])
+};
+export const OpenPositions: StoryObj = {
+    name: 'Open: positions',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-message-toast keepOpen />` }),
+    play: ({ canvasElement }) =>
+        openToasts(canvasElement, [
+            'top-left',
+            'top-center',
+            'top-right',
+            'bottom-left',
+            'bottom-center',
+            'bottom-right',
+            'Custom position',
+            'Bound to this button'
+        ])
+};

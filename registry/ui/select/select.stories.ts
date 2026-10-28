@@ -2,9 +2,11 @@ import { JsonPipe } from '@angular/common';
 import { Component, signal } from '@angular/core';
 import { FormControl as NgFormControl, FormGroup as NgFormGroup, ReactiveFormsModule } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
 import { ContentDensityDirective } from '@/ui/content-density/content-density';
 import { FormItem, FormLabel } from '@/ui/form/form';
+import { FormInputMessageGroup } from '@/ui/form/form-input-message-group';
 import { FormMessage } from '@/ui/form/form-message';
 import { Icon } from '@/ui/icon/icon';
 import { ListGroupHeader, ListIcon, ListSecondary, ListTitle } from '@/ui/list/list';
@@ -70,7 +72,7 @@ class StorySelectModes {
 
 @Component({
     selector: 'story-select-states',
-    imports: [Select, SelectOption, FormItem, FormLabel, FormMessage],
+    imports: [Select, SelectOption, FormItem, FormLabel, FormMessage, FormInputMessageGroup],
     template: `
         <div class="flex flex-col gap-6">
             @for (state of states; track state.state) {
@@ -95,6 +97,25 @@ class StorySelectModes {
                     }}</fd-form-message>
                 </div>
             }
+            <div fdFormItem>
+                <label fdFormLabel id="sel-state-hover">Form message with event triggers (hover)</label>
+                <fd-form-input-message-group class="w-full" [triggers]="['mouseenter', 'mouseleave']">
+                    <fd-select
+                        class="w-full"
+                        placeholder="Select value"
+                        ariaLabelledBy="sel-state-hover"
+                        ariaDescribedBy="sel-state-msg-hover"
+                        state="success"
+                        stateMessage="Success message"
+                        [inline]="false"
+                    >
+                        @for (option of fruits; track option) {
+                            <li fd-option [value]="option">{{ option }}</li>
+                        }
+                    </fd-select>
+                    <fd-form-message id="sel-state-msg-hover" type="success">Success message</fd-form-message>
+                </fd-form-input-message-group>
+            </div>
         </div>
     `
 })
@@ -279,6 +300,34 @@ class StorySelectComparator {
 }
 
 @Component({
+    selector: 'story-select-max-height',
+    imports: [Select, SelectOption, FormLabel],
+    template: `
+        <label fdFormLabel id="sel-height">Fruit</label>
+        <fd-select ariaLabelledBy="sel-height" placeholder="Select an option" maxHeight="250px" [(value)]="value">
+            @for (option of options; track option) {
+                <li fd-option [value]="option">{{ option }}</li>
+            }
+        </fd-select>
+        <small class="${text}">Selected value: {{ value() }}</small>
+    `
+})
+class StorySelectMaxHeight {
+    protected readonly options = [
+        'Apple',
+        'Apricot',
+        'Avocado',
+        'Banana',
+        'Blueberry',
+        'Bing Cherry',
+        'Mango',
+        'Mandarin',
+        'Melon'
+    ];
+    protected readonly value = signal<string | null | undefined>(undefined);
+}
+
+@Component({
     selector: 'story-select-mobile',
     imports: [Select, SelectOption, FormLabel],
     template: `
@@ -324,6 +373,7 @@ const meta: Meta<Select> = {
                 StorySelectForms,
                 StorySelectProgrammatic,
                 StorySelectComparator,
+                StorySelectMaxHeight,
                 StorySelectMobile
             ]
         })
@@ -383,3 +433,34 @@ export const CustomComparator: Story = {
     render: () => ({ template: `<story-select-comparator />` })
 };
 export const Mobile: Story = { render: () => ({ template: `<story-select-mobile />` }) };
+export const MaxHeight: Story = {
+    name: 'Max height',
+    render: () => ({ template: `<story-select-max-height />` })
+};
+
+/** Clicks the first select of the story and waits for its list (or mobile dialog) to open. */
+async function openSelect(canvasElement: HTMLElement, popup: string): Promise<void> {
+    const combobox = canvasElement.querySelector<HTMLElement>('[role=combobox]')!;
+    await userEvent.click(combobox);
+    await waitFor(() => expect(document.querySelector(popup)).not.toBeNull());
+    await waitFor(() => expect(combobox.getAttribute('aria-expanded')).toBe('true'));
+}
+
+export const OpenDefault: Story = {
+    name: 'Open: default',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-select-modes />` }),
+    play: ({ canvasElement }) => openSelect(canvasElement, '[role=listbox] [role=option]')
+};
+export const OpenRich: Story = {
+    name: 'Open: groups and icons',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-select-rich />` }),
+    play: ({ canvasElement }) => openSelect(canvasElement, '[role=listbox] [role=option]')
+};
+export const OpenMobile: Story = {
+    name: 'Open: mobile',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-select-mobile />` }),
+    play: ({ canvasElement }) => openSelect(canvasElement, '[role=dialog] [role=listbox]')
+};

@@ -1,12 +1,27 @@
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
-import { Title } from './title';
+import { FD_DEFAULT_TITLE_SIZE, Title } from './title';
 
 const LONG = 'A very long title that does not fit into the available width of its container';
+
+/** A container that styles its titles as H5 unless they set headerSize (dialogs do the same). */
+@Component({
+    selector: 'story-title-default-size',
+    imports: [Title],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [{ provide: FD_DEFAULT_TITLE_SIZE, useValue: 5 }],
+    template: `
+        <h2 fdTitle>H2 element, default size 5 from the provider</h2>
+        <h3 fdTitle>H3 element, default size 5 from the provider</h3>
+        <h3 fdTitle [headerSize]="2">H3 element with an explicit headerSize 2</h3>
+    `
+})
+class StoryTitleDefaultSize {}
 
 const meta: Meta<Title> = {
     title: 'Components/Title',
     component: Title,
-    decorators: [moduleMetadata({ imports: [Title] })],
+    decorators: [moduleMetadata({ imports: [Title, StoryTitleDefaultSize] })],
     parameters: {
         docs: {
             description: {
@@ -56,4 +71,16 @@ export const Wrapping: Story = {
     render: () => ({
         template: `<div class="w-[300px]"><h1 fdTitle wrap>${LONG}</h1><h2 fdTitle headerSize="3" wrap>${LONG}</h2><h3 fdTitle headerSize="5" twoLineClamp>${LONG} and that is clamped to two lines when it gets even longer than this</h3></div>`
     })
+};
+
+export const DefaultSize: Story = {
+    name: 'Default size via injection',
+    parameters: {
+        docs: {
+            description: {
+                story: 'A component can provide `FD_DEFAULT_TITLE_SIZE` to give the titles inside it a default visual size; an explicit `headerSize` still wins.'
+            }
+        }
+    },
+    render: () => ({ template: `<story-title-default-size />` })
 };

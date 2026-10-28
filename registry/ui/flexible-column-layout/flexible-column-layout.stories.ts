@@ -2,6 +2,14 @@ import { Component, input, signal } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { Bar, BarLeft, BarElement, BarRight } from '@/ui/bar/bar';
 import { Button } from '@/ui/button/button';
+import {
+    DynamicPage,
+    DynamicPageContent,
+    DynamicPageGlobalActions,
+    DynamicPageHeader,
+    DynamicPageLayoutActions,
+    DynamicPageSubheader
+} from '@/ui/dynamic-page/dynamic-page';
 import { List, ListItem, ListLink, ListTitle } from '@/ui/list/list';
 import { Title } from '@/ui/title/title';
 import {
@@ -9,6 +17,9 @@ import {
     provideFlexibleColumnLayoutConfig,
     type FlexibleColumnLayout
 } from './flexible-column-layout';
+
+const LOREM =
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.';
 
 const LAYOUTS: FlexibleColumnLayout[] = [
     'OneColumnStartFullScreen',
@@ -178,10 +189,117 @@ class StoryFcl {
 })
 class StoryFclConfig {}
 
+@Component({
+    selector: 'story-fcl-dynamic-page',
+    imports: [
+        FlexibleColumnLayoutComponent,
+        DynamicPage,
+        DynamicPageHeader,
+        DynamicPageSubheader,
+        DynamicPageContent,
+        DynamicPageGlobalActions,
+        DynamicPageLayoutActions,
+        Bar,
+        BarLeft,
+        BarElement,
+        Button,
+        List,
+        ListItem,
+        ListLink,
+        ListTitle,
+        Title
+    ],
+    template: `
+        <fd-flexible-column-layout class="h-[36rem]" [(layout)]="layout">
+            <ng-template #startColumn>
+                <div class="h-full bg-sap-group-content-background">
+                    <div fd-bar>
+                        <div fd-bar-left>
+                            <fd-bar-element><h3 fd-title headerSize="5" class="m-0">Products</h3></fd-bar-element>
+                        </div>
+                    </div>
+                    <ul fd-list navigationIndicator aria-label="Products">
+                        @for (product of products; track product) {
+                            <li fd-list-item>
+                                <a
+                                    fd-list-link
+                                    href="#"
+                                    [navigated]="product === selected()"
+                                    (click)="$event.preventDefault(); open(product)"
+                                >
+                                    <span fd-list-title>{{ product }}</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </ng-template>
+            <ng-template #midColumn>
+                <fd-dynamic-page ariaLabel="Product details" [expandContent]="false">
+                    <fd-dynamic-page-header [title]="selected()" subtitle="Price, availability and the supplier">
+                        <fd-dynamic-page-global-actions ariaLabel="Product actions">
+                            <button fdButton variant="transparent" label="Edit"></button>
+                        </fd-dynamic-page-global-actions>
+                        <fd-dynamic-page-layout-actions ariaLabel="Column actions">
+                            @if (layout() === 'OneColumnMidFullScreen') {
+                                <button
+                                    fdButton
+                                    variant="transparent"
+                                    glyph="exit-full-screen"
+                                    ariaLabel="Exit full screen"
+                                    title="Exit full screen"
+                                    (click)="layout.set('TwoColumnsMidExpanded')"
+                                ></button>
+                            } @else {
+                                <button
+                                    fdButton
+                                    variant="transparent"
+                                    glyph="full-screen"
+                                    ariaLabel="Full screen"
+                                    title="Full screen"
+                                    (click)="layout.set('OneColumnMidFullScreen')"
+                                ></button>
+                            }
+                            <button
+                                fdButton
+                                variant="transparent"
+                                glyph="decline"
+                                ariaLabel="Close"
+                                title="Close"
+                                (click)="layout.set('OneColumnStartFullScreen')"
+                            ></button>
+                        </fd-dynamic-page-layout-actions>
+                    </fd-dynamic-page-header>
+                    <fd-dynamic-page-subheader pinnable>
+                        Supplier: Very Best Screens, Walldorf. Collapse or pin this header; scrolling the content
+                        collapses it unless it is pinned.
+                    </fd-dynamic-page-subheader>
+                    <fd-dynamic-page-content>
+                        @for (n of paragraphs; track n) {
+                            <p class="m-0 mb-4">${LOREM}</p>
+                        }
+                    </fd-dynamic-page-content>
+                </fd-dynamic-page>
+            </ng-template>
+        </fd-flexible-column-layout>
+    `
+})
+class StoryFclDynamicPage {
+    protected readonly products = ['Notebook Basic 15', 'Notebook Basic 17', 'Ergo Screen E-I', 'Flat Future'];
+    protected readonly selected = signal('Notebook Basic 15');
+    protected readonly layout = signal<FlexibleColumnLayout>('TwoColumnsMidExpanded');
+    protected readonly paragraphs = Array.from({ length: 12 }, (_, i) => i);
+
+    protected open(product: string): void {
+        this.selected.set(product);
+        if (this.layout() === 'OneColumnStartFullScreen') this.layout.set('TwoColumnsMidExpanded');
+    }
+}
+
 const meta: Meta<FlexibleColumnLayoutComponent> = {
     title: 'Components/Flexible Column Layout',
     component: FlexibleColumnLayoutComponent,
-    decorators: [moduleMetadata({ imports: [StoryFcl, StoryFclConfig] })],
+    decorators: [moduleMetadata({ imports: [StoryFcl, StoryFclConfig, StoryFclDynamicPage] })],
     parameters: {
         docs: {
             description: {
@@ -207,4 +325,16 @@ export const ThreeColumns: Story = {
 export const CustomConfig: Story = {
     name: 'Custom layout widths',
     render: () => ({ template: `<story-fcl-config />` })
+};
+
+export const WithDynamicPage: Story = {
+    name: 'With dynamic page',
+    parameters: {
+        docs: {
+            description: {
+                story: 'The mid column hosts a dynamic page with a collapsible, pinnable header; its layout actions switch to OneColumnMidFullScreen and close the column.'
+            }
+        }
+    },
+    render: () => ({ template: `<story-fcl-dynamic-page />` })
 };

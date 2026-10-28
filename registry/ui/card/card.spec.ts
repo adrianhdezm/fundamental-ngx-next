@@ -12,6 +12,8 @@ import {
     CardHeader,
     CardHeaderAction,
     CardHeaderRow,
+    CardHeaderColumn,
+    CardExtendedHeader,
     CardIndicator,
     CardIndicatorTitle,
     CardIndicatorValue,
@@ -381,6 +383,43 @@ class ListHost {
     `
 })
 class CornerHost {}
+
+@Component({
+    imports: [
+        Card,
+        CardHeader,
+        CardMainHeader,
+        CardTitle,
+        CardSubtitle,
+        CardSecondSubtitle,
+        CardExtendedHeader,
+        CardHeaderColumn,
+        CardHeaderRow
+    ],
+    template: `
+        <fd-card id="extended" style="width: 400px">
+            <fd-card-header id="extended-header">
+                <fd-card-main-header>
+                    <h2 fd-card-title>Travel Request</h2>
+                    <h3 fd-card-subtitle id="sub">Marie Johnson</h3>
+                    <h4 fd-card-second-subtitle id="second">Q1, 2024</h4>
+                </fd-card-main-header>
+                <fd-card-extended-header id="ext" [align]="align()">
+                    <div fd-card-header-column id="start-column">
+                        <div fd-card-header-row><span>Las Vegas</span><span>TechEd</span></div>
+                        <div fd-card-header-row><span>May 3rd - 5th</span></div>
+                    </div>
+                    <div fd-card-header-column align="right" id="end-column">
+                        <div fd-card-header-row><span id="amount" style="font-size: 1.4rem">956.00 EUR</span></div>
+                    </div>
+                </fd-card-extended-header>
+            </fd-card-header>
+        </fd-card>
+    `
+})
+class ExtendedHost {
+    readonly align = signal<'top' | 'bottom' | null>('bottom');
+}
 
 describe('Card', () => {
     it('header, content and footer render in order; badges at the top end corner (two at most)', async () => {
@@ -787,5 +826,35 @@ describe('Card', () => {
         // the bottom header of the three-part card has a top border instead of a bottom one
         expect(style(q('#bottom fd-card-main-header')).borderTopWidth).toBe('1px');
         expect(style(q('#top fd-card-main-header')).borderBottomWidth).toBe('1px');
+    });
+
+    it('aria-describedby includes the second subtitle', async () => {
+        const { q } = await render(ExtendedHost);
+        expect(q('#extended').getAttribute('aria-describedby')).toBe('sub second');
+    });
+
+    it('extended header: a group whose end column aligns to the end and whose content can sit at the bottom', async () => {
+        const { host, q, stable } = await render(ExtendedHost);
+        const ext = q('#ext');
+        expect(ext.getAttribute('role')).toBe('group');
+        expect(ext.getAttribute('aria-roledescription')).toBe('Extended content');
+        // the extended header follows the main header inside the card header
+        expect(rect(ext).top).toBeGreaterThanOrEqual(rect(q('fd-card-main-header')).bottom - 1);
+
+        // columns sit side by side; the end column's content hugs the end edge
+        const start = rect(q('#start-column'));
+        const end = rect(q('#end-column'));
+        expect(end.left).toBeGreaterThanOrEqual(start.right - 1);
+        expect(Math.abs(rect(q('#amount')).right - end.right)).toBeLessThan(1);
+        // rows lay out their items side by side
+        const [a, b] = [...q('#start-column [fd-card-header-row]').children].map(rect);
+        expect(b.left).toBeGreaterThan(a.right - 1);
+
+        // align bottom: the shorter end column sits at the bottom of the taller start column
+        expect(Math.abs(end.bottom - start.bottom)).toBeLessThan(1);
+        expect(end.top).toBeGreaterThan(start.top + 1);
+        host.align.set('top');
+        await stable();
+        expect(Math.abs(rect(q('#end-column')).top - rect(q('#start-column')).top)).toBeLessThan(1);
     });
 });

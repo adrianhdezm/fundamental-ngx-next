@@ -1,8 +1,12 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, input, signal } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
+import { ContentDensityDirective } from '@/ui/content-density/content-density';
+import { FormItem, FormLabel } from '@/ui/form/form';
+import { InputGroup } from '@/ui/input-group/input-group';
 import { Title } from '@/ui/title/title';
-import { TabItem, TabLink, TabList, TabNav, TabPanel, TabTag, TabTitle } from './tabs';
+import { TabItem, TabLink, TabList, TabNav, TabPanel, TabTag, TabTitle, type TabModes, type TabSizes } from './tabs';
 
 const content = 'block p-4 font-sap-font-family text-sap-font-size text-sap-text-color';
 const heading = 'mt-6 mb-2 first:mt-0';
@@ -200,12 +204,119 @@ class StoryTabsNav {
     protected readonly active = signal('Home');
 }
 
+@Component({
+    selector: 'story-tabs-default',
+    imports: [TabList, TabPanel, Title, Button],
+    template: `
+        <h3 fdTitle headerSize="5" class="${heading}">Default tab specified</h3>
+        <fd-tab-list ariaLabel="Tabs with a default tab" defaultTab="story-default-three">
+            <fd-tab id="story-default-one" title="Link 1"><span class="${content}">Content for tab 1</span></fd-tab>
+            <fd-tab id="story-default-two" title="Link 2"><span class="${content}">Content for tab 2</span></fd-tab>
+            <fd-tab id="story-default-three" title="Link 3"><span class="${content}">Content for tab 3</span></fd-tab>
+        </fd-tab-list>
+
+        <h3 fdTitle headerSize="5" class="${heading}">Default tab selected again when the tabs change</h3>
+        <button fdButton class="mb-2" [label]="(hide() ? 'Show' : 'Hide') + ' first tab'" (click)="toggle()"></button>
+        <fd-tab-list ariaLabel="Tabs that select the default tab on change" selectDefaultOnTabsChange>
+            @if (!hide()) {
+                <fd-tab id="story-change-one" title="Link 1"><span class="${content}">Content for tab 1</span></fd-tab>
+            }
+            <fd-tab id="story-change-two" title="Link 2"><span class="${content}">Content for tab 2</span></fd-tab>
+            <fd-tab id="story-change-three" title="Link 3"><span class="${content}">Content for tab 3</span></fd-tab>
+        </fd-tab-list>
+    `
+})
+class StoryTabsDefault {
+    protected readonly hide = signal(true);
+    protected toggle(): void {
+        this.hide.update((hide) => !hide);
+    }
+}
+
+@Component({
+    selector: 'story-tabs-form',
+    imports: [TabList, TabPanel, Button, FormItem, FormLabel, InputGroup],
+    template: `
+        <fd-tab-list ariaLabel="Tabs with form content">
+            @for (tab of [1, 2, 3]; track tab) {
+                <fd-tab [title]="'Link ' + tab">
+                    <div class="${content} flex flex-col items-start gap-2">
+                        <span>Content for tab {{ tab }}</span>
+                        @if (tab === 1) {
+                            <button fdButton label="Save"></button>
+                        }
+                        <div fdFormItem>
+                            <label fdFormLabel [for]="'story-tabs-amount-' + tab">Left aligned icon add-on</label>
+                            <fd-input-group
+                                placement="before"
+                                glyph="cart"
+                                glyphAriaLabel="Add to cart"
+                                placeholder="Amount"
+                                [inputId]="'story-tabs-amount-' + tab"
+                            />
+                        </div>
+                    </div>
+                </fd-tab>
+            }
+        </fd-tab-list>
+    `
+})
+class StoryTabsForm {}
+
+/** The upstream playground: mode, size, density and the title, icon and count of each tab. */
+@Component({
+    selector: 'story-tabs-playground',
+    imports: [TabList, TabPanel, ContentDensityDirective],
+    template: `
+        <fd-tab-list ariaLabel="Playground tabs" [mode]="mode() || null" [size]="size()" [fdCompact]="compact()">
+            @for (tab of tabs(); track $index; let first = $first) {
+                <fd-tab
+                    [header]="mode() === 'filter' && first"
+                    [title]="tab.title"
+                    [glyph]="tab.glyph"
+                    [count]="tab.count"
+                >
+                    <span class="${content}">Content of {{ tab.title }}</span>
+                </fd-tab>
+            }
+        </fd-tab-list>
+    `
+})
+class StoryTabsPlayground {
+    readonly mode = input<TabModes | ''>('');
+    readonly size = input<TabSizes>('m');
+    readonly compact = input(false);
+    readonly title1 = input('Link 1');
+    readonly glyph1 = input('cart');
+    readonly count1 = input('1');
+    readonly title2 = input('Link 2');
+    readonly glyph2 = input('employee');
+    readonly count2 = input('2');
+    readonly title3 = input('Link 3');
+    readonly glyph3 = input('calendar');
+    readonly count3 = input('3');
+    protected readonly tabs = computed(() => [
+        { title: this.title1(), glyph: this.glyph1(), count: this.count1() },
+        { title: this.title2(), glyph: this.glyph2(), count: this.count2() },
+        { title: this.title3(), glyph: this.glyph3(), count: this.count3() }
+    ]);
+}
+
 const meta: Meta<TabList> = {
     title: 'Components/Tabs',
     component: TabList,
     decorators: [
         moduleMetadata({
-            imports: [StoryTabsBasic, StoryTabsModes, StoryTabsBehaviour, StoryTabsStacked, StoryTabsNav]
+            imports: [
+                StoryTabsBasic,
+                StoryTabsModes,
+                StoryTabsBehaviour,
+                StoryTabsStacked,
+                StoryTabsNav,
+                StoryTabsDefault,
+                StoryTabsForm,
+                StoryTabsPlayground
+            ]
         })
     ],
     parameters: {
@@ -222,6 +333,33 @@ const meta: Meta<TabList> = {
 export default meta;
 type Story = StoryObj<TabList>;
 
+export const Playground: StoryObj<StoryTabsPlayground> = {
+    argTypes: {
+        mode: { control: 'select', options: ['', 'icon-only', 'process', 'filter'] },
+        size: { control: 'select', options: ['s', 'm', 'l', 'xl', 'xxl'] }
+    },
+    args: {
+        mode: '',
+        size: 'm',
+        compact: false,
+        title1: 'Link 1',
+        glyph1: 'cart',
+        count1: '1',
+        title2: 'Link 2',
+        glyph2: 'employee',
+        count2: '2',
+        title3: 'Link 3',
+        glyph3: 'calendar',
+        count3: '3'
+    },
+    render: (args) => ({
+        props: args,
+        template: `<story-tabs-playground [mode]="mode" [size]="size" [compact]="compact"
+            [title1]="title1" [glyph1]="glyph1" [count1]="count1"
+            [title2]="title2" [glyph2]="glyph2" [count2]="count2"
+            [title3]="title3" [glyph3]="glyph3" [count3]="count3" />`
+    })
+};
 export const Basic: Story = { render: () => ({ template: `<story-tabs-basic />` }) };
 export const Modes: Story = { render: () => ({ template: `<story-tabs-modes />` }) };
 export const Behaviour: Story = {
@@ -229,4 +367,28 @@ export const Behaviour: Story = {
     render: () => ({ template: `<story-tabs-behaviour />` })
 };
 export const Stacked: Story = { name: 'Stacked content', render: () => ({ template: `<story-tabs-stacked />` }) };
+export const DefaultTab: Story = {
+    name: 'Default tab',
+    render: () => ({ template: `<story-tabs-default />` })
+};
+export const FormContent: Story = {
+    name: 'Form content',
+    render: () => ({ template: `<story-tabs-form />` })
+};
 export const Navigation: Story = { render: () => ({ template: `<story-tabs-nav />` }) };
+
+export const OpenMore: Story = {
+    name: 'Open: More menu',
+    tags: ['!autodocs'],
+    render: Behaviour.render,
+    play: async ({ canvasElement }) => {
+        const more = await waitFor(() => {
+            const el = canvasElement.querySelector<HTMLElement>('fd-tab-list button[aria-haspopup=menu]');
+            expect(el).not.toBeNull();
+            return el!;
+        });
+        await userEvent.click(more);
+        await waitFor(() => expect(more.getAttribute('aria-expanded')).toBe('true'));
+        await waitFor(() => expect(document.querySelector('.cdk-overlay-container [role=menuitem]')).not.toBeNull());
+    }
+};

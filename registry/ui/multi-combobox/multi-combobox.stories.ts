@@ -1,11 +1,29 @@
 import { JsonPipe } from '@angular/common';
-import { Component, signal } from '@angular/core';
-import { FormControl as NgFormControl, FormGroup as NgFormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Component, TemplateRef, inject, signal, viewChild } from '@angular/core';
+import {
+    FormControl as NgFormControl,
+    FormGroup as NgFormGroup,
+    FormsModule,
+    ReactiveFormsModule
+} from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
 import { delay, of } from 'rxjs';
+import { expect, userEvent, waitFor } from 'storybook/test';
+import { ButtonBar } from '@/ui/bar/bar';
 import { Button } from '@/ui/button/button';
+import {
+    Dialog,
+    DialogBody,
+    DialogFooter,
+    DialogHeader,
+    DialogService,
+    DialogTemplate,
+    DialogTitle
+} from '@/ui/dialog/dialog';
 import { FormItem, FormLabel } from '@/ui/form/form';
 import { ListByline, ListContent, ListTitle } from '@/ui/list/list';
+import { SegmentedButton } from '@/ui/segmented-button/segmented-button';
+import { Title } from '@/ui/title/title';
 import { MultiCombobox, MultiComboboxTemplate } from './multi-combobox';
 
 interface Food {
@@ -303,6 +321,112 @@ class StoryMultiComboboxMobile {
     protected readonly selected = signal<string[]>(['Norway']);
 }
 
+@Component({
+    selector: 'story-multi-combobox-dynamic',
+    imports: [MultiCombobox, FormItem, FormLabel, FormsModule, Button, SegmentedButton, JsonPipe],
+    template: `
+        <div class="flex max-w-lg flex-col gap-4">
+            <p class="${text}">Active data set: {{ dataset() || 'loading...' }}</p>
+            <fd-segmented-button ariaLabel="Data set" [ngModel]="dataset()" (ngModelChange)="switchTo($event)">
+                <button fdButton label="Fruits" value="Fruits"></button>
+                <button fdButton label="Vegetables" value="Vegetables"></button>
+            </fd-segmented-button>
+            <div fdFormItem>
+                <label fdFormLabel for="mcb-dynamic">Search and select</label>
+                <fd-multi-combobox
+                    inputId="mcb-dynamic"
+                    displayKey="name"
+                    lookupKey="id"
+                    placeholder="Type some text..."
+                    [dataSource]="items()"
+                    [(selectedItems)]="selected"
+                />
+                <small class="${text}">Selected: {{ names() | json }}</small>
+            </div>
+        </div>
+    `
+})
+class StoryMultiComboboxDynamic {
+    protected readonly items = signal<Food[]>([]);
+    protected readonly dataset = signal<'' | Food['type']>('');
+    protected readonly selected = signal<Food[]>([]);
+
+    constructor() {
+        // the first data set arrives later, like an HTTP response
+        setTimeout(() => this.switchTo('Fruits'), 500);
+    }
+
+    protected switchTo(type: Food['type']): void {
+        this.items.set(FOOD.filter((f) => f.type === type));
+        this.dataset.set(type);
+        this.selected.set([]);
+    }
+
+    protected names(): string[] {
+        return this.selected().map((f) => f.name);
+    }
+}
+
+@Component({
+    selector: 'story-multi-combobox-dialog',
+    imports: [
+        MultiCombobox,
+        FormItem,
+        FormLabel,
+        Button,
+        ButtonBar,
+        Dialog,
+        DialogHeader,
+        DialogBody,
+        DialogFooter,
+        DialogTemplate,
+        DialogTitle,
+        Title
+    ],
+    template: `
+        <ng-template fdDialogTemplate let-dialog #tpl>
+            <fd-dialog [dialogRef]="dialog">
+                <fd-dialog-header>
+                    <h1 fd-title fd-dialog-title>Multi combobox in a dialog</h1>
+                </fd-dialog-header>
+                <fd-dialog-body>
+                    <div fdFormItem>
+                        <label fdFormLabel for="mcb-dialog">Countries</label>
+                        <fd-multi-combobox
+                            inputId="mcb-dialog"
+                            showSelectAll
+                            placeholder="Type some text..."
+                            [dataSource]="countries"
+                            [(selectedItems)]="selected"
+                        />
+                    </div>
+                    <p class="${text}">Selected: {{ selected().join(', ') || 'none' }}</p>
+                </fd-dialog-body>
+                <fd-dialog-footer>
+                    <fd-button-bar variant="emphasized" label="Interested" (click)="dialog.close('Continue')" />
+                    <fd-button-bar label="Cancel" (click)="dialog.dismiss('Cancel')" />
+                </fd-dialog-footer>
+            </fd-dialog>
+        </ng-template>
+        <button fdButton label="Open dialog" (click)="open()"></button>
+        <p class="${text}">{{ reason() }}</p>
+    `
+})
+class StoryMultiComboboxDialog {
+    protected readonly countries = COUNTRIES;
+    protected readonly selected = signal<string[]>([]);
+    protected readonly reason = signal('');
+    private readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
+    private readonly dialogs = inject(DialogService);
+
+    protected open(): void {
+        this.dialogs.open(this.tpl(), { responsivePadding: true }).afterClosed.subscribe({
+            next: (result) => this.reason.set(`Dialog closed with result: ${result}`),
+            error: (reason) => this.reason.set(`Dialog dismissed with result: ${reason}`)
+        });
+    }
+}
+
 const meta: Meta<MultiCombobox> = {
     title: 'Components/Multi Combobox',
     component: MultiCombobox,
@@ -314,7 +438,9 @@ const meta: Meta<MultiCombobox> = {
                 StoryMultiComboboxLayout,
                 StoryMultiComboboxStates,
                 StoryMultiComboboxForms,
-                StoryMultiComboboxMobile
+                StoryMultiComboboxMobile,
+                StoryMultiComboboxDynamic,
+                StoryMultiComboboxDialog
             ]
         })
     ],
@@ -363,3 +489,67 @@ export const Layout: Story = {
 export const States: Story = { render: () => ({ template: `<story-multi-combobox-states />` }) };
 export const Forms: Story = { render: () => ({ template: `<story-multi-combobox-forms />` }) };
 export const Mobile: Story = { render: () => ({ template: `<story-multi-combobox-mobile />` }) };
+export const DynamicDataSource: Story = {
+    name: 'Dynamic data source',
+    render: () => ({ template: `<story-multi-combobox-dynamic />` })
+};
+export const InsideDialog: Story = {
+    name: 'Inside a dialog',
+    render: () => ({ template: `<story-multi-combobox-dialog />` })
+};
+
+/** Clicks the addon button of the multi-combobox with the input id and waits for the list (or dialog). */
+async function openMultiCombobox(canvasElement: HTMLElement, inputId: string, popup: string): Promise<void> {
+    const combobox = canvasElement.querySelector<HTMLElement>(`fd-multi-combobox:has(#${inputId})`)!;
+    await userEvent.click(combobox.querySelector<HTMLElement>('button[aria-haspopup]')!);
+    await waitFor(() => expect(document.querySelector(popup)).not.toBeNull());
+    await waitFor(() => expect(combobox.querySelector('#' + inputId)!.getAttribute('aria-expanded')).toBe('true'));
+}
+
+export const OpenSelectAll: Story = {
+    name: 'Open: select all',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-multi-combobox-data />` }),
+    play: ({ canvasElement }) => openMultiCombobox(canvasElement, 'mcb-1', '[role=listbox] [role=option]')
+};
+export const OpenGroups: Story = {
+    name: 'Open: groups',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-multi-combobox-layout />` }),
+    play: ({ canvasElement }) => openMultiCombobox(canvasElement, 'mcb-group', '[role=listbox] [role=group]')
+};
+export const OpenColumns: Story = {
+    name: 'Open: two columns',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-multi-combobox-layout />` }),
+    play: ({ canvasElement }) => openMultiCombobox(canvasElement, 'mcb-columns', '[role=listbox] [role=option]')
+};
+export const OpenTemplate: Story = {
+    name: 'Open: custom item template',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-multi-combobox-layout />` }),
+    play: ({ canvasElement }) => openMultiCombobox(canvasElement, 'mcb-byline', '[role=listbox] [fdListByline]')
+};
+export const OpenState: Story = {
+    name: 'Open: state message',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-multi-combobox-states />` }),
+    play: ({ canvasElement }) => openMultiCombobox(canvasElement, 'mcb-state-error', '[role=listbox] [role=option]')
+};
+export const OpenInsideDialog: Story = {
+    name: 'Open: inside a dialog',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-multi-combobox-dialog />` }),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(canvasElement.querySelector<HTMLElement>('button')!);
+        await waitFor(() => expect(document.querySelector('[role=dialog] fd-multi-combobox')).not.toBeNull());
+        await openMultiCombobox(document.body, 'mcb-dialog', '[role=listbox] [role=option]');
+    }
+};
+export const OpenMobile: Story = {
+    name: 'Open: mobile',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-multi-combobox-mobile />` }),
+    play: ({ canvasElement }) =>
+        openMultiCombobox(canvasElement, 'mcb-mobile', '[role=dialog] [role=listbox] [role=option]')
+};

@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import {
     UserMenu,
@@ -63,6 +63,7 @@ import {
             </fd-user-menu-body>
             <fd-user-menu-footer><button type="button">Sign out</button></fd-user-menu-footer>
         </fd-user-menu>
+        <button type="button" id="outside">Outside</button>
     `
 })
 class Host {
@@ -85,7 +86,26 @@ async function setup(mobile = false) {
     return { fixture, host: fixture.componentInstance, control };
 }
 
+const NAME = 'Maximilian Alexander Featherstonehaugh-Montgomery the Third of Somewhere Rather Far Away';
+
+@Component({
+    imports: [UserMenuUserName, UserMenuSubline],
+    template: `
+        <div class="w-48">
+            <div fd-user-menu-user-name id="clamped">{{ name }}</div>
+            <div fd-user-menu-user-name truncate id="truncated">{{ name }}</div>
+            <div fd-user-menu-subline id="subline">{{ name }}</div>
+            <div fd-user-menu-subline wrap id="wrapped">{{ name }}</div>
+        </div>
+    `
+})
+class TextHost {
+    readonly name = NAME;
+}
+
 describe('UserMenu', () => {
+    afterEach(() => document.documentElement.removeAttribute('dir'));
+
     it('opens from the control in a popover labelled by the user name and focuses the first item', async () => {
         const { host, control } = await setup();
         expect(control.getAttribute('role')).toBe('button');
@@ -171,5 +191,134 @@ describe('UserMenu', () => {
         await userEvent.click(document.querySelector<HTMLElement>('[aria-label="Close"]')!);
         await wait(300);
         expect(host.open()).toBe(false);
+    });
+
+    it('keeps clicks inside the body from bubbling out of the menu', async () => {
+        const { host, control } = await setup();
+        await userEvent.click(control);
+        await wait();
+        const outside = vi.fn();
+        document.addEventListener('click', outside);
+        try {
+            await userEvent.click(document.getElementById('name')!);
+            await userEvent.click(item('Settings'));
+            expect(host.picked()).toBe('Settings');
+            expect(outside).not.toHaveBeenCalled();
+            await userEvent.click(document.querySelector<HTMLElement>('fd-user-menu-footer button')!);
+            expect(outside).toHaveBeenCalledOnce();
+        } finally {
+            document.removeEventListener('click', outside);
+        }
+    });
+
+    it('the control is a focusable button (tabindex 0, aria-haspopup dialog)', async () => {
+        const { control } = await setup();
+        expect(control.getAttribute('role')).toBe('button');
+        expect(control.tabIndex).toBe(0);
+        expect(control.getAttribute('aria-haspopup')).toBe('dialog');
+        await userEvent.tab();
+        expect(document.activeElement).toBe(control);
+    });
+
+    it('opens with Space and ignores other keys on the control', async () => {
+        const { host, control } = await setup();
+        control.focus();
+        await userEvent.keyboard('a{ArrowDown}{Tab}');
+        await wait();
+        expect(host.open()).toBe(false);
+        control.focus();
+        await userEvent.keyboard('[Space]');
+        await wait();
+        expect(host.open()).toBe(true);
+        expect(focusedText()).toBe('Settings');
+    });
+
+    it('reopening after moving the focus starts on the first item', async () => {
+        const { control } = await setup();
+        control.focus();
+        await userEvent.keyboard('{Enter}');
+        await wait();
+        await userEvent.keyboard('{End}');
+        expect(focusedText()).toBe('About');
+        await userEvent.keyboard('{Escape}');
+        await wait();
+        await userEvent.keyboard('{Enter}');
+        await wait();
+        expect(focusedText()).toBe('Settings');
+        expect(item('Settings').tabIndex).toBe(0);
+        expect(item('About').tabIndex).toBe(-1);
+    });
+
+    it('moving the focus out of the menu resets the tab stop to the first item', async () => {
+        const { control } = await setup();
+        control.focus();
+        await userEvent.keyboard('{Enter}');
+        await wait();
+        await userEvent.keyboard('{ArrowDown}');
+        expect(item('Language').tabIndex).toBe(0);
+        // moving within the menu (into a submenu) keeps the item
+        await userEvent.keyboard('{ArrowRight}');
+        await wait(150);
+        expect(focusedText()).toBe('English');
+        expect(item('Language').tabIndex).toBe(0);
+        await userEvent.keyboard('{ArrowLeft}');
+        await wait();
+        // leaving the menu makes the first item the tab stop again
+        document.getElementById('outside')!.focus();
+        await wait();
+        expect(item('Language').tabIndex).toBe(-1);
+        expect(item('Settings').tabIndex).toBe(0);
+    });
+
+    it('submenu arrows are mirrored in RTL', async () => {
+        document.documentElement.setAttribute('dir', 'rtl');
+        const { control } = await setup();
+        control.focus();
+        await userEvent.keyboard('{Enter}');
+        await wait();
+        await userEvent.keyboard('{ArrowDown}{ArrowRight}');
+        await wait(150);
+        expect(item('Language').getAttribute('aria-expanded')).toBe('false');
+        await userEvent.keyboard('{ArrowLeft}');
+        await wait(150);
+        expect(item('Language').getAttribute('aria-expanded')).toBe('true');
+        expect(focusedText()).toBe('English');
+        await userEvent.keyboard('{ArrowRight}');
+        await wait();
+        expect(item('Language').getAttribute('aria-expanded')).toBe('false');
+        expect(focusedText()).toBe('Language');
+    });
+
+    it('mobile mode focuses the first item when it opens', async () => {
+        const { control } = await setup(true);
+        await userEvent.click(control);
+        await wait(300);
+        expect(document.querySelector('[role=dialog]')).not.toBeNull();
+        expect(focusedText()).toBe('Settings');
+    });
+
+    it('user name clamps to two lines, truncate keeps one line', async () => {
+        const fixture = TestBed.createComponent(TextHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        const lineHeight = (el: HTMLElement) => parseFloat(getComputedStyle(el).lineHeight);
+        const clamped = document.getElementById('clamped')!;
+        expect(clamped.clientHeight).toBeCloseTo(2 * lineHeight(clamped), 0);
+        expect(clamped.scrollHeight).toBeGreaterThan(clamped.clientHeight);
+        const truncated = document.getElementById('truncated')!;
+        expect(truncated.clientHeight).toBeCloseTo(lineHeight(truncated), 0);
+        expect(getComputedStyle(truncated).textOverflow).toBe('ellipsis');
+    });
+
+    it('a subline truncates to one line unless it wraps', async () => {
+        const fixture = TestBed.createComponent(TextHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        const subline = document.getElementById('subline')!;
+        const wrapped = document.getElementById('wrapped')!;
+        expect(getComputedStyle(subline).textOverflow).toBe('ellipsis');
+        expect(subline.scrollWidth).toBeGreaterThan(subline.clientWidth);
+        expect(wrapped.clientHeight).toBeGreaterThan(2 * subline.clientHeight);
+        expect(wrapped.scrollWidth).toBe(wrapped.clientWidth);
     });
 });

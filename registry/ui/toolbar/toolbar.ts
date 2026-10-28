@@ -12,6 +12,7 @@ import {
     Directive,
     ElementRef,
     InjectionToken,
+    type Signal,
     afterNextRender,
     booleanAttribute,
     computed,
@@ -102,6 +103,9 @@ function sortByPriorityAndGroup<T extends ToolbarOverflowItem>(items: readonly T
 }
 
 export const FD_TOOLBAR_ITEM = new InjectionToken<ToolbarItem>('FdToolbarItem');
+
+/** Provided by a container (e.g. dynamic page global actions) to move all items of its toolbars into the overflow. */
+export const FD_TOOLBAR_FORCE_OVERFLOW = new InjectionToken<Signal<boolean>>('FdToolbarForceOverflow');
 
 /** A toolbar child that moves into the overflow popover when it does not fit. */
 @Directive({
@@ -232,7 +236,8 @@ let nextId = 0;
                 <fd-toolbar-spacer />
             }
             <fd-toolbar-separator />
-            <fd-popover placement="bottom-end" [(isOpen)]="overflowOpen">
+            <!-- the popover is a dialog: named like its "More" button -->
+            <fd-popover placement="bottom-end" [bodyAriaLabel]="moreLabel()" [(isOpen)]="overflowOpen">
                 <fd-popover-control>
                     <button
                         fdButton
@@ -286,9 +291,14 @@ export class Toolbar {
     private readonly panel = viewChild.required<ElementRef<HTMLElement>>('panel');
     private readonly slot = viewChild<ElementRef<HTMLElement>>('slot');
     private readonly checker = inject(InteractivityChecker);
+    private readonly containerForce = inject(FD_TOOLBAR_FORCE_OVERFLOW, { optional: true });
 
-    readonly overflown = signal<ToolbarItem[]>([]);
+    /** Equal when the same items overflow in the same order, so a re-measure moves nothing. */
+    readonly overflown = signal<ToolbarItem[]>([], {
+        equal: (a, b) => a.length === b.length && a.every((item, i) => item === b[i])
+    });
     private readonly measure = signal(0);
+    private readonly observer = signal<ResizeObserver | null>(null);
     private readonly placeholders = new Map<ToolbarItem, Comment>();
 
     protected readonly hasFlexibleSpacer = computed(() => this.spacers().some((spacer) => !spacer.fixed()));
@@ -300,14 +310,21 @@ export class Toolbar {
             observer.observe(this.elementRef.nativeElement);
             const title = this.titleElement()?.nativeElement ?? this.projectedTitle()?.nativeElement;
             if (title) observer.observe(title);
+            this.observer.set(observer);
             destroyRef.onDestroy(() => observer.disconnect());
+        });
+        // items change size after the first measure (fonts, inner controls that render later)
+        effect(() => {
+            const observer = this.observer();
+            this.items().forEach((item) => observer?.observe(item.element));
         });
         // recompute the overflow when the size, items or options change
         effect(() => {
             this.measure();
             const items = this.items();
-            const should = this.shouldOverflow();
-            const force = this.forceOverflow();
+            const container = this.containerForce?.() ?? false;
+            const should = this.shouldOverflow() || container;
+            const force = this.forceOverflow() || container;
             untracked(() =>
                 this.overflown.set(
                     should ? toolbarOverflow(items, this.availableWidth(), this.titleWidth(), force) : []
@@ -385,7 +402,7 @@ export class Toolbar {
         const type = this.fdType();
         const titled = !!this.title() || !!this.projectedTitle();
         return cn(
-            'm-0 box-border flex h-(--tb-h) min-h-(--tb-h) items-center gap-2 py-0 ps-(--tb-ps) pe-2 [&>*]:shrink-0',
+            'm-0 box-border flex h-(--tb-h) min-h-(--tb-h) items-center gap-2 py-0 ps-(--tb-ps) pe-2 [&>:not([role=heading])]:shrink-0',
             'border-b border-solid border-sap-group-title-border-color font-sap-font-family text-sap-font-size',
             '[--tb-h:2.75rem] compact:[--tb-h:2rem] [--tb-sep-h:2rem] compact:[--tb-sep-h:1.5rem] [--tb-ps:0.5rem]',
             type === 'transparent' ? 'bg-transparent' : 'bg-sap-toolbar-background',

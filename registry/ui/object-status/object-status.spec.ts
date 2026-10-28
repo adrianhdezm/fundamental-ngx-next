@@ -21,6 +21,7 @@ import { ObjectStatusComponent, type IndicationColor, type ObjectStatus } from '
                 [indicationColor]="indication()"
                 [secondaryIndication]="secondary()"
                 [clickable]="clickable()"
+                [ariaRoleDescription]="roleDescription()"
                 [inverted]="inverted()"
                 [large]="large()"
                 [truncate]="truncate()"
@@ -42,6 +43,7 @@ class Host {
     readonly indication = signal<IndicationColor | null>(null);
     readonly secondary = signal(false);
     readonly clickable = signal(false);
+    readonly roleDescription = signal('Object Status Button');
     readonly inverted = signal(false);
     readonly large = signal(false);
     readonly truncate = signal(false);
@@ -163,6 +165,14 @@ describe('ObjectStatus', () => {
         element().focus();
         await userEvent.keyboard('{Enter}');
         expect(host.clicks).toEqual([]);
+    });
+
+    it('ariaRoleDescription overrides the role description of a clickable status', async () => {
+        const { host, element, update } = await setup();
+        await update(() => host.roleDescription.set('Status link'));
+        expect(element().hasAttribute('aria-roledescription')).toBe(false);
+        await update(() => host.clickable.set(true));
+        expect(element().getAttribute('aria-roledescription')).toBe('Status link');
     });
 
     it('clickable status is a focusable role button that activates with click, Enter and Space', async () => {

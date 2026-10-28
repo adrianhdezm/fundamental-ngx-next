@@ -28,12 +28,13 @@ const meta: Meta<Button> = {
         variant: 'standard',
         glyph: '',
         glyphPosition: 'before',
+        // The alias of the `menu` input: argsToTemplate binds the arg by its name.
         fdMenu: false,
         toggled: false,
         disabled: false,
         fullWidth: false,
         decisive: false
-    } as Partial<Button> & Record<string, unknown>
+    } as Meta<Button>['args']
 };
 export default meta;
 type Story = StoryObj<Button>;

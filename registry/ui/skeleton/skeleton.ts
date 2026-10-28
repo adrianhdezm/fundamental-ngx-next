@@ -107,7 +107,8 @@ export class Skeleton {
     });
 
     protected readonly lineWidths = computed(() => {
-        const lines = Math.max(1, this.textLines());
+        // like upstream, zero (or fewer) lines draws no lines; the height above keeps one line's worth
+        const lines = Math.max(0, this.textLines() || 0);
         return Array.from({ length: lines }, (_, i) => (lines > 1 && i === lines - 1 ? '60%' : '100%'));
     });
 

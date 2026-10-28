@@ -18,7 +18,8 @@ const LONG = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '.repeat(
                 [whitespaces]="whitespaces()"
                 [hyphenation]="hyphenation()"
                 [subline]="subline()"
-                moreLabel="more"
+                [moreLabel]="moreLabel()"
+                [lessLabel]="lessLabel()"
             />
         </div>
     `
@@ -31,6 +32,8 @@ class Host {
     readonly whitespaces = signal(false);
     readonly hyphenation = signal<Hyphenation>(null);
     readonly subline = signal(false);
+    readonly moreLabel = signal('more');
+    readonly lessLabel = signal('Less');
 }
 
 async function setup(configure?: (host: Host) => void) {
@@ -159,5 +162,34 @@ describe('Text', () => {
         expect(getComputedStyle(paragraph).webkitLineClamp).toBe('2');
         const lineHeight = parseFloat(getComputedStyle(paragraph).fontSize) * 1.5;
         expect(paragraph.getBoundingClientRect().height).toBeLessThanOrEqual(2 * lineHeight);
+    });
+
+    it('maxLines 0 or negative does not clamp and shows no toggle', async () => {
+        const { clamp, toggle, update } = await setup((h) => h.expandable.set(true));
+        const full = clamp.getBoundingClientRect().height;
+        for (const lines of [0, -1, -5]) {
+            await update((h) => h.maxLines.set(lines));
+            expect(clamp.getBoundingClientRect().height).toBe(full);
+            expect(getComputedStyle(clamp).webkitLineClamp).toBe('none');
+            expect(toggle()).toBeNull();
+        }
+        await update((h) => h.maxLines.set(2));
+        expect(clamp.getBoundingClientRect().height).toBeLessThan(full);
+        expect(toggle()).not.toBeNull();
+    });
+
+    it('custom moreLabel and lessLabel replace the toggle text', async () => {
+        const { toggle, update, stable } = await setup((h) => {
+            h.maxLines.set(2);
+            h.expandable.set(true);
+            h.moreLabel.set('Show all');
+            h.lessLabel.set('Show fewer');
+        });
+        expect(toggle()!.textContent!.trim()).toBe('Show all');
+        await userEvent.click(toggle()!);
+        await stable();
+        expect(toggle()!.textContent!.trim()).toBe('Show fewer');
+        await update((h) => h.lessLabel.set('Collapse'));
+        expect(toggle()!.textContent!.trim()).toBe('Collapse');
     });
 });

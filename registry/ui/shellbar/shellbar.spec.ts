@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import {
+    ProductMenu,
     Shellbar,
     ShellbarAction,
     ShellbarActions,
@@ -11,7 +12,10 @@ import {
     ShellbarHidePriority,
     ShellbarSearch,
     ShellbarTitle,
-    type ShellbarSize
+    type ShellbarGroupFlexOptions,
+    type ShellbarMenuItem,
+    type ShellbarSize,
+    type ShellbarUserMenuItem
 } from './shellbar';
 
 @Component({
@@ -27,12 +31,18 @@ import {
     ],
     template: `
         <div [style.width.px]="width()">
-            <fd-shellbar [size]="size()" showNavigationButton (navigationButtonClicked)="clicked.set('navigation')">
+            <fd-shellbar
+                [size]="size()"
+                showNavigationButton
+                showBackButton
+                (navigationButtonClicked)="clicked.set('navigation')"
+                (backButtonClicked)="clicked.set('back')"
+            >
                 <fd-shellbar-branding interactiveBranding ariaLabel="Home" (click)="clicked.set('home')">
                     <fd-shellbar-title>Corporate Portal</fd-shellbar-title>
                 </fd-shellbar-branding>
                 @if (context()) {
-                    <fd-shellbar-context-area (contentItemVisibilityChange)="hidden.set($event.length)">
+                    <fd-shellbar-context-area (contentItemVisibilityChange)="hidden.set($event)">
                         <span class="inline-block w-40" fdShellbarHidePriority="1">First</span>
                         <span class="inline-block w-40" fdShellbarHidePriority="2">Second</span>
                     </fd-shellbar-context-area>
@@ -45,7 +55,7 @@ import {
                         [notificationCount]="3"
                         [callback]="notify"
                     />
-                    <fd-shellbar-action glyph="feedback" label="Feedback" />
+                    <fd-shellbar-action glyph="feedback" label="Feedback" [toggled]="toggled()" [callback]="toggle" />
                     <fd-shellbar-action glyph="sys-help" label="Help" />
                 </fd-shellbar-actions>
             </fd-shellbar>
@@ -58,9 +68,45 @@ class Host {
     readonly context = signal(false);
     readonly clicked = signal('');
     readonly searched = signal<string | null>(null);
-    readonly hidden = signal(0);
+    readonly hidden = signal<HTMLElement[]>([]);
+    readonly toggled = signal(false);
     readonly notify = () => this.clicked.set('notifications');
+    readonly toggle = () => this.toggled.update((v) => !v);
 }
+
+@Component({
+    imports: [Shellbar, ShellbarActions, ShellbarAction, ProductMenu],
+    template: `
+        <fd-shellbar [groupFlex]="groupFlex()">
+            <fd-product-menu control="Corporate Portal" [items]="items" closePopoverOnSelect />
+            <fd-shellbar-actions [user]="{ fullName: 'Lisa Miller' }" [userMenu]="userMenu" closePopoverOnSelect>
+                <fd-shellbar-action glyph="bell" label="Notifications" />
+            </fd-shellbar-actions>
+        </fd-shellbar>
+    `
+})
+class MenuHost {
+    readonly picked = signal('');
+    readonly groupFlex = signal<ShellbarGroupFlexOptions | null>(null);
+    readonly items: ShellbarMenuItem[] = [
+        { name: 'Application A', callback: () => this.picked.set('A') },
+        { name: 'Application B', callback: () => this.picked.set('B') }
+    ];
+    readonly userMenu: ShellbarUserMenuItem[] = [
+        { text: 'Settings', callback: () => this.picked.set('Settings') },
+        { text: 'Sign Out', callback: () => this.picked.set('Sign Out') }
+    ];
+}
+
+async function setupMenus() {
+    const fixture = TestBed.createComponent(MenuHost);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    await wait(150);
+    return { fixture, host: fixture.componentInstance, root: fixture.nativeElement as HTMLElement };
+}
+
+const menuItems = () => [...document.querySelectorAll<HTMLElement>('.cdk-overlay-container [role=menuitem]')];
 
 const wait = (ms = 100) => new Promise((r) => setTimeout(r, ms));
 
@@ -149,6 +195,76 @@ describe('Shellbar', () => {
     it('hides context area items by priority when space runs out', async () => {
         const { host } = await setup(460, true);
         await wait();
-        expect(host.hidden()).toBeGreaterThan(0);
+        expect(host.hidden().length).toBeGreaterThan(0);
+    });
+
+    it('contentItemVisibilityChange emits the hidden items and restores them when space returns', async () => {
+        const { host, fixture } = await setup(460, true);
+        await wait();
+        const hidden = host.hidden();
+        // the item with the highest priority number hides first
+        expect(hidden.map((el) => el.textContent)).toEqual(hidden.length === 1 ? ['Second'] : ['Second', 'First']);
+        expect(hidden.every((el) => el.offsetParent === null)).toBe(true);
+        host.width.set(1300);
+        await fixture.whenStable();
+        await wait(200);
+        expect(host.hidden()).toEqual([]);
+        expect(hidden.every((el) => el.offsetParent !== null)).toBe(true);
+    });
+
+    it('a toggled action exposes aria-pressed', async () => {
+        const { host, button, fixture } = await setup(1300);
+        const feedback = button(/^Feedback$/)!;
+        expect(feedback.hasAttribute('aria-pressed')).toBe(false);
+        await userEvent.click(feedback);
+        await fixture.whenStable();
+        expect(host.toggled()).toBe(true);
+        expect(feedback.getAttribute('aria-pressed')).toBe('true');
+    });
+
+    it('the navigation and back buttons emit their events', async () => {
+        const { host, button } = await setup(1300);
+        await userEvent.click(button(/^Navigation$/)!);
+        expect(host.clicked()).toBe('navigation');
+        await userEvent.click(button(/^Back$/)!);
+        expect(host.clicked()).toBe('back');
+    });
+
+    it('the product menu opens and runs the callback of a selected item', async () => {
+        const { host, root } = await setupMenus();
+        const control = [...root.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Corporate Portal')!;
+        await userEvent.click(control);
+        await wait();
+        expect(menuItems().map((i) => i.textContent?.trim())).toEqual(['Application A', 'Application B']);
+        await userEvent.click(menuItems()[1]);
+        await wait();
+        expect(host.picked()).toBe('B');
+        expect(menuItems()).toHaveLength(0);
+    });
+
+    it('the user menu built from [user] and [userMenu] opens and runs callbacks', async () => {
+        const { host, root } = await setupMenus();
+        const avatar = root.querySelector<HTMLElement>('fd-shellbar-user-menu [aria-label="Lisa Miller"]')!;
+        expect(avatar.textContent?.trim()).toBe('LM');
+        await userEvent.click(avatar.closest('button')!);
+        await wait();
+        expect(menuItems().map((i) => i.textContent?.trim())).toEqual(['Settings', 'Sign Out']);
+        await userEvent.click(menuItems()[0]);
+        await wait();
+        expect(host.picked()).toBe('Settings');
+        expect(menuItems()).toHaveLength(0);
+    });
+
+    it('groupFlex lets a group shrink to its content so the others grow', async () => {
+        const { host, root, fixture } = await setupMenus();
+        const product = root.querySelector<HTMLElement>('fd-product-menu')!.parentElement!.parentElement!;
+        const actions = root.querySelector<HTMLElement>('fd-shellbar-actions')!;
+        expect(getComputedStyle(product).minWidth).toBe('auto');
+        expect(getComputedStyle(actions).flexShrink).toBe('0');
+        host.groupFlex.set({ product: { shrink: true, flexBasisAuto: true }, actions: { shrink: true } });
+        await fixture.whenStable();
+        const style = getComputedStyle(product);
+        expect([style.minWidth, style.flexShrink, style.flexGrow, style.flexBasis]).toEqual(['0px', '1', '0', 'auto']);
+        expect(getComputedStyle(actions).flexShrink).toBe('1');
     });
 });

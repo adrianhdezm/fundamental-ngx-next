@@ -75,6 +75,27 @@ export const Types: Story = {
     })
 };
 
+export const Filter: Story = {
+    name: 'Filter',
+    render: () => ({
+        template: frame(`
+            <fd-message-page type="filter">
+                <fd-message-page-title>No matching items found.</fd-message-page-title>
+                <fd-message-page-subtitle>Check the filter settings.</fd-message-page-subtitle>
+            </fd-message-page>`)
+    })
+};
+
+export const NoItems: Story = {
+    name: 'No items',
+    render: () => ({
+        template: frame(`
+            <fd-message-page type="no-items">
+                <fd-message-page-title>No items are currently available.</fd-message-page-title>
+            </fd-message-page>`)
+    })
+};
+
 export const Error: Story = {
     name: 'Error',
     render: () => ({

@@ -393,7 +393,11 @@ export class UserMenuControlElement {
     selector: 'fd-user-menu-body',
     imports: [NgTemplateOutlet],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    host: { '[class]': 'computedClass()' },
+    host: {
+        '[class]': 'computedClass()',
+        // like upstream: clicks inside the menu do not bubble out of it (outside clicks are detected in the capture phase)
+        '(click)': '$event.stopPropagation()'
+    },
     template: `
         <div [class]="level() ? 'hidden' : 'contents'">
             <ng-content select="[fd-user-menu-header], [fdUserMenuHeader]" />

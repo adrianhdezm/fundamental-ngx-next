@@ -1,6 +1,6 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { FileUploader, FileUploaderService, parseFileSize } from './file-uploader';
@@ -45,6 +45,48 @@ async function setup() {
     };
 }
 
+@Component({
+    imports: [FileUploader, ReactiveFormsModule],
+    template: `
+        <div style="width: 600px">
+            <fd-file-uploader
+                ariaLabel="Attachment"
+                placeholder="Select a file"
+                [formControl]="control"
+                [width]="width()"
+                [fileLimit]="fileLimit()"
+                (selectedInvalidFiles)="invalid.set($event)"
+                (onDragEnter)="drags.update((d) => [...d, 'enter'])"
+                (onDragLeave)="drags.update((d) => [...d, 'leave'])"
+            />
+        </div>
+    `
+})
+class OptionsHost {
+    readonly control = new FormControl<File[]>([]);
+    readonly width = signal<string | null>(null);
+    readonly fileLimit = signal<number | null>(null);
+    readonly invalid = signal<File[]>([]);
+    readonly drags = signal<string[]>([]);
+}
+
+async function setupOptions(init: (host: OptionsHost) => void = () => {}) {
+    const fixture = TestBed.createComponent(OptionsHost);
+    init(fixture.componentInstance);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    return {
+        fixture,
+        host: fixture.componentInstance,
+        root,
+        field: root.querySelector<HTMLInputElement>('input[type=text]')!,
+        button: root.querySelector<HTMLButtonElement>('button')!,
+        fileInput: root.querySelector<HTMLInputElement>('input[type=file]')!,
+        dropZone: root.querySelector<HTMLElement>('[fdFileDragnDrop]')!
+    };
+}
+
 describe('parseFileSize', () => {
     it('reads sizes with units', () => {
         expect(parseFileSize('')).toBe(0);
@@ -66,6 +108,20 @@ describe('FileUploaderService', () => {
         );
         expect(result.validFiles!.map((f) => f.name)).toEqual(['a.png']);
         expect(result.invalidFiles!.map((f) => f.name)).toEqual(['b.txt', 'c.PDF']);
+    });
+
+    it('rejects files below minFileSize, alone and between min and max with an extension filter', () => {
+        const service = TestBed.inject(FileUploaderService);
+        const names = (files?: File[]) => files!.map((f) => f.name);
+        const files = [file('tiny.png', 100), file('mid.png', 1500), file('mid.txt', 1500), file('big.png', 3000)];
+
+        const minOnly = service.validateFiles(files, '1 KB', '', null);
+        expect(names(minOnly.validFiles)).toEqual(['mid.png', 'mid.txt', 'big.png']);
+        expect(names(minOnly.invalidFiles)).toEqual(['tiny.png']);
+
+        const range = service.validateFiles(files, '1 KB', '2 KB', '.png');
+        expect(names(range.validFiles)).toEqual(['mid.png']);
+        expect(names(range.invalidFiles)).toEqual(['tiny.png', 'mid.txt', 'big.png']);
     });
 });
 
@@ -108,5 +164,61 @@ describe('FileUploader', () => {
         await fixture.whenStable();
         expect(host.files()).toEqual([]);
         expect(field.value).toBe('');
+    });
+
+    it('disables the field and the button when the form control is disabled', async () => {
+        const { fixture, host, field, button, fileInput } = await setupOptions();
+        const click = vi.spyOn(fileInput, 'click').mockImplementation(() => undefined);
+        host.control.disable();
+        await fixture.whenStable();
+        expect(field.disabled).toBe(true);
+        expect(button.disabled).toBe(true);
+        expect(fileInput.disabled).toBe(true);
+        await userEvent.click(button, { force: true });
+        expect(click).not.toHaveBeenCalled();
+        host.control.enable();
+        await fixture.whenStable();
+        expect(field.disabled).toBe(false);
+        await userEvent.click(button);
+        expect(click).toHaveBeenCalledTimes(1);
+    });
+
+    it('fixes the field to the given width and truncates long names', async () => {
+        const { fixture, host, field, fileInput } = await setupOptions();
+        const grown = field.getBoundingClientRect().width;
+        expect(grown).toBeGreaterThan(300);
+        host.width.set('150px');
+        await fixture.whenStable();
+        expect(field.getBoundingClientRect().width).toBe(150);
+        fileInput.files = transfer([file('a_very_long_file_name_that_does_not_fit_in_the_field.pdf')]).files;
+        fileInput.dispatchEvent(new Event('change'));
+        await fixture.whenStable();
+        expect(field.getBoundingClientRect().width).toBe(150);
+        expect(getComputedStyle(field).textOverflow).toBe('ellipsis');
+        expect(field.scrollWidth).toBeGreaterThan(field.clientWidth);
+        expect(field.title).toBe('a_very_long_file_name_that_does_not_fit_in_the_field.pdf');
+    });
+
+    it('rejects all chosen files when there are more than fileLimit', async () => {
+        const { fixture, host, fileInput } = await setupOptions((h) => h.fileLimit.set(2));
+        fileInput.files = transfer([file('a.png'), file('b.png'), file('c.png')]).files;
+        fileInput.dispatchEvent(new Event('change'));
+        await fixture.whenStable();
+        expect(host.control.value).toEqual([]);
+        expect(host.invalid().map((f) => f.name)).toEqual(['a.png', 'b.png', 'c.png']);
+        fileInput.files = transfer([file('a.png'), file('b.png')]).files;
+        fileInput.dispatchEvent(new Event('change'));
+        await fixture.whenStable();
+        expect(host.control.value!.map((f) => f.name)).toEqual(['a.png', 'b.png']);
+    });
+
+    it('emits onDragEnter and onDragLeave once while dragging over, also across children', async () => {
+        const { host, dropZone, field } = await setupOptions();
+        dropZone.dispatchEvent(new DragEvent('dragenter', { bubbles: true }));
+        field.dispatchEvent(new DragEvent('dragenter', { bubbles: true }));
+        field.dispatchEvent(new DragEvent('dragleave', { bubbles: true }));
+        expect(host.drags()).toEqual(['enter']);
+        dropZone.dispatchEvent(new DragEvent('dragleave', { bubbles: true }));
+        expect(host.drags()).toEqual(['enter', 'leave']);
     });
 });

@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Icon } from '@/ui/icon/icon';
 import { List, ListItem, ListLink, ListTitle } from '@/ui/list/list';
 import { Popover, PopoverBody, PopoverControl } from '@/ui/popover/popover';
@@ -190,7 +191,7 @@ class StoryMpfOverflow {
         <fd-micro-process-flow>
             @for (step of steps; track step.label) {
                 <fd-micro-process-flow-item [state]="step.state">
-                    <fd-popover placement="bottom">
+                    <fd-popover placement="bottom" [bodyAriaLabel]="step.label">
                         <fd-popover-control>
                             <fd-micro-process-flow-icon
                                 fd-micro-process-flow-focusable-item
@@ -260,4 +261,14 @@ export const Overflow: Story = { render: () => ({ template: `<story-mpf-overflow
 export const OtherControls: Story = {
     name: 'Status indicators and popovers',
     render: () => ({ template: `<story-mpf-controls />` })
+};
+
+export const OpenPopover: Story = {
+    name: 'Open: popover',
+    tags: ['!autodocs'],
+    render: OtherControls.render,
+    play: async ({ canvasElement }) => {
+        await userEvent.click(canvasElement.querySelector<HTMLElement>('fd-popover-control > *')!);
+        await waitFor(() => expect(document.querySelector('.cdk-overlay-pane fd-popover-body')).not.toBeNull());
+    }
 };

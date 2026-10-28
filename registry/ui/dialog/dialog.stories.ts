@@ -1,9 +1,14 @@
-import { Component, TemplateRef, afterNextRender, computed, inject, input, signal, viewChild } from '@angular/core';
+import { Component, TemplateRef, computed, inject, input, signal, viewChild } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { BarElement, BarLeft, BarMiddle, BarRight, ButtonBar } from '@/ui/bar/bar';
 import { Button } from '@/ui/button/button';
+import { Checkbox } from '@/ui/checkbox/checkbox';
+import { FormGroup, FormItem, FormLabel } from '@/ui/form/form';
 import { FormControl } from '@/ui/input/input';
+import { LayoutGrid, LayoutGridCol } from '@/ui/layout-grid/layout-grid';
 import { List, ListItem, ListSecondary, ListTitle } from '@/ui/list/list';
+import { MultiInput } from '@/ui/multi-input/multi-input';
 import { Title } from '@/ui/title/title';
 import {
     Dialog,
@@ -94,8 +99,6 @@ function result(ref: DialogRef, set: (text: string) => void): void {
 })
 class StoryDialogTemplate {
     readonly kind = input<'basic' | 'configuration' | 'position' | 'mobile' | 'state'>('basic');
-    /** Index of the action to run on load. */
-    readonly autoOpen = input<number | null>(null);
     protected readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
     protected readonly dialogs = inject(DialogService);
     protected readonly status = signal('');
@@ -175,13 +178,6 @@ class StoryDialogTemplate {
         }
     );
 
-    constructor() {
-        afterNextRender(() => {
-            const action = this.actions()[this.autoOpen() ?? -1];
-            if (action) this.open(action.config, action.after);
-        });
-    }
-
     protected open(config: DialogConfig, after?: (ref: DialogRef) => void): void {
         const ref = this.dialogs.open(this.tpl(), config);
         result(ref, (text) => this.status.set(text));
@@ -258,12 +254,8 @@ class StorySecondDialog {
     `
 })
 class StoryDialogComponent {
-    readonly autoOpen = input(false);
     private readonly dialogs = inject(DialogService);
     protected readonly status = signal('');
-    constructor() {
-        afterNextRender(() => this.autoOpen() && this.open());
-    }
     protected open(): void {
         const ref = this.dialogs.open(StoryDialogContent, {
             data: { title: 'Pineapple Fun Facts' },
@@ -298,14 +290,10 @@ class StoryDialogComponent {
     `
 })
 class StoryDialogObject {
-    readonly autoOpen = input(false);
     private readonly dialogs = inject(DialogService);
     private readonly content = viewChild.required<TemplateRef<unknown>>('content');
     private readonly subHeader = viewChild.required<TemplateRef<unknown>>('subHeader');
     protected readonly status = signal('');
-    constructor() {
-        afterNextRender(() => this.autoOpen() && this.open());
-    }
     protected open(): void {
         let ref: DialogRef;
         const content: DialogDefaultContent = {
@@ -405,7 +393,6 @@ interface Fruit {
     `
 })
 class StoryDialogComplex {
-    readonly autoOpen = input(false);
     private readonly dialogs = inject(DialogService);
     private readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
     protected readonly search = signal('');
@@ -424,9 +411,6 @@ class StoryDialogComplex {
     protected readonly total = computed(() =>
         this.fruits.filter((f) => this.selected().has(f.id)).reduce((sum, f) => sum + f.price, 0)
     );
-    constructor() {
-        afterNextRender(() => this.autoOpen() && this.open());
-    }
     protected toggle(fruit: Fruit): void {
         const next = new Set(this.selected());
         if (!next.delete(fruit.id)) next.add(fruit.id);
@@ -495,6 +479,248 @@ class StoryDialogBackdrop {
     }
 }
 
+/** A form in a dialog: labelled fields in a layout grid, required markers and the paddings as options. */
+@Component({
+    selector: 'story-dialog-form',
+    imports: [...DIALOG, Checkbox, FormControl, FormGroup, FormItem, FormLabel, LayoutGrid, LayoutGridCol],
+    providers: [DialogService],
+    host: { class: 'flex flex-wrap items-center gap-4' },
+    template: `
+        <ng-template fdDialogTemplate let-dialog let-dialogConfig="dialogConfig" #tpl>
+            <fd-dialog [dialogRef]="dialog" [dialogConfig]="dialogConfig">
+                <fd-dialog-header>
+                    <h1 fd-title id="story-dialog-form-title">The History of Pineapple</h1>
+                </fd-dialog-header>
+                <fd-dialog-body>
+                    <fd-form-group>
+                        <div fdFormItem>
+                            <label fdFormLabel for="story-dialog-form-name" colon>Name</label>
+                            <input
+                                fdFormControl
+                                id="story-dialog-form-name"
+                                placeholder="Enter first and last name"
+                                value="Amelia Perry"
+                            />
+                        </div>
+                        <div fdFormItem>
+                            <label fdFormLabel for="story-dialog-form-street" required colon>Street/No.</label>
+                            <fd-layout-grid>
+                                <div fdLayoutGridCol="8">
+                                    <input
+                                        fdFormControl
+                                        id="story-dialog-form-street"
+                                        required
+                                        placeholder="Enter address"
+                                        value="Myrtle St."
+                                    />
+                                </div>
+                                <div fdLayoutGridCol="4">
+                                    <input
+                                        fdFormControl
+                                        aria-label="Street number"
+                                        required
+                                        placeholder="Enter street number"
+                                        value="495"
+                                    />
+                                </div>
+                            </fd-layout-grid>
+                        </div>
+                        <div fdFormItem>
+                            <label fdFormLabel for="story-dialog-form-zip" required colon>ZIP Code/City</label>
+                            <fd-layout-grid>
+                                <div fdLayoutGridCol="4">
+                                    <input
+                                        fdFormControl
+                                        id="story-dialog-form-zip"
+                                        required
+                                        placeholder="Enter ZIP code"
+                                        value="43823"
+                                    />
+                                </div>
+                                <div fdLayoutGridCol="8">
+                                    <input
+                                        fdFormControl
+                                        aria-label="City"
+                                        required
+                                        placeholder="Enter city"
+                                        value="Downtown"
+                                    />
+                                </div>
+                            </fd-layout-grid>
+                        </div>
+                        <div fdFormItem>
+                            <label fdFormLabel for="story-dialog-form-bio" colon>Bio</label>
+                            <textarea fdFormControl id="story-dialog-form-bio" rows="3">
+Grows pineapples on the balcony.</textarea>
+                        </div>
+                    </fd-form-group>
+                </fd-dialog-body>
+                <fd-dialog-footer>
+                    <fd-button-bar variant="emphasized" label="Save" (click)="dialog.close('Save')" />
+                    <fd-button-bar label="Cancel" (click)="dialog.dismiss('Cancel')" />
+                </fd-dialog-footer>
+            </fd-dialog>
+        </ng-template>
+        <fd-checkbox
+            label="Responsive padding"
+            [value]="responsivePadding()"
+            (valueChange)="responsivePadding.set(!!$event)"
+        />
+        <fd-checkbox
+            label="Vertical padding"
+            [value]="verticalPadding()"
+            (valueChange)="verticalPadding.set(!!$event)"
+        />
+        <button fdButton label="Open form" (click)="open()"></button>
+        <p class="m-0 w-full font-sap-font-family text-sap-font-size text-sap-text-color" aria-live="polite">
+            {{ status() }}
+        </p>
+    `
+})
+class StoryDialogForm {
+    private readonly dialogs = inject(DialogService);
+    private readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
+    protected readonly responsivePadding = signal(false);
+    protected readonly verticalPadding = signal(true);
+    protected readonly status = signal('');
+    protected open(): void {
+        const ref = this.dialogs.open(this.tpl(), {
+            width: '30rem',
+            responsivePadding: this.responsivePadding(),
+            verticalPadding: this.verticalPadding(),
+            ariaLabelledBy: 'story-dialog-form-title'
+        });
+        result(ref, (text) => this.status.set(text));
+    }
+}
+
+interface StoryOption {
+    name: string;
+}
+
+/** A dialog with two multi inputs: their lists open in popovers above the dialog. */
+@Component({
+    imports: [...DIALOG, FormItem, FormLabel, MultiInput],
+    template: `
+        <fd-dialog>
+            <fd-dialog-header>
+                <h1 fd-title fd-dialog-title>{{ ref.data.title }}</h1>
+            </fd-dialog-header>
+            <fd-dialog-body>
+                <div class="flex flex-col gap-4">
+                    <div fdFormItem>
+                        <label fdFormLabel for="story-dialog-first-list">The first list of options</label>
+                        <fd-multi-input
+                            inputId="story-dialog-first-list"
+                            placeholder="Search here..."
+                            [dropdownValues]="ref.data.first"
+                            [displayFn]="display"
+                            [(selected)]="first"
+                        />
+                    </div>
+                    <div fdFormItem>
+                        <label fdFormLabel for="story-dialog-second-list">The second list of options</label>
+                        <fd-multi-input
+                            inputId="story-dialog-second-list"
+                            placeholder="Search here..."
+                            [dropdownValues]="ref.data.second"
+                            [displayFn]="display"
+                            [(selected)]="second"
+                        />
+                    </div>
+                </div>
+            </fd-dialog-body>
+            <fd-dialog-footer>
+                <fd-button-bar variant="emphasized" label="Interesting" (click)="ref.close('Interesting')" />
+                <fd-button-bar label="Cancel" (click)="ref.dismiss('Cancel')" />
+            </fd-dialog-footer>
+        </fd-dialog>
+    `
+})
+class StoryDialogPopoverContent {
+    protected readonly ref =
+        inject<DialogRef<{ title: string; first: StoryOption[]; second: StoryOption[] }>>(DialogRef);
+    protected readonly first = signal<unknown[]>([]);
+    protected readonly second = signal<unknown[]>([]);
+    protected readonly display = (option: StoryOption) => option?.name ?? '';
+}
+
+@Component({
+    selector: 'story-dialog-inner-popover',
+    imports: [Button],
+    providers: [DialogService],
+    template: `
+        <button fdButton label="Open from component" (click)="open()"></button>
+        <p class="font-sap-font-family text-sap-font-size text-sap-text-color" aria-live="polite">{{ status() }}</p>
+    `
+})
+class StoryDialogInnerPopover {
+    private readonly dialogs = inject(DialogService);
+    protected readonly status = signal('');
+    protected open(): void {
+        const names = (list: string) => list.split(', ').map((name) => ({ name }));
+        const ref = this.dialogs.open(StoryDialogPopoverContent, {
+            data: {
+                title: 'Pineapple Fun Facts',
+                first: names(
+                    'Photo Voltaic, Settings, Heating Cooling, Competitor, Chalkboard, Database, Passenger Train, World, Shield, Journey Change'
+                ),
+                second: names('Apple, Tomato, Banana, Grapes, Pumpkin, Kiwi, Mango, Cucumber, Garlic, Pear')
+            },
+            width: '25rem',
+            responsivePadding: true
+        });
+        result(ref, (text) => this.status.set(text));
+    }
+}
+
+/** Options of the playground dialog. */
+interface PlaygroundArgs {
+    width: string;
+    draggable: boolean;
+    resizable: boolean;
+    mobile: boolean;
+    backdropClickCloseable: boolean;
+    escKeyCloseable: boolean;
+    hasBackdrop: boolean;
+    verticalPadding: boolean;
+    responsivePadding: boolean;
+}
+
+@Component({
+    selector: 'story-dialog-playground',
+    imports: DIALOG,
+    providers: [DialogService],
+    template: `
+        <ng-template fdDialogTemplate let-dialog let-dialogConfig="dialogConfig" #tpl>
+            <fd-dialog [dialogRef]="dialog" [dialogConfig]="dialogConfig">
+                <fd-dialog-header>
+                    <h1 fd-title fd-dialog-title>Playground Dialog</h1>
+                    <button fd-dialog-close-button title="Close" (click)="dialog.dismiss('Close button')"></button>
+                </fd-dialog-header>
+                <fd-dialog-body>This is the dialog playground body text.</fd-dialog-body>
+                <fd-dialog-footer>
+                    <fd-button-bar variant="emphasized" label="Save" (click)="dialog.close('Save')" />
+                    <fd-button-bar label="Cancel" (click)="dialog.dismiss('Cancel')" />
+                </fd-dialog-footer>
+            </fd-dialog>
+        </ng-template>
+        <button fdButton label="Open dialog" (click)="open()"></button>
+        <p class="font-sap-font-family text-sap-font-size text-sap-text-color" aria-live="polite">{{ status() }}</p>
+    `
+})
+class StoryDialogPlayground {
+    readonly options = input<Partial<PlaygroundArgs>>({});
+    private readonly dialogs = inject(DialogService);
+    private readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
+    protected readonly status = signal('');
+    protected open(): void {
+        const { width, ...flags } = this.options();
+        const ref = this.dialogs.open(this.tpl(), { ...flags, width: width || undefined });
+        result(ref, (text) => this.status.set(text));
+    }
+}
+
 const meta: Meta<Dialog> = {
     title: 'Components/Dialog',
     component: Dialog,
@@ -505,7 +731,10 @@ const meta: Meta<Dialog> = {
                 StoryDialogComponent,
                 StoryDialogObject,
                 StoryDialogComplex,
-                StoryDialogBackdrop
+                StoryDialogBackdrop,
+                StoryDialogForm,
+                StoryDialogInnerPopover,
+                StoryDialogPlayground
             ]
         })
     ],
@@ -569,29 +798,113 @@ export const Backdrop: Story = {
     render: () => ({ template: `<story-dialog-backdrop />` })
 };
 
-/** Opened on load, for visual checks. */
+export const Form: Story = {
+    name: 'Form',
+    render: () => ({ template: `<story-dialog-form />` })
+};
+
+export const InnerPopovers: Story = {
+    name: 'Inner popovers',
+    parameters: {
+        docs: { description: { story: 'The lists of the multi inputs open in popovers above the dialog.' } }
+    },
+    render: () => ({ template: `<story-dialog-inner-popover />` })
+};
+
+export const Playground: StoryObj<PlaygroundArgs> = {
+    args: {
+        width: '25rem',
+        draggable: false,
+        resizable: false,
+        mobile: false,
+        backdropClickCloseable: true,
+        escKeyCloseable: true,
+        hasBackdrop: true,
+        verticalPadding: true,
+        responsivePadding: false
+    },
+    argTypes: { width: { control: 'text' } },
+    render: (args) => ({ props: { options: args }, template: `<story-dialog-playground [options]="options" />` })
+};
+
+/** Clicks the button with this label and waits until the dialog has faded in. */
+async function openDialog(canvasElement: HTMLElement, label: string): Promise<void> {
+    const button = [...canvasElement.querySelectorAll<HTMLElement>('button')].find(
+        (b) => b.textContent!.trim() === label
+    )!;
+    await userEvent.click(button);
+    await waitFor(() => expect(document.querySelectorAll('fd-dialog-container [role=dialog]')).toHaveLength(1));
+    const containers = [...document.querySelectorAll<HTMLElement>('fd-dialog-container')];
+    await Promise.all(containers.flatMap((c) => c.getAnimations().map((a) => a.finished)));
+}
+
 export const OpenTemplate: Story = {
     name: 'Open: template',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-dialog-template [autoOpen]="0" />` })
+    render: TemplateBased.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open from template')
 };
 export const OpenComponent: Story = {
     name: 'Open: component',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-dialog-component [autoOpen]="true" />` })
+    render: ComponentBased.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open from component')
 };
 export const OpenObject: Story = {
     name: 'Open: object',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-dialog-object [autoOpen]="true" />` })
+    render: ObjectBased.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open dialog from object')
 };
 export const OpenComplex: Story = {
     name: 'Open: custom header and footer',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-dialog-complex [autoOpen]="true" />` })
+    render: Complex.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open with custom header and footer')
 };
 export const OpenLoading: Story = {
     name: 'Open: loading',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-dialog-template kind="state" [autoOpen]="3" />` })
+    render: States.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open loading dialog')
+};
+export const OpenPosition: Story = {
+    name: 'Open: position',
+    tags: ['!autodocs'],
+    render: Position.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open in bottom right')
+};
+export const OpenMobile: Story = {
+    name: 'Open: mobile',
+    tags: ['!autodocs'],
+    render: Mobile.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open in mobile mode')
+};
+export const OpenInnerPopover: Story = {
+    name: 'Open: inner popover',
+    tags: ['!autodocs'],
+    render: InnerPopovers.render,
+    play: async ({ canvasElement }) => {
+        await openDialog(canvasElement, 'Open from component');
+        const field = document.querySelector<HTMLElement>('#story-dialog-first-list')!.closest('fd-multi-input')!;
+        await userEvent.click(field.querySelector<HTMLElement>('button[aria-haspopup]')!);
+        await waitFor(() => expect(document.querySelector('[role=listbox] [role=option]')).not.toBeNull());
+        // the list is above the dialog
+        const option = document.querySelector<HTMLElement>('[role=listbox] [role=option]')!.getBoundingClientRect();
+        const hit = document.elementFromPoint(option.left + option.width / 2, option.top + option.height / 2);
+        expect(hit?.closest('[role=listbox]')).not.toBeNull();
+    }
+};
+export const OpenForm: Story = {
+    name: 'Open: form',
+    tags: ['!autodocs'],
+    render: Form.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open form')
+};
+export const OpenPlayground: StoryObj<PlaygroundArgs> = {
+    name: 'Open: playground',
+    tags: ['!autodocs'],
+    args: Playground.args,
+    render: Playground.render,
+    play: ({ canvasElement }) => openDialog(canvasElement, 'Open dialog')
 };

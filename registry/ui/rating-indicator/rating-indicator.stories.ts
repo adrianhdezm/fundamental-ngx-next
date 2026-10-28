@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { FormControl as NgFormControl, ReactiveFormsModule } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { RatingIndicator } from './rating-indicator';
 
 const row = 'flex flex-wrap items-center gap-4 font-sap-font-family text-sap-font-size text-sap-text-color';
@@ -60,7 +61,7 @@ class StoryRatingDefault {
     selector: 'story-rating-sizes',
     imports: [RatingIndicator],
     template: `
-        <div class="flex gap-16">
+        <div class="flex flex-wrap gap-x-16 gap-y-6">
             <div class="flex flex-col gap-2">
                 @for (size of sizes; track size) {
                     <div class="${row}">
@@ -74,6 +75,33 @@ class StoryRatingDefault {
                     <div class="${row}">
                         <span class="w-32" [id]="'ri-d-' + size">Display {{ size }}</span>
                         <fd-rating-indicator displayMode [ariaLabelledBy]="'ri-d-' + size" [size]="size" [value]="2" />
+                    </div>
+                }
+            </div>
+            <div class="flex flex-col gap-2">
+                @for (size of sizes; track size) {
+                    <div class="${row}">
+                        <span class="w-32" [id]="'ri-h-' + size">Halves {{ size }}</span>
+                        <fd-rating-indicator
+                            allowHalves
+                            [ariaLabelledBy]="'ri-h-' + size"
+                            [size]="size"
+                            [value]="2.5"
+                        />
+                    </div>
+                }
+            </div>
+            <div class="flex flex-col gap-2">
+                @for (size of sizes; track size) {
+                    <div class="${row}">
+                        <span class="w-32" [id]="'ri-t-' + size">Total ratings {{ size }}</span>
+                        <fd-rating-indicator
+                            showDynamicText
+                            [ariaLabelledBy]="'ri-t-' + size"
+                            [size]="size"
+                            [value]="3"
+                            [totalRatings]="111"
+                        />
                     </div>
                 }
             </div>
@@ -104,6 +132,19 @@ class StoryRatingSizes {
                 />
             </div>
             <div class="${row}">
+                <span class="${label}" id="ri-r6">7 stars, votes per rating</span>
+                <fd-rating-indicator
+                    ariaLabelledBy="ri-r6"
+                    [indicatorCapacity]="7"
+                    displayAllRatings
+                    [ratings]="ratingsOfSeven"
+                />
+            </div>
+            <div class="${row}">
+                <span class="${label}" id="ri-r7">Wrong ratings data (an array)</span>
+                <fd-rating-indicator ariaLabelledBy="ri-r7" size="lg" displayAllRatings [ratings]="wrongRatings" />
+            </div>
+            <div class="${row}">
                 <span class="${label}" id="ri-r3">Average and total given</span>
                 <fd-rating-indicator ariaLabelledBy="ri-r3" nonInteractive [ratingAverage]="3.2" [totalRatings]="126" />
             </div>
@@ -132,6 +173,9 @@ class StoryRatingSizes {
 })
 class StoryRatingRatings {
     protected readonly ratings = { 1: 4, 2: 2, 3: 9, 4: 23, 5: 41 };
+    protected readonly ratingsOfSeven = { 1: 1, 2: 100, 5: 1, 7: 10 };
+    /** Upstream's example of wrong data: an array is read as votes per index. */
+    protected readonly wrongRatings: Record<number, number> = [1, 2, 3, 4, 5];
 }
 
 const meta: Meta<RatingIndicator> = {
@@ -166,4 +210,20 @@ export const Sizes: Story = { name: 'Sizes and display mode', render: () => ({ t
 export const Ratings: Story = {
     name: 'Ratings and custom icons',
     render: () => ({ template: `<story-rating-ratings />` })
+};
+
+/** Hovers the number of votes and waits for the votes per rating. */
+async function openVotes(canvasElement: HTMLElement): Promise<void> {
+    await userEvent.hover(canvasElement.querySelector<HTMLElement>('fd-rating-indicator a')!);
+    await waitFor(() => expect(document.querySelector('.cdk-overlay-pane fd-popover-body ul li')).not.toBeNull());
+}
+
+export const OpenVotes: Story = {
+    name: 'Open: Votes per rating',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { ratings: { 1: 4, 2: 2, 3: 9, 4: 23, 5: 41 } },
+        template: `<fd-rating-indicator ariaLabel="Product rating" displayMode displayAllRatings allowHalves [ratings]="ratings" />`
+    }),
+    play: ({ canvasElement }) => openVotes(canvasElement)
 };

@@ -4,6 +4,7 @@
  * Modified for fundamental-ngx-registry: rewritten with Angular signals, the Angular CDK and Tailwind CSS.
  * SPDX-License-Identifier: Apache-2.0
  */
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { NgTemplateOutlet } from '@angular/common';
 import {
     ChangeDetectionStrategy,
@@ -17,11 +18,13 @@ import {
     computed,
     contentChild,
     contentChildren,
+    effect,
     inject,
     input,
     output,
     signal,
-    viewChild
+    viewChild,
+    viewChildren
 } from '@angular/core';
 import { cn, type ClassValue } from '@/lib/utils';
 import { type AvatarSize } from '@/ui/avatar/avatar';
@@ -150,6 +153,14 @@ export class AvatarGroupOverflowList {
     protected readonly heading = computed(() => this.selected()?.fdAvatarGroupItemTitle() ?? this.title() ?? '');
     private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
+    constructor() {
+        // Escape closes the popover even when the content (e.g. a details template) stops its propagation
+        const group = inject(AvatarGroup, { optional: true });
+        const onKeydown = (event: KeyboardEvent) => event.key === 'Escape' && group?.closePopovers();
+        this.element.addEventListener('keydown', onKeydown, true);
+        inject(DestroyRef).onDestroy(() => this.element.removeEventListener('keydown', onKeydown, true));
+    }
+
     protected open(item: AvatarGroupItem): void {
         if (!item.details()) return;
         this.selected.set(item);
@@ -189,11 +200,22 @@ export class AvatarGroupOverflowList {
     host: { '[class]': 'computedClass()' },
     template: `
         @if (type() === 'individual') {
-            <div #row role="list" [attr.aria-label]="ariaLabel() || 'Individual avatar group'" [class]="rowClass()">
+            <div
+                #row
+                role="list"
+                [attr.aria-label]="ariaLabel() || 'Individual avatar group'"
+                [class]="rowClass()"
+                (focusin)="announcePosition($event)"
+            >
                 @for (item of visibleItems(); track item) {
                     <div role="listitem" data-avatar-group-item class="flex">
                         @if (item.details()) {
-                            <fd-popover [noArrow]="false" [placement]="placement()">
+                            <!-- the details dialog is named by the title of the avatar -->
+                            <fd-popover
+                                [noArrow]="false"
+                                [placement]="effectivePlacement()"
+                                [bodyAriaLabel]="item.fdAvatarGroupItemTitle()"
+                            >
                                 <fd-popover-control>
                                     <div
                                         role="button"
@@ -215,7 +237,7 @@ export class AvatarGroupOverflowList {
                     <div role="listitem" data-avatar-group-overflow class="flex">
                         <fd-popover
                             [noArrow]="false"
-                            [placement]="placement()"
+                            [placement]="effectivePlacement()"
                             [bodyAriaLabel]="overflowPopoverTitle()"
                         >
                             <fd-popover-control>
@@ -239,7 +261,7 @@ export class AvatarGroupOverflowList {
                 }
             </div>
         } @else {
-            <fd-popover [noArrow]="false" [placement]="placement()" [bodyAriaLabel]="overflowPopoverTitle()">
+            <fd-popover [noArrow]="false" [placement]="effectivePlacement()" [bodyAriaLabel]="overflowPopoverTitle()">
                 <fd-popover-control>
                     <div #row role="button" tabindex="0" aria-haspopup="dialog" [class]="rowClass()">
                         <span class="sr-only-sap">{{
@@ -300,9 +322,11 @@ export class AvatarGroup {
     readonly orientation = input<AvatarGroupOrientation>('horizontal');
     /** Upper limit of visible avatars; the rest go to the overflow popover. */
     readonly maxVisibleItems = input<number | null | undefined>();
-    readonly overflowButtonShape = input<'circle' | 'square'>('circle');
+    /** Shape of the default overflow button; use circle next to circle avatars. */
+    readonly overflowButtonShape = input<'circle' | 'square'>('square');
     readonly overflowPopoverTitle = input<string | null | undefined>();
     readonly overflowHeadingLevel = input(5);
+    /** Placement of the popovers; by default below the group, or to the right of a vertical group. */
     readonly placement = input<Placement | undefined>(undefined);
     readonly ariaLabel = input<string | null | undefined>();
     readonly userClass = input<ClassValue>('', { alias: 'class' });
@@ -310,11 +334,16 @@ export class AvatarGroup {
     readonly visibleCountChange = output<number>();
 
     protected readonly focusRing = FOCUS_RING;
+    protected readonly effectivePlacement = computed<Placement>(
+        () => this.placement() ?? (this.orientation() === 'vertical' ? 'right' : 'bottom')
+    );
     readonly items = contentChildren(AvatarGroupItem);
     protected readonly customButton = contentChild(AvatarGroupOverflowButton);
     protected readonly customBody = contentChild(AvatarGroupOverflowBody);
     private readonly row = viewChild<ElementRef<HTMLElement>>('row');
+    private readonly popovers = viewChildren(Popover);
     private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    private readonly announcer = inject(LiveAnnouncer);
 
     /** Measured widths (including spacing) of avatars and the overflow button. */
     private readonly widths = new Map<AvatarGroupItem | 'overflow', number>();
@@ -341,17 +370,16 @@ export class AvatarGroup {
             visible.push(item);
         }
         let hidden = regular.slice(visible.length);
-        // make room for the overflow button
+        // make room for the overflow button: in the slots of maxVisibleItems and in the width
         if (hidden.length && visible.length) {
             const overflow = this.widths.get('overflow') ?? this.averageWidth();
             while (
                 visible.length &&
-                (max != null ? visible.length + forced.length >= max : used + overflow > available)
+                ((max != null && visible.length + forced.length >= max) || used + overflow > available)
             ) {
                 const moved = visible.pop()!;
                 used -= width(moved);
                 hidden = [moved, ...hidden];
-                if (max != null) break;
             }
         }
         return { visible: [...forced, ...visible], hidden };
@@ -366,6 +394,24 @@ export class AvatarGroup {
             observer.observe(this.host);
             destroyRef.onDestroy(() => observer.disconnect());
         });
+        // after each measurement, and when maxVisibleItems, the orientation or the items change
+        effect(() => {
+            const count = this.visibleItems().length;
+            if (this.measured()) this.visibleCountChange.emit(count);
+        });
+    }
+
+    /** Closes the open popover of the group (details, overflow or group popover). */
+    closePopovers(): void {
+        for (const popover of this.popovers()) if (popover.isOpen()) popover.close();
+    }
+
+    /** Announces "2 of 6" when an avatar (or the overflow button) of an individual group gets the focus. */
+    protected announcePosition(event: FocusEvent): void {
+        const row = event.currentTarget as HTMLElement;
+        const items = [...row.querySelectorAll<HTMLElement>(':scope > [role=listitem]')];
+        const index = items.findIndex((item) => item.contains(event.target as Node));
+        if (index >= 0) this.announcer.announce(`${index + 1} of ${items.length}`);
     }
 
     private averageWidth(): number {
@@ -388,13 +434,13 @@ export class AvatarGroup {
         if (overflow) this.widths.set('overflow', overflow.getBoundingClientRect().width + gap);
         this.available.set(this.host.clientWidth);
         this.measured.update((n) => n + 1);
-        this.visibleCountChange.emit(this.visibleItems().length);
     }
 
     protected readonly computedClass = computed(() =>
         cn(
             'm-0 box-border flex max-w-full p-0',
-            this.orientation() === 'vertical' && 'h-full flex-col',
+            // the column hugs its avatars, so a popover opening to the right sits next to them
+            this.orientation() === 'vertical' && 'h-full flex-col items-start',
             this.userClass()
         )
     );

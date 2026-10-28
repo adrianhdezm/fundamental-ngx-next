@@ -1,5 +1,5 @@
-import { JsonPipe } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { AsyncPipe, JsonPipe } from '@angular/common';
+import { Component, TemplateRef, inject, signal, viewChild } from '@angular/core';
 import {
     FormControl as NgFormControl,
     FormGroup as NgFormGroup,
@@ -7,7 +7,20 @@ import {
     ReactiveFormsModule
 } from '@angular/forms';
 import { argsToTemplate, moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { of } from 'rxjs';
+import { expect, userEvent, waitFor } from 'storybook/test';
+import { ButtonBar } from '@/ui/bar/bar';
+import { Button } from '@/ui/button/button';
 import { ContentDensityDirective } from '@/ui/content-density/content-density';
+import {
+    Dialog,
+    DialogBody,
+    DialogFooter,
+    DialogHeader,
+    DialogService,
+    DialogTemplate,
+    DialogTitle
+} from '@/ui/dialog/dialog';
 import { FormItem, FormLabel } from '@/ui/form/form';
 import { FormMessage } from '@/ui/form/form-message';
 import { Icon } from '@/ui/icon/icon';
@@ -20,6 +33,7 @@ import {
     ListThumbnail,
     ListTitle
 } from '@/ui/list/list';
+import { Title } from '@/ui/title/title';
 import { Combobox, ComboboxItemTemplate, type ComboboxGroupFunction } from './combobox';
 
 const FRUITS = [
@@ -402,6 +416,131 @@ class StoryComboboxMobile {
     protected readonly two = signal('');
 }
 
+@Component({
+    selector: 'story-combobox-behaviour',
+    imports: [Combobox, FormItem, FormLabel, FormsModule, AsyncPipe],
+    template: `
+        <div class="flex max-w-lg flex-col gap-4">
+            <div fdFormItem>
+                <label fdFormLabel for="cb-filter">Custom filter (case-sensitive start of the text)</label>
+                <fd-combobox
+                    inputId="cb-filter"
+                    placeholder="Type to filter the list..."
+                    [filterFn]="startsWith"
+                    [dropdownValues]="fruits"
+                    [(ngModel)]="filtered"
+                />
+            </div>
+            <div fdFormItem>
+                <label fdFormLabel for="cb-open">Open state control</label>
+                <fd-combobox
+                    inputId="cb-open"
+                    maxHeight="250px"
+                    placeholder="Combobox with open state subscription"
+                    [dropdownValues]="fruits"
+                    (openChange)="openLog.set([...openLog(), $event ? 'Opened' : 'Closed'])"
+                    [(ngModel)]="opened"
+                />
+                <small class="${text}">openChange: {{ openLog().join(', ') || 'none yet' }}</small>
+            </div>
+            <div fdFormItem>
+                <label fdFormLabel for="cb-async">Observable values (async pipe)</label>
+                <fd-combobox
+                    inputId="cb-async"
+                    placeholder="Type some text..."
+                    [dropdownValues]="values$ | async"
+                    [(ngModel)]="asyncTerm"
+                />
+                <small class="${text}">Search term: {{ asyncTerm() }}</small>
+            </div>
+        </div>
+    `
+})
+class StoryComboboxBehaviour {
+    protected readonly fruits = ['Apple', 'Banana', 'Kiwi', 'Strawberry', 'Tomato', 'Pineapple'];
+    protected readonly values$ = of([
+        'Apple',
+        'Pineapple',
+        'Tomato',
+        'Grapes',
+        'Pumpkin',
+        'Banana',
+        'Kiwi',
+        'Raspberries',
+        'Watermelons',
+        'Nectarines',
+        'Oranges'
+    ]);
+    protected readonly startsWith = (values: string[], term: string) =>
+        term ? values.filter((value) => value.startsWith(term)) : values;
+    protected readonly filtered = signal('');
+    protected readonly opened = signal('');
+    protected readonly asyncTerm = signal('');
+    protected readonly openLog = signal<string[]>([]);
+}
+
+@Component({
+    selector: 'story-combobox-dialog',
+    imports: [
+        Combobox,
+        FormItem,
+        FormLabel,
+        FormsModule,
+        Button,
+        ButtonBar,
+        Dialog,
+        DialogHeader,
+        DialogBody,
+        DialogFooter,
+        DialogTemplate,
+        DialogTitle,
+        Title
+    ],
+    template: `
+        <ng-template fdDialogTemplate let-dialog #tpl>
+            <fd-dialog [dialogRef]="dialog">
+                <fd-dialog-header>
+                    <h1 fd-title fd-dialog-title>Combobox inside a dialog</h1>
+                </fd-dialog-header>
+                <fd-dialog-body>
+                    <div fdFormItem>
+                        <label fdFormLabel for="cb-dialog">Fruit</label>
+                        <fd-combobox
+                            inputId="cb-dialog"
+                            maxHeight="250px"
+                            width="300px"
+                            placeholder="Type some text..."
+                            [dropdownValues]="fruits"
+                            [(ngModel)]="term"
+                        />
+                    </div>
+                    <small class="${text}">Search term: {{ term() }}</small>
+                </fd-dialog-body>
+                <fd-dialog-footer>
+                    <fd-button-bar variant="emphasized" label="OK" (click)="dialog.close('Continue')" />
+                    <fd-button-bar label="Cancel" (click)="dialog.dismiss('Cancel')" />
+                </fd-dialog-footer>
+            </fd-dialog>
+        </ng-template>
+        <button fdButton label="Open dialog" (click)="open()"></button>
+        <p class="${text}">{{ reason() }}</p>
+    `
+})
+class StoryComboboxDialog {
+    protected readonly fruits = ['Apple', 'Pineapple', 'Banana', 'Kiwi', 'Strawberry'];
+    protected readonly term = signal('');
+    protected readonly reason = signal('');
+    private readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
+    private readonly dialogs = inject(DialogService);
+
+    protected open(): void {
+        this.dialogs.open(this.tpl(), { responsivePadding: true }).afterClosed.subscribe({
+            next: (result) => this.reason.set(`Dialog closed with result: ${result}`),
+            error: (reason) => this.reason.set(`Dialog dismissed with result: ${reason}`)
+        });
+    }
+}
+
 const meta: Meta<Combobox> = {
     title: 'Components/Combobox',
     component: Combobox,
@@ -414,7 +553,9 @@ const meta: Meta<Combobox> = {
                 StoryComboboxSearch,
                 StoryComboboxTemplates,
                 StoryComboboxForms,
-                StoryComboboxMobile
+                StoryComboboxMobile,
+                StoryComboboxBehaviour,
+                StoryComboboxDialog
             ]
         })
     ],
@@ -462,3 +603,61 @@ export const Templates: Story = {
 };
 export const Forms: Story = { render: () => ({ template: `<story-combobox-forms />` }) };
 export const Mobile: Story = { render: () => ({ template: `<story-combobox-mobile />` }) };
+export const Behaviour: Story = {
+    name: 'Custom filter, open state and async values',
+    render: () => ({ template: `<story-combobox-behaviour />` })
+};
+export const InsideDialog: Story = {
+    name: 'Inside a dialog',
+    render: () => ({ template: `<story-combobox-dialog />` })
+};
+
+/** Clicks the button of the combobox (or, in mobile mode, its field) and waits for the list. */
+async function openCombobox(canvasElement: HTMLElement, selector: string, popup: string): Promise<void> {
+    const combobox = canvasElement.querySelector<HTMLElement>(selector)!;
+    const target = combobox.hasAttribute('mobile')
+        ? combobox.querySelector<HTMLElement>('input')!
+        : combobox.querySelector<HTMLElement>('button[aria-haspopup]')!;
+    await userEvent.click(target);
+    await waitFor(() => expect(document.querySelector(popup)).not.toBeNull());
+    await waitFor(() =>
+        expect(combobox.querySelector('input[role=combobox]')!.getAttribute('aria-expanded')).toBe('true')
+    );
+}
+
+export const OpenDropdown: Story = {
+    name: 'Open: dropdown',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-combobox-standard />` }),
+    play: ({ canvasElement }) => openCombobox(canvasElement, 'fd-combobox', '[role=listbox] [role=option]')
+};
+export const OpenGroups: Story = {
+    name: 'Open: groups',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-combobox-templates />` }),
+    play: ({ canvasElement }) =>
+        openCombobox(canvasElement, 'fd-combobox:has(#cb-tpl-4)', '[role=listbox] [role=group] [role=option]')
+};
+export const OpenListMessage: Story = {
+    name: 'Open: list message',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-combobox-forms />` }),
+    play: ({ canvasElement }) => openCombobox(canvasElement, 'fd-combobox', '[role=listbox] [fdListMessage]')
+};
+export const OpenInsideDialog: Story = {
+    name: 'Open: inside a dialog',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-combobox-dialog />` }),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(canvasElement.querySelector<HTMLElement>('button')!);
+        await waitFor(() => expect(document.querySelector('[role=dialog] fd-combobox')).not.toBeNull());
+        await openCombobox(document.body, '[role=dialog] fd-combobox', '[role=listbox] [role=option]');
+    }
+};
+export const OpenMobile: Story = {
+    name: 'Open: mobile dialog',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-combobox-mobile />` }),
+    play: ({ canvasElement }) =>
+        openCombobox(canvasElement, 'fd-combobox', '[role=dialog] [role=listbox] [role=option]')
+};

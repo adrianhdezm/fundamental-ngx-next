@@ -1,8 +1,11 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, TemplateRef, computed, inject, input, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
-import { Bar, BarElement, BarRight } from '@/ui/bar/bar';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { Bar, BarElement, BarRight, ButtonBar } from '@/ui/bar/bar';
 import { Button } from '@/ui/button/button';
+import { Dialog, DialogBody, DialogFooter, DialogHeader, DialogService, DialogTemplate } from '@/ui/dialog/dialog';
+import { Skeleton } from '@/ui/skeleton/skeleton';
 import { FormItem, FormLabel } from '@/ui/form/form';
 import { FormControl } from '@/ui/input/input';
 import { Link } from '@/ui/link/link';
@@ -294,10 +297,274 @@ class StoryWizardNarrow {
     }
 }
 
+/** Upstream's customizable example: solid content background, mixed sizes, compact next-step buttons. */
+@Component({
+    selector: 'story-wizard-customizable',
+    imports: [...PARTS, Bar, BarRight, ButtonBar],
+    template: `
+        <fd-wizard contentHeight="20rem" [appendToWizard]="false">
+            <fd-wizard-navigation>
+                <ul fd-wizard-progress-bar size="sm" aria-label="Wizard steps">
+                    @for (step of steps; track step; let i = $index) {
+                        <li fd-wizard-step [status]="status()[i]" (statusChange)="sync(i, $event)" [label]="step">
+                            @if (i === 0) {
+                                <fd-wizard-step-indicator glyph="accept" />
+                            } @else {
+                                <fd-wizard-step-indicator>{{ i + 1 }}</fd-wizard-step-indicator>
+                            }
+                            <fd-wizard-content size="md" [contentBackground]="i === 0 ? 'solid' : null">
+                                <h3 fdTitle headerSize="4" class="mb-4">{{ i + 1 }}. {{ step }}</h3>
+                                <p class="m-0">${LOREM}</p>
+                                @if (i < steps.length - 1) {
+                                    <fd-wizard-next-step>
+                                        <button
+                                            fdButton
+                                            data-density="compact"
+                                            variant="emphasized"
+                                            [label]="'Go to step ' + (i + 2)"
+                                            (click)="go(i + 1)"
+                                        ></button>
+                                    </fd-wizard-next-step>
+                                }
+                            </fd-wizard-content>
+                        </li>
+                    }
+                </ul>
+            </fd-wizard-navigation>
+            <div fd-bar barDesign="footer">
+                <div fd-bar-right>
+                    <fd-button-bar variant="emphasized" label="Save" />
+                    <fd-button-bar label="Cancel" />
+                </div>
+            </div>
+        </fd-wizard>
+    `
+})
+class StoryWizardCustomizable {
+    protected readonly steps = ['Solid background', 'Medium content', 'Last step'];
+    protected readonly status = signal(statuses(3, 0));
+
+    protected go(step: number): void {
+        this.status.set(statuses(this.steps.length, step));
+    }
+
+    protected sync(index: number, status: WizardStepStatus): void {
+        if (status === 'current') this.go(index);
+    }
+}
+
+/** Upstream's mobile example: a small wizard with a floating footer and floating next-step buttons. */
+@Component({
+    selector: 'story-wizard-mobile',
+    imports: [...PARTS, Bar, BarRight, ButtonBar],
+    template: `
+        <div class="relative max-w-[24rem] border border-solid border-sap-group-title-border-color">
+            <fd-wizard contentHeight="24rem" [appendToWizard]="false">
+                <fd-wizard-navigation>
+                    <ul fd-wizard-progress-bar size="sm" aria-label="Mobile wizard steps">
+                        @for (step of steps; track step; let i = $index) {
+                            <li fd-wizard-step [status]="status()[i]" (statusChange)="sync(i, $event)" [label]="step">
+                                <fd-wizard-step-indicator>{{ i + 1 }}</fd-wizard-step-indicator>
+                                <fd-wizard-content size="sm">
+                                    <h3 fdTitle headerSize="4" class="mb-4">{{ i + 1 }}. {{ step }}</h3>
+                                    <p class="m-0">${LOREM}</p>
+                                    <fd-wizard-next-step floating>
+                                        <button
+                                            fdButton
+                                            variant="emphasized"
+                                            [label]="i < steps.length - 1 ? 'Go to step ' + (i + 2) : 'Submit'"
+                                            (click)="go(i + 1)"
+                                        ></button>
+                                    </fd-wizard-next-step>
+                                </fd-wizard-content>
+                            </li>
+                        }
+                    </ul>
+                </fd-wizard-navigation>
+                <div fd-bar barDesign="floating-footer">
+                    <div fd-bar-right>
+                        <fd-button-bar variant="emphasized" label="Save" />
+                        <fd-button-bar label="Cancel" />
+                    </div>
+                </div>
+            </fd-wizard>
+        </div>
+    `
+})
+class StoryWizardMobile {
+    protected readonly steps = ['Account', 'Profile', 'Review'];
+    protected readonly status = signal(statuses(3, 0));
+
+    protected go(step: number): void {
+        if (step < this.steps.length) this.status.set(statuses(this.steps.length, step));
+    }
+
+    protected sync(index: number, status: WizardStepStatus): void {
+        if (status === 'current') this.go(index);
+    }
+}
+
+/** Upstream's dialog example: current step only, a visible summary step and the actions in the footer. */
+@Component({
+    selector: 'story-wizard-dialog',
+    imports: [
+        ...PARTS,
+        Dialog,
+        DialogHeader,
+        DialogBody,
+        DialogFooter,
+        DialogTemplate,
+        ButtonBar,
+        FormsModule,
+        FormItem,
+        FormLabel,
+        FormControl
+    ],
+    providers: [DialogService],
+    template: `
+        <ng-template fdDialogTemplate let-dialog let-dialogConfig="dialogConfig" #tpl>
+            <fd-dialog [dialogRef]="dialog" [dialogConfig]="dialogConfig">
+                <fd-dialog-header>
+                    <h2 fdTitle headerSize="2">Checkout</h2>
+                </fd-dialog-header>
+                <fd-dialog-body>
+                    <fd-wizard contentHeight="18rem" [appendToWizard]="false" displaySummaryStep ariaLabel="Checkout">
+                        <fd-wizard-navigation>
+                            <ul fd-wizard-progress-bar size="sm" aria-label="Checkout steps">
+                                @for (step of steps; track step; let i = $index) {
+                                    <li
+                                        fd-wizard-step
+                                        [status]="status()[i]"
+                                        (statusChange)="sync(i, $event)"
+                                        [label]="step"
+                                        [isSummary]="i === steps.length - 1"
+                                    >
+                                        <fd-wizard-step-indicator>{{ i + 1 }}</fd-wizard-step-indicator>
+                                        <fd-wizard-content size="sm">
+                                            <h3 fdTitle headerSize="4" class="mb-4">{{ i + 1 }}. {{ step }}</h3>
+                                            @if (i === 1) {
+                                                <div fd-form-item>
+                                                    <label fd-form-label required for="wizard-dialog-name"
+                                                        >Full name</label
+                                                    >
+                                                    <input
+                                                        fdFormControl
+                                                        id="wizard-dialog-name"
+                                                        [(ngModel)]="name"
+                                                        autocomplete="off"
+                                                    />
+                                                </div>
+                                            } @else if (i === steps.length - 1) {
+                                                <p class="m-0">Customer: {{ name || '-' }}</p>
+                                            } @else {
+                                                <p class="m-0">${LOREM}</p>
+                                            }
+                                        </fd-wizard-content>
+                                    </li>
+                                }
+                            </ul>
+                        </fd-wizard-navigation>
+                    </fd-wizard>
+                </fd-dialog-body>
+                <fd-dialog-footer>
+                    @if (current() > 0) {
+                        <fd-button-bar label="Previous step" (click)="go(current() - 1)" />
+                    }
+                    @if (current() < steps.length - 1) {
+                        <fd-button-bar
+                            variant="emphasized"
+                            [label]="current() === steps.length - 2 ? 'Review' : 'Next step'"
+                            [disabled]="current() === 1 && !name"
+                            (click)="go(current() + 1)"
+                        />
+                    } @else {
+                        <fd-button-bar variant="emphasized" label="Finish" (click)="dialog.close('Finished')" />
+                    }
+                    <fd-button-bar label="Cancel" (click)="dialog.dismiss('Cancel')" />
+                </fd-dialog-footer>
+            </fd-dialog>
+        </ng-template>
+        <div class="p-4">
+            <button fdButton label="Open wizard in dialog" (click)="open()"></button>
+            <p class="font-sap-font-family text-sap-font-size text-sap-text-color" aria-live="polite">{{ result() }}</p>
+        </div>
+    `
+})
+class StoryWizardDialog {
+    protected readonly steps = ['Product Type', 'Customer Information', 'Payment Details', 'Summary'];
+    protected readonly status = signal(statuses(4, 0));
+    protected readonly current = computed(() => this.status().indexOf('current'));
+    protected readonly result = signal('');
+    protected name = '';
+    private readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
+    private readonly dialogs = inject(DialogService);
+
+    protected open(): void {
+        this.go(0);
+        this.dialogs.open(this.tpl(), { width: '48rem', ariaLabel: 'Checkout' }).afterClosed.subscribe({
+            next: (r) => this.result.set(`Wizard closed: ${r}`),
+            error: (r) => this.result.set(`Wizard dismissed: ${r}`)
+        });
+    }
+
+    protected go(step: number): void {
+        this.status.set(statuses(this.steps.length, step));
+    }
+
+    protected sync(index: number, status: WizardStepStatus): void {
+        if (status === 'current' && index !== this.current()) this.go(index);
+    }
+}
+
+/** Upstream's loading example: skeletons in place of the step indicators and the content. */
+@Component({
+    selector: 'story-wizard-loading',
+    imports: [...PARTS, Bar, BarRight, ButtonBar, Skeleton],
+    template: `
+        <fd-wizard contentHeight="16rem" ariaLabel="Loading wizard">
+            <fd-wizard-navigation>
+                <ul fd-wizard-progress-bar size="lg" aria-label="Loading steps">
+                    @for (i of [0, 1, 2]; track i) {
+                        <li
+                            fd-wizard-step
+                            [status]="i === 0 ? 'current' : 'upcoming'"
+                            [ariaLabel]="'Loading step ' + (i + 1)"
+                        >
+                            <fd-skeleton type="rectangle" width="2rem" height="2rem" />
+                            <fd-wizard-content size="lg">
+                                <fd-skeleton type="text" width="60%" />
+                            </fd-wizard-content>
+                        </li>
+                    }
+                </ul>
+            </fd-wizard-navigation>
+            <div fd-bar barDesign="footer">
+                <div fd-bar-right>
+                    <fd-button-bar label="Save" disabled />
+                    <fd-button-bar label="Cancel" />
+                </div>
+            </div>
+        </fd-wizard>
+    `
+})
+class StoryWizardLoading {}
+
 const meta: Meta<Wizard> = {
     title: 'Components/Wizard',
     component: Wizard,
-    decorators: [moduleMetadata({ imports: [StoryWizardDefault, StoryWizardBranching, StoryWizardNarrow] })],
+    decorators: [
+        moduleMetadata({
+            imports: [
+                StoryWizardDefault,
+                StoryWizardBranching,
+                StoryWizardNarrow,
+                StoryWizardCustomizable,
+                StoryWizardMobile,
+                StoryWizardDialog,
+                StoryWizardLoading
+            ]
+        })
+    ],
     parameters: {
         layout: 'fullscreen',
         docs: {
@@ -325,4 +592,47 @@ export const Branching: Story = {
 export const Narrow: Story = {
     name: 'Stacked steps and a footer',
     render: () => ({ template: `<story-wizard-narrow />` })
+};
+export const Customizable: Story = {
+    name: 'Customizable',
+    render: () => ({ template: `<story-wizard-customizable />` })
+};
+export const Mobile: Story = {
+    name: 'Mobile, floating footer',
+    render: () => ({ template: `<story-wizard-mobile />` })
+};
+export const InDialog: Story = {
+    name: 'In a dialog',
+    render: () => ({ template: `<story-wizard-dialog />` })
+};
+export const Loading: Story = {
+    name: 'Loading',
+    render: () => ({ template: `<story-wizard-loading />` })
+};
+export const OpenDialog: Story = {
+    name: 'Open: dialog',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-wizard-dialog />` }),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open wizard in dialog' }));
+        await waitFor(() =>
+            expect(document.querySelector('fd-dialog-container [role=dialog] fd-wizard')).not.toBeNull()
+        );
+        const containers = [...document.querySelectorAll<HTMLElement>('fd-dialog-container')];
+        await Promise.all(containers.flatMap((c) => c.getAnimations().map((a) => a.finished)));
+    }
+};
+export const OpenStacked: Story = {
+    name: 'Open: stacked steps',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-wizard-narrow />` }),
+    play: async ({ canvasElement }) => {
+        let trigger: HTMLElement | null = null;
+        await waitFor(() => {
+            trigger = canvasElement.querySelector<HTMLElement>('fd-wizard-step-indicator [aria-haspopup="menu"]');
+            expect(trigger).not.toBeNull();
+        });
+        await userEvent.click(trigger!);
+        await waitFor(() => expect(document.querySelector('.cdk-overlay-pane fd-action-sheet-body')).not.toBeNull());
+    }
 };

@@ -1,8 +1,16 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import { Avatar, avatarInitials, labelColorAccent, type AvatarSize, type ColorAccent } from './avatar';
+import { iconGlyphChar } from '@/ui/icon/icon';
+import {
+    Avatar,
+    avatarInitials,
+    labelColorAccent,
+    type AvatarSize,
+    type AvatarValueState,
+    type ColorAccent
+} from './avatar';
 
 const IMAGE = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><rect width="8" height="8" fill="red"/></svg>')}`;
 const BACKUP = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><rect width="8" height="8" fill="blue"/></svg>')}`;
@@ -24,6 +32,10 @@ const BROKEN = 'data:image/png;base64,AAAA';
             [tile]="tile()"
             [transparent]="transparent()"
             [colorAccent]="colorAccent()"
+            [colorIndication]="colorIndication()"
+            [contain]="contain()"
+            [placeholder]="placeholder()"
+            [valueState]="valueState()"
             [clickable]="clickable()"
             [zoomGlyph]="zoomGlyph()"
             (avatarClicked)="clicks.set(clicks() + 1)"
@@ -43,6 +55,10 @@ class Host {
     readonly tile = signal(false);
     readonly transparent = signal(false);
     readonly colorAccent = signal<ColorAccent | null>(null);
+    readonly colorIndication = signal<ColorAccent | null>(null);
+    readonly contain = signal(false);
+    readonly placeholder = signal(false);
+    readonly valueState = signal<AvatarValueState | null>(null);
     readonly clickable = signal(false);
     readonly zoomGlyph = signal<string | null>(null);
     readonly clicks = signal(0);
@@ -102,6 +118,15 @@ async function setup() {
             await fixture.whenStable();
         }
     };
+}
+
+function resolveBackground(variable: string): string {
+    const probe = document.createElement('span');
+    probe.style.backgroundColor = `var(${variable})`;
+    document.body.appendChild(probe);
+    const value = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return value;
 }
 
 const char = (code: number) => String.fromCodePoint(code);
@@ -289,6 +314,61 @@ describe('Avatar', () => {
         expect(style().color).toBe(resolve('--sapTile_IconColor'));
     });
 
+    it('contain scales the image to fit instead of covering', async () => {
+        const { fixture, avatar, update } = await setup();
+        await update((h) => h.image.set(IMAGE));
+        await until(() => avatar.style.backgroundImage !== '');
+        await fixture.whenStable();
+        expect(getComputedStyle(avatar).backgroundSize).toBe('cover');
+        await update((h) => h.contain.set(true));
+        expect(getComputedStyle(avatar).backgroundSize).toBe('contain');
+    });
+
+    it('placeholder uses the image placeholder background and foreground tokens', async () => {
+        const { avatar, resolve, update } = await setup();
+        await update((h) => h.placeholder.set(true));
+        const style = getComputedStyle(avatar);
+        expect(style.backgroundColor).toBe(resolve('--sapContent_ImagePlaceholderBackground'));
+        expect(style.color).toBe(resolve('--sapContent_ImagePlaceholderForegroundColor'));
+    });
+
+    it('colorIndication applies the indication background and text tokens; an accent wins over it', async () => {
+        const { avatar, resolve, update } = await setup();
+        const style = () => getComputedStyle(avatar);
+        await update((h) => h.colorIndication.set(5));
+        expect(style().backgroundColor).toBe(resolve('--sapIndicationColor_5_Background'));
+        expect(style().color).toBe(resolve('--sapIndicationColor_5_TextColor'));
+        expect(style().borderColor).toBe(resolve('--sapIndicationColor_5_BorderColor'));
+        await update((h) => h.colorAccent.set(2));
+        expect(style().backgroundColor).toBe(resolve('--sapAvatar_2_Background'));
+    });
+
+    it('valueState shows the state badge with its icon and colour instead of the zoom glyph', async () => {
+        const { avatar, resolve, update } = await setup();
+        const badge = () => avatar.querySelector<HTMLElement>('fd-icon.absolute');
+        expect(badge()).toBeNull();
+        const states: [AvatarValueState, string, string, string][] = [
+            ['positive', 'sys-enter-2', '--sapSuccessBackground', '--sapPositiveTextColor'],
+            ['caution', 'warning', '--sapWarningBackground', '--sapCriticalTextColor'],
+            ['negative', 'error', '--sapErrorBackground', '--sapNegativeTextColor'],
+            ['information', 'information', '--sapInformationBackground', '--sapInformativeTextColor']
+        ];
+        for (const [state, glyph, background, color] of states) {
+            await update((h) => h.valueState.set(state));
+            expect(badge()!.dataset['glyph']).toBe(iconGlyphChar(glyph));
+            expect(getComputedStyle(badge()!).backgroundColor).toBe(resolveBackground(background));
+            expect(getComputedStyle(badge()!).color).toBe(resolve(color));
+        }
+        // at the bottom-end corner, and it replaces the zoom glyph
+        await update((h) => h.zoomGlyph.set('edit'));
+        expect(avatar.querySelectorAll('fd-icon.absolute').length).toBe(1);
+        expect(badge()!.dataset['glyph']).toBe(iconGlyphChar('information'));
+        const a = avatar.getBoundingClientRect();
+        const b = badge()!.getBoundingClientRect();
+        expect(b.right).toBeGreaterThan(a.right - b.width);
+        expect(b.bottom).toBeGreaterThan(a.bottom - b.height);
+    });
+
     it('random color accent is stable for the same label', async () => {
         const render = async () => {
             const fixture = TestBed.createComponent(RandomHost);
@@ -309,5 +389,161 @@ describe('Avatar', () => {
         const accents = new Set(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'].map(labelColorAccent));
         expect(accents.size).toBeGreaterThan(5);
         for (const accent of accents) expect(accent >= 1 && accent <= 10).toBe(true);
+    });
+});
+
+/** Stands in for `Image`: records each request and lets the test decide when it loads or fails. */
+class FakeImage {
+    static requests: FakeImage[] = [];
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    private url = '';
+    set src(url: string) {
+        this.url = url;
+        FakeImage.requests.push(this);
+    }
+    get src(): string {
+        return this.url;
+    }
+    load(): void {
+        this.onload?.();
+    }
+    fail(): void {
+        this.onerror?.();
+    }
+}
+
+@Component({
+    imports: [Avatar],
+    template: `
+        @for (id of ids(); track id) {
+            <fd-avatar
+                [id]="'avatar-' + id"
+                [image]="image()"
+                [label]="label()"
+                [size]="size()"
+                [alterIcon]="alterIcon()"
+                [backupImage]="backup()"
+                ariaLabel="Photo"
+            />
+        }
+    `
+})
+class ImageHost {
+    readonly ids = signal([1]);
+    readonly image = signal<string | null>(null);
+    readonly label = signal('John Doe');
+    readonly size = signal<AvatarSize>('l');
+    readonly alterIcon = signal<string | null>(null);
+    readonly backup = signal<string | null>(null);
+}
+
+describe('Avatar image loading', () => {
+    beforeEach(() => {
+        FakeImage.requests = [];
+        vi.stubGlobal('Image', FakeImage);
+    });
+    afterEach(() => vi.unstubAllGlobals());
+
+    async function setupImages() {
+        const fixture = TestBed.createComponent(ImageHost);
+        await fixture.whenStable();
+        const root = fixture.nativeElement as HTMLElement;
+        return {
+            fixture,
+            host: fixture.componentInstance,
+            avatar: (id = 1) => root.querySelector<HTMLElement>(`#avatar-${id}`)!,
+            urls: () => FakeImage.requests.map((r) => r.src),
+            update: async (change: (host: ImageHost) => void) => {
+                change(fixture.componentInstance);
+                await fixture.whenStable();
+            }
+        };
+    }
+
+    it('returns to a previously loaded URL without a new request', async () => {
+        const { avatar, urls, update } = await setupImages();
+        await update((h) => h.image.set('/one.png'));
+        FakeImage.requests[0].load();
+        await update((h) => h.image.set('/two.png'));
+        FakeImage.requests[1].load();
+        await update(() => {});
+        expect(avatar().style.backgroundImage).toContain('/two.png');
+
+        await update((h) => h.image.set('/one.png'));
+        expect(urls()).toEqual(['/one.png', '/two.png']);
+        expect(avatar().style.backgroundImage).toContain('/one.png');
+        expect(avatar().textContent!.trim()).toBe('');
+    });
+
+    it('loads an image once and does not reload when the same URL is set again or the avatar re-renders', async () => {
+        const { avatar, urls, update } = await setupImages();
+        expect(urls()).toEqual([]);
+        await update((h) => h.image.set('/photo.png'));
+        expect(urls()).toEqual(['/photo.png']);
+        // initials until the image arrives
+        expect(avatar().textContent!.trim()).toBe('JD');
+        FakeImage.requests[0].load();
+        await update(() => {});
+        expect(avatar().style.backgroundImage).toContain('/photo.png');
+
+        await update((h) => h.image.set('/photo.png'));
+        await update((h) => h.label.set('Jane Roe'));
+        await update((h) => h.size.set('s'));
+        // the same URL built from parts (interpolation) is still the same URL
+        await update((h) => h.image.set(['', 'photo.png'].join('/')));
+        expect(urls()).toEqual(['/photo.png']);
+
+        // each avatar requests its image once
+        FakeImage.requests = [];
+        await update((h) => {
+            h.image.set('/team.png');
+            h.ids.set([1, 2, 3]);
+        });
+        expect(urls()).toEqual(['/team.png', '/team.png', '/team.png']);
+    });
+
+    it('ignores a slower earlier image when the URL changes quickly', async () => {
+        const { avatar, update } = await setupImages();
+        await update((h) => h.image.set('/slow.png'));
+        await update((h) => h.image.set('/fast.png'));
+        const [slow, fast] = FakeImage.requests;
+        fast.load();
+        await update(() => {});
+        expect(avatar().style.backgroundImage).toContain('/fast.png');
+        // the earlier request finishing late does not replace the current image
+        slow.load();
+        await update(() => {});
+        expect(avatar().style.backgroundImage).toContain('/fast.png');
+
+        // nor does a late failure of an earlier request trigger the fallback
+        await update((h) => h.image.set('/broken.png'));
+        await update((h) => h.image.set('/third.png'));
+        const [broken, third] = FakeImage.requests.slice(2);
+        third.load();
+        broken.fail();
+        await update(() => {});
+        expect(avatar().style.backgroundImage).toContain('/third.png');
+        expect(avatar().querySelector('fd-icon')).toBeNull();
+    });
+
+    it('a failing image is requested only once before falling back', async () => {
+        const { avatar, urls, update } = await setupImages();
+        await update((h) => {
+            h.alterIcon.set('backup');
+            h.backup.set('/backup.png');
+            h.image.set('/missing.png');
+        });
+        FakeImage.requests[0].fail();
+        await update(() => {});
+        expect(urls()).toEqual(['/missing.png', '/backup.png']);
+        FakeImage.requests[1].fail();
+        await update(() => {});
+        // the default icon, and no new attempt on re-render or for the same URL
+        expect(avatar().querySelector('fd-icon')).not.toBeNull();
+        await update((h) => h.size.set('m'));
+        await update((h) => h.image.set('/missing.png'));
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(urls()).toEqual(['/missing.png', '/backup.png']);
     });
 });

@@ -1,7 +1,9 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
+import { Bar, BarRight } from '@/ui/bar/bar';
+import { iconGlyphChar } from '@/ui/icon/icon';
 import {
     Wizard,
     WizardContent,
@@ -38,8 +40,11 @@ const TEXT = 'Lorem ipsum dolor sit amet. '.repeat(40);
                                 [label]="label"
                                 [isSummary]="last && withSummary()"
                                 [stepClickValidator]="validator()"
+                                [branching]="i === branchingStep()"
                             >
-                                <fd-wizard-step-indicator>{{ i + 1 }}</fd-wizard-step-indicator>
+                                <fd-wizard-step-indicator [glyph]="i === 0 ? glyph() : null">{{
+                                    i + 1
+                                }}</fd-wizard-step-indicator>
                                 <fd-wizard-content>
                                     <h3>Content {{ i + 1 }}</h3>
                                     <p>{{ text }}</p>
@@ -62,6 +67,8 @@ class Host {
     readonly append = signal(true);
     readonly withSummary = signal(true);
     readonly showSummary = signal(false);
+    readonly glyph = signal<string | null>(null);
+    readonly branchingStep = signal(-1);
     readonly validator = signal<((visited: boolean, completed: boolean) => boolean) | undefined>(undefined);
     readonly status = signal<WizardStepStatus[]>(['current', 'upcoming', 'upcoming', 'upcoming']);
     readonly changes: string[] = [];
@@ -74,6 +81,45 @@ class Host {
         this.changes.push(`${index}:${status}`);
         this.status.update((all) => all.map((s, i) => (i === index ? status : s)));
     }
+}
+
+@Component({
+    imports: [
+        Wizard,
+        WizardNavigation,
+        WizardProgressBar,
+        WizardStep,
+        WizardStepIndicator,
+        WizardContent,
+        WizardNextStep,
+        Bar,
+        BarRight
+    ],
+    template: `
+        <fd-wizard contentHeight="300px" [appendToWizard]="false">
+            <fd-wizard-navigation>
+                <ul fd-wizard-progress-bar size="sm" aria-label="Steps">
+                    <li fd-wizard-step status="current" label="One">
+                        <fd-wizard-step-indicator>1</fd-wizard-step-indicator>
+                        <fd-wizard-content>
+                            <p>{{ text }}</p>
+                            <fd-wizard-next-step floating><button>Next</button></fd-wizard-next-step>
+                        </fd-wizard-content>
+                    </li>
+                    <li fd-wizard-step label="Two">
+                        <fd-wizard-step-indicator>2</fd-wizard-step-indicator>
+                        <fd-wizard-content><p>Two</p></fd-wizard-content>
+                    </li>
+                </ul>
+            </fd-wizard-navigation>
+            <div fd-bar barDesign="floating-footer">
+                <div fd-bar-right><button>Save</button></div>
+            </div>
+        </fd-wizard>
+    `
+})
+class FloatingHost {
+    readonly text = TEXT;
 }
 
 async function setup(config: Partial<{ append: boolean; width: string; labels: string[]; summary: boolean }> = {}) {
@@ -232,5 +278,95 @@ describe('Wizard', () => {
         const items = [...document.querySelectorAll('[fd-action-sheet-item]')].map((item) => item.textContent!.trim());
         expect(items.length).toBeGreaterThan(1);
         expect(items).toContain('C');
+    });
+    describe('more', () => {
+        afterEach(() => document.documentElement.removeAttribute('dir'));
+
+        it('shows the glyph of a step indicator', async () => {
+            const { fixture, host, root, stable } = await setup();
+            host.glyph.set('product');
+            await stable();
+            const icon = root.querySelector<HTMLElement>('fd-wizard-step-indicator fd-icon')!;
+            expect(icon.getAttribute('data-glyph')).toBe(iconGlyphChar('product'));
+            expect(root.querySelectorAll('fd-wizard-step-indicator fd-icon')).toHaveLength(1);
+            fixture.destroy();
+        });
+
+        it('gives stacked steps their labels back when the wizard grows', async () => {
+            const labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+            const { fixture, host, root, stable } = await setup({ width: '600px', labels, summary: false });
+            host.go(3);
+            await stable();
+            const stacked = () => root.querySelectorAll('[fd-wizard-step][data-stacked]').length;
+            expect(stacked()).toBeGreaterThan(0);
+            host.width.set('1400px');
+            await stable();
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            await stable();
+            expect(stacked()).toBe(0);
+            expect(root.querySelector('[aria-haspopup=menu]')).toBeNull();
+            fixture.destroy();
+        });
+
+        it('keeps the summary in the progress bar with displaySummaryStep', async () => {
+            const { fixture, host, root, stable, contents } = await setup();
+            host.showSummary.set(true);
+            await stable();
+            const steps = () => [...root.querySelectorAll<HTMLElement>('[fd-wizard-step]')];
+            expect(steps()[3].style.display).toBe('');
+            host.go(3);
+            await stable();
+            expect(root.querySelector<HTMLElement>('ul')!.style.display).toBe('');
+            expect(steps()[3].getAttribute('data-status')).toBe('current');
+            expect(contents()).toEqual(['Content 1', 'Content 2', 'Content 3', 'Content 4']);
+            fixture.destroy();
+        });
+
+        it('draws a dashed connector after a branching step', async () => {
+            const { fixture, host, root, stable } = await setup({ summary: false });
+            host.branchingStep.set(3);
+            await stable();
+            const steps = [...root.querySelectorAll<HTMLElement>('[fd-wizard-step]')];
+            const connector = (step: HTMLElement) => step.querySelector<HTMLElement>('span[class*="border-b"]');
+            expect(getComputedStyle(connector(steps[0])!).borderBottomStyle).toBe('solid');
+            // the last step has a connector only when it branches
+            expect(getComputedStyle(connector(steps[3])!).borderBottomStyle).toBe('dashed');
+            host.branchingStep.set(-1);
+            await stable();
+            expect(connector(steps[3])).toBeNull();
+            fixture.destroy();
+        });
+
+        it('keeps a floating next step above the floating footer', async () => {
+            const fixture = TestBed.createComponent(FloatingHost);
+            document.body.appendChild(fixture.nativeElement);
+            await fixture.whenStable();
+            await new Promise((resolve) => requestAnimationFrame(resolve));
+            await fixture.whenStable();
+            const root = fixture.nativeElement as HTMLElement;
+            const next = root.querySelector<HTMLElement>('fd-wizard-next-step button')!.getBoundingClientRect();
+            const footer = root.querySelector<HTMLElement>('[fd-bar]')!.getBoundingClientRect();
+            const scroller = root.querySelector<HTMLElement>('[data-wizard-scroll]')!.getBoundingClientRect();
+            expect(next.height).toBeGreaterThan(0);
+            expect(next.bottom).toBeLessThanOrEqual(footer.top);
+            expect(next.bottom).toBeLessThanOrEqual(scroller.bottom);
+            expect(next.top).toBeGreaterThanOrEqual(scroller.top);
+            fixture.destroy();
+        });
+
+        it('mirrors the arrow keys between steps in RTL', async () => {
+            document.documentElement.setAttribute('dir', 'rtl');
+            const { fixture, host, stable, container } = await setup();
+            host.go(2);
+            await stable();
+            container(2).focus();
+            await userEvent.keyboard('{ArrowRight}');
+            expect(document.activeElement).toBe(container(1));
+            await userEvent.keyboard('{ArrowRight}');
+            expect(document.activeElement).toBe(container(0));
+            await userEvent.keyboard('{ArrowLeft}');
+            expect(document.activeElement).toBe(container(1));
+            fixture.destroy();
+        });
     });
 });

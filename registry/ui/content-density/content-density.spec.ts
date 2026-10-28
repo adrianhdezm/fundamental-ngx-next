@@ -13,16 +13,25 @@ import { ContentDensityDirective, type ContentDensity } from './content-density'
             <div fdCozy data-testid="island">
                 <button fdButton label="Island" data-testid="island-button"></button>
             </div>
+            <div [fdCompact]="compact()" data-testid="toggle">
+                <button fdButton label="Toggle" data-testid="toggle-button"></button>
+            </div>
         </section>
         <div fdCompact data-testid="compact"></div>
         <div fdCondensed data-testid="condensed"></div>
         <div fdCozy data-testid="cozy"></div>
         <div fdContentDensity="condensed" fdCompact data-testid="explicit"></div>
         <div fdContentDensity data-testid="none"></div>
+        <section fdCozy data-testid="cozy-parent">
+            <div fdCompact data-testid="compact-child">
+                <button fdButton label="Compact child" data-testid="compact-child-button"></button>
+            </div>
+        </section>
     `
 })
 class Host {
     readonly outer = signal<ContentDensity | null>(null);
+    readonly compact = signal(true);
 }
 
 async function setup(outer: ContentDensity | null = null) {
@@ -96,5 +105,32 @@ describe('ContentDensity', () => {
         expect(height('outer-button')).toBeLessThan(height('root'));
         // a cozy island resets condensed as well
         expect(height('island-button')).toBe(height('root'));
+    });
+
+    // Upstream lets a consumer configured with restrictChildContentDensity force its density on children. Here density
+    // is CSS (the `compact:`/`condensed:` variants), so the nearest data-density always wins; this pins that choice.
+    it('a density set on a child wins over the density of its parent', async () => {
+        const { el, height } = await setup();
+        expect(el('cozy-parent').getAttribute('data-density')).toBe('cozy');
+        expect(el('compact-child').getAttribute('data-density')).toBe('compact');
+        expect(height('compact-child-button')).toBeLessThan(height('root'));
+    });
+
+    it('fdCompact set back to false removes data-density so the inherited density applies', async () => {
+        const { fixture, host, el, height } = await setup();
+        const cozy = height('root');
+        expect(el('toggle').getAttribute('data-density')).toBe('compact');
+        expect(height('toggle-button')).toBeLessThan(cozy);
+
+        host.compact.set(false);
+        await fixture.whenStable();
+        expect(el('toggle').hasAttribute('data-density')).toBe(false);
+        expect(height('toggle-button')).toBe(cozy);
+
+        // with no density of its own it follows the parent
+        host.outer.set('compact');
+        await fixture.whenStable();
+        expect(height('toggle-button')).toBe(height('outer-button'));
+        expect(height('toggle-button')).toBeLessThan(cozy);
     });
 });

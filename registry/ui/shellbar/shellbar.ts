@@ -326,7 +326,11 @@ export class Shellbar implements ShellbarContext {
         branding.forEach((el) => (el.style.display = ''));
         this.contextArea()?.showAll();
         actions.setOverflow(this.size() === 's' && this.showSearchFieldOnSizeSmall());
-        if (!this.exceeds()) return;
+        if (!this.exceeds()) {
+            // everything fits again: report that no context item is hidden any more
+            this.contextArea()?.hideWhile(() => false);
+            return;
+        }
         actions.setOverflow(true);
         if (this.exceeds()) branding.forEach((el) => (el.style.display = 'none'));
         this.contextArea()?.hideWhile(() => this.exceeds());

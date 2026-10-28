@@ -1,6 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, inject, input, signal, viewChild, type TemplateRef } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Avatar } from '@/ui/avatar/avatar';
 import { Bar, BarElement, BarLeft, ButtonBar } from '@/ui/bar/bar';
 import { Button } from '@/ui/button/button';
@@ -234,7 +235,6 @@ const IMPORTS = [
 })
 class StorySettings {
     readonly inline = input(false);
-    readonly autoOpen = input(false);
     protected readonly photo =
         "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'><rect width='80' height='80' fill='%23a2c4e6'/><circle cx='40' cy='31' r='15' fill='%23557a9e'/><path d='M12 80c3-18 15-26 28-26s25 8 28 26z' fill='%23557a9e'/></svg>";
     protected readonly result = signal('');
@@ -277,10 +277,6 @@ class StorySettings {
         };
     }
 
-    constructor() {
-        queueMicrotask(() => this.autoOpen() && setTimeout(() => this.open(), 50));
-    }
-
     protected open(): void {
         const ref = this.dialogs.open(this.dialogTpl(), settingsDialogConfig({ ariaLabelledBy: 'settings-title' }));
         ref.afterClosed.subscribe({
@@ -314,5 +310,9 @@ export const Inline: Story = { render: () => ({ template: `<story-settings [inli
 export const OpenDialog: Story = {
     name: 'Open: dialog',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-settings [autoOpen]="true" />` })
+    render: () => ({ template: `<story-settings />` }),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open settings' }));
+        await waitFor(() => expect(document.querySelector('[role=dialog] fd-settings-container')).not.toBeNull());
+    }
 };

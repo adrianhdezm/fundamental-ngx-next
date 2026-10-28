@@ -1,5 +1,6 @@
-import { Component, TemplateRef, inject, input, viewChild } from '@angular/core';
+import { Component, TemplateRef, computed, inject, input, viewChild } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Avatar } from '@/ui/avatar/avatar';
 import { Button } from '@/ui/button/button';
 import { Dialog, DialogBody, DialogFooter, DialogHeader, DialogService } from '@/ui/dialog/dialog';
@@ -37,6 +38,8 @@ const PARTS = [
     Link
 ];
 
+const LONG = ' Lorem ipsum dolor sit amet consectetur adipisicing elit. Distinctio ipsam cupiditate voluptatibus et.';
+
 const DATA = {
     title: 'Employee',
     subHeader: { title: 'Ann Smith', subtitle: 'Senior sales manager' },
@@ -65,19 +68,27 @@ const DATA = {
     template: `
         <fd-quick-view>
             @if (withTitle()) {
-                <fd-quick-view-title [align]="align()">{{ data.title }}</fd-quick-view-title>
+                <fd-quick-view-title [align]="align()">{{ data.title }}{{ suffix() }}</fd-quick-view-title>
             }
             <fd-quick-view-subheader>
                 <fd-avatar size="s" [label]="data.subHeader.title" />
-                <fd-quick-view-subheader-title>{{ data.subHeader.title }}</fd-quick-view-subheader-title>
-                <fd-quick-view-subheader-subtitle>{{ data.subHeader.subtitle }}</fd-quick-view-subheader-subtitle>
+                <fd-quick-view-subheader-title [allowWrap]="long()"
+                    >{{ data.subHeader.title }}{{ suffix() }}</fd-quick-view-subheader-title
+                >
+                <fd-quick-view-subheader-subtitle [allowWrap]="long()"
+                    >{{ data.subHeader.subtitle }}{{ suffix() }}</fd-quick-view-subheader-subtitle
+                >
             </fd-quick-view-subheader>
             @for (group of data.groups; track group.title) {
                 <fd-quick-view-group>
-                    <fd-quick-view-group-title>{{ group.title }}</fd-quick-view-group-title>
+                    <fd-quick-view-group-title [allowWrap]="long()"
+                        >{{ group.title }}{{ suffix() }}</fd-quick-view-group-title
+                    >
                     @for (item of group.items; track item.label) {
                         <fd-quick-view-group-item>
-                            <fd-quick-view-group-item-label>{{ item.label }}</fd-quick-view-group-item-label>
+                            <fd-quick-view-group-item-label [allowWrap]="long()"
+                                >{{ item.label }}{{ suffix() }}</fd-quick-view-group-item-label
+                            >
                             <fd-quick-view-group-item-content>
                                 @if (item.href) {
                                     <a fdLink fd-quick-view-group-item-content-element [href]="item.href">{{
@@ -97,7 +108,10 @@ const DATA = {
 class StoryQuickView {
     readonly withTitle = input(false);
     readonly align = input<'left' | 'middle' | 'right'>('middle');
+    /** Appends a long text to every title and label, which wrap instead of truncating. */
+    readonly long = input(false);
     protected readonly data = DATA;
+    protected readonly suffix = computed(() => (this.long() ? LONG : ''));
 }
 
 @Component({
@@ -118,16 +132,23 @@ class StoryQuickView {
     providers: [DialogService],
     host: { class: 'flex flex-wrap gap-2' },
     template: `
-        <fd-popover placement="right-start" [noArrow]="false">
+        <fd-popover placement="right-start" [noArrow]="false" bodyAriaLabel="Employee">
             <fd-popover-control><button fdButton label="Open in a popover"></button></fd-popover-control>
             <fd-popover-body class="max-w-[37.5rem]">
                 <story-quick-view [withTitle]="true" />
             </fd-popover-body>
         </fd-popover>
+        <fd-popover placement="right-start" [noArrow]="false" bodyAriaLabel="Employee">
+            <fd-popover-control><button fdButton label="Open without heading"></button></fd-popover-control>
+            <fd-popover-body class="max-w-[37.5rem]">
+                <story-quick-view />
+            </fd-popover-body>
+        </fd-popover>
         <button fdButton label="Open in a dialog" (click)="open()"></button>
         <ng-template #tpl let-dialog>
             <fd-dialog>
-                <fd-dialog-header><h1 fd-title fdTitle>Employee</h1></fd-dialog-header>
+                <!-- h4: the quick view below starts at heading level 5 -->
+                <fd-dialog-header><h4 fd-title>Employee</h4></fd-dialog-header>
                 <fd-dialog-body><story-quick-view /></fd-dialog-body>
                 <fd-dialog-footer
                     ><fd-button-bar variant="emphasized" label="Close" (click)="dialog.close()"
@@ -173,4 +194,35 @@ export const Overlays: Story = {
     name: 'In a popover or a dialog',
     parameters: { docs: { story: { inline: false, iframeHeight: 560 } } },
     render: () => ({ template: `<story-quick-view-overlays />` })
+};
+
+export const LongTexts: Story = {
+    name: 'Long texts',
+    parameters: {
+        docs: {
+            description: {
+                story: 'With `allowWrap`, the subheader title and subtitle, group titles and labels wrap instead of truncating. The header bar title still truncates.'
+            }
+        }
+    },
+    render: () => ({ template: `<story-quick-view class="block max-w-sm" [withTitle]="true" [long]="true" />` })
+};
+
+/** Clicks the button that opens the overlay and waits for the quick view inside it. */
+async function openOverlay(canvasElement: HTMLElement, label: string, overlay: string): Promise<void> {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: label }));
+    await waitFor(() => expect(document.querySelector(`${overlay} fd-quick-view`)).not.toBeNull());
+}
+
+export const OpenPopover: Story = {
+    name: 'Open: In a popover',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-quick-view-overlays />` }),
+    play: ({ canvasElement }) => openOverlay(canvasElement, 'Open in a popover', '.cdk-overlay-pane fd-popover-body')
+};
+export const OpenDialog: Story = {
+    name: 'Open: In a dialog',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-quick-view-overlays />` }),
+    play: ({ canvasElement }) => openOverlay(canvasElement, 'Open in a dialog', '[role=dialog]')
 };

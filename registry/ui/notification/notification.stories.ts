@@ -1,6 +1,8 @@
 import { Component, TemplateRef, inject, input, signal, viewChild } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Avatar } from '@/ui/avatar/avatar';
+import { ActionSheet, ActionSheetBody, ActionSheetControl, ActionSheetItem } from '@/ui/action-sheet/action-sheet';
 import { Button } from '@/ui/button/button';
 import { Icon } from '@/ui/icon/icon';
 import { MessageStrip } from '@/ui/message-strip/message-strip';
@@ -23,6 +25,7 @@ import {
     NotificationHeader,
     NotificationList,
     NotificationMessageStrip,
+    NotificationMessageStripContainer,
     NotificationParagraph,
     NotificationPopover,
     NotificationRef,
@@ -106,7 +109,16 @@ class StoryNotificationItem {
 
 @Component({
     selector: 'story-notification-states',
-    imports: [StoryNotificationItem],
+    imports: [
+        ...PARTS,
+        StoryNotificationItem,
+        NotificationMessageStripContainer,
+        MessageStrip,
+        ActionSheet,
+        ActionSheetBody,
+        ActionSheetControl,
+        ActionSheetItem
+    ],
     host: { class: 'flex max-w-[27rem] flex-col gap-2' },
     template: `
         <story-notification-item title="Unread notification" unread />
@@ -117,9 +129,102 @@ class StoryNotificationItem {
             [text]="'Description of notification topic ${LONG}'"
             [actions]="['accept', 'decline']"
         />
+        <fd-notification>
+            <fd-notification-body>
+                <fd-avatar size="xs" glyph="product" colorAccent="2" ariaLabel="Product" />
+                <fd-notification-content>
+                    <fd-notification-header>
+                        <h4 fd-notification-title unread>Notification with overflow actions</h4>
+                    </fd-notification-header>
+                    <p fd-notification-paragraph>Description of the notification topic</p>
+                    <fd-notification-footer>
+                        <span fd-notification-footer-content>Product name</span>
+                        <span fd-notification-separator></span>
+                        <span fd-notification-footer-content>11:11 AM</span>
+                    </fd-notification-footer>
+                </fd-notification-content>
+                <fd-notification-actions>
+                    <fd-action-sheet noArrow placement="bottom-end" #sheet>
+                        <fd-action-sheet-control>
+                            <button
+                                fdButton
+                                variant="transparent"
+                                glyph="overflow"
+                                ariaLabel="More actions"
+                                title="More actions"
+                                aria-haspopup="menu"
+                            ></button>
+                        </fd-action-sheet-control>
+                        <fd-action-sheet-body>
+                            <li
+                                fd-action-sheet-item
+                                label="Approve"
+                                glyph="accept"
+                                (click)="picked('Approve', sheet)"
+                            ></li>
+                            <li
+                                fd-action-sheet-item
+                                label="Reject"
+                                glyph="decline"
+                                (click)="picked('Reject', sheet)"
+                            ></li>
+                            <li
+                                fd-action-sheet-item
+                                label="Forward"
+                                glyph="arrow-right"
+                                (click)="picked('Forward', sheet)"
+                            ></li>
+                        </fd-action-sheet-body>
+                    </fd-action-sheet>
+                    <button
+                        fdButton
+                        variant="transparent"
+                        glyph="decline"
+                        ariaLabel="Clear notification"
+                        title="Clear notification"
+                    ></button>
+                </fd-notification-actions>
+            </fd-notification-body>
+        </fd-notification>
+        <fd-notification>
+            <div fd-notification-message-strip-container>
+                <fd-message-strip type="error">A message strip above the notification.</fd-message-strip>
+            </div>
+            <fd-notification-body>
+                <fd-avatar size="xs" glyph="batch-payments" ariaLabel="Payments" />
+                <fd-notification-content>
+                    <fd-notification-header>
+                        <fd-icon glyph="error" color="negative" ariaLabel="Negative" />
+                        <h4 fd-notification-title unread>Notification with a message strip</h4>
+                    </fd-notification-header>
+                    <p fd-notification-paragraph>Description of the notification topic</p>
+                    <fd-notification-footer>
+                        <span fd-notification-footer-content>Product name</span>
+                        <span fd-notification-separator></span>
+                        <span fd-notification-footer-content>11:11 AM</span>
+                    </fd-notification-footer>
+                </fd-notification-content>
+                <fd-notification-actions>
+                    <button
+                        fdButton
+                        variant="transparent"
+                        glyph="decline"
+                        ariaLabel="Clear notification"
+                        title="Clear notification"
+                    ></button>
+                </fd-notification-actions>
+            </fd-notification-body>
+        </fd-notification>
+        <p class="font-sap-font-family text-sap-font-size text-sap-text-color" aria-live="polite">{{ last() }}</p>
     `
 })
-class StoryNotificationStates {}
+class StoryNotificationStates {
+    protected readonly last = signal('');
+    protected picked(action: string, sheet: ActionSheet): void {
+        this.last.set(`${action} action performed`);
+        sheet.close();
+    }
+}
 
 @Component({
     selector: 'story-notification-group',
@@ -210,7 +315,6 @@ class StoryNotificationStates {}
 })
 class StoryNotificationGroup {
     readonly open = signal(false);
-    readonly autoOpen = input(false);
     protected readonly last = signal('');
     protected readonly groups = [
         { title: 'Today', expanded: true, items: ['Leave request approved', 'New purchase order', 'Invoice overdue'] },
@@ -218,9 +322,6 @@ class StoryNotificationGroup {
     ];
     protected readonly onKey = (_: KeyboardEvent, key: 'enter' | 'delete') =>
         this.last.set(key === 'enter' ? 'Notification opened' : 'Notification removed');
-    constructor() {
-        queueMicrotask(() => this.autoOpen() && this.open.set(true));
-    }
 }
 
 @Component({
@@ -352,5 +453,29 @@ export const Service: Story = { name: 'Service', render: () => ({ template: `<st
 export const OpenGroup: Story = {
     name: 'Open: groups',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-notification-group [autoOpen]="true" />` })
+    render: () => ({ template: `<story-notification-group />` }),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open notification group' }));
+        await waitFor(() =>
+            expect(document.querySelector('.cdk-overlay-pane [fd-notification-popover]')).not.toBeNull()
+        );
+    }
+};
+export const OpenOverflow: Story = {
+    name: 'Open: overflow actions',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-notification-states />` }),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name: 'More actions' }));
+        await waitFor(() => expect(document.querySelector('.cdk-overlay-pane fd-action-sheet-body')).not.toBeNull());
+    }
+};
+export const OpenService: Story = {
+    name: 'Open: service banner',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-notification-service />` }),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open from component' }));
+        await waitFor(() => expect(document.querySelector('.cdk-overlay-container fd-notification')).not.toBeNull());
+    }
 };

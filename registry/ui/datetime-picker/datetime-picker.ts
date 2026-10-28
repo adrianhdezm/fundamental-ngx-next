@@ -82,6 +82,11 @@ export interface DatetimePickerLabels {
     okLabel: string;
     cancelLabel: string;
     closeLabel: string;
+    /** Read with the message, by the state of the field. */
+    successStateLabel: string;
+    informationStateLabel: string;
+    warningStateLabel: string;
+    errorStateLabel: string;
 }
 
 export const DATETIME_PICKER_LABELS: DatetimePickerLabels = {
@@ -93,7 +98,11 @@ export const DATETIME_PICKER_LABELS: DatetimePickerLabels = {
     timeLabel: 'Time',
     okLabel: 'OK',
     cancelLabel: 'Cancel',
-    closeLabel: 'Close'
+    closeLabel: 'Close',
+    successStateLabel: 'Value state Success',
+    informationStateLabel: 'Value state Information',
+    warningStateLabel: 'Value state Warning',
+    errorStateLabel: 'Value state Error'
 };
 
 let nextId = 0;
@@ -218,6 +227,7 @@ let nextId = 0;
                         [attr.aria-labelledby]="ariaLabelledBy() || null"
                         [attr.aria-required]="required() || null"
                         [attr.aria-invalid]="computedState() === 'error' || null"
+                        [attr.aria-describedby]="description() ? id() + '-description' : null"
                         (input)="!processInputOnBlur() && read(field.value, true)"
                         (keydown.enter)="read(field.value, false)"
                         (keydown.f4)="$event.preventDefault(); setOpen(!isOpen())"
@@ -226,6 +236,8 @@ let nextId = 0;
                         (blur)="onFieldBlur(field.value)"
                     />
                     <span fdInputGroupAddon button>
+                        <!-- the picker opens in a dialog (the popover body or the mobile dialog), so
+                             aria-haspopup is "dialog" -->
                         <button
                             fdButton
                             variant="transparent"
@@ -245,6 +257,12 @@ let nextId = 0;
                     <fd-form-message [type]="messageType()">{{ message() }}</fd-form-message>
                 }
             </fd-form-input-message-group>
+            <!-- the state and the message, read as the description of the field, also while the picker is open -->
+            @if (description()) {
+                <div class="hidden" aria-hidden="true">
+                    <div [id]="id() + '-description'">{{ description() }}</div>
+                </div>
+            }
         </ng-template>
 
         <ng-template #pickerTpl>
@@ -392,7 +410,14 @@ export class DatetimePicker<D> implements ControlValueAccessor, Validator {
     readonly timeLabels = input<Partial<TimeLabels>>({});
     readonly userClass = input<ClassValue>('', { alias: 'class' });
 
-    readonly date = model<D | null | undefined>(null);
+    /** The value; two-way bindable as `[(date)]`. */
+    readonly date = input<D | null | undefined>(null);
+    /**
+     * A change by the user: a submitted pick or accepted typing that differs from the value. Not for
+     * values written by a form, Cancel or a submit without a change, nor for an invalid value (unreadable
+     * or disabled text, or null when `allowNull` is false), which still reaches the form as upstream.
+     */
+    readonly dateChange = output<D | null>();
     readonly isOpen = model(false);
     readonly activeView = model<FdCalendarView>('day');
     /** The picker closed without applying, by Cancel, Escape or an outside click. */
@@ -422,9 +447,12 @@ export class DatetimePicker<D> implements ControlValueAccessor, Validator {
     private readonly displayFormat = computed(() => this.customDateTimeFormat() ?? this.formats.display.dateTimeInput);
     private readonly parseFormat = computed(() => this.customDateTimeFormat() ?? this.formats.parse.dateTimeInput);
 
+    /** The current value: follows `date`, and also holds values written by a form. */
+    private readonly value = linkedSignal<D | null | undefined>(() => this.date());
+
     /** The text of the field: the formatted value, or what was typed. */
     protected readonly text = linkedSignal<{ date: D | null | undefined; formatted: string }, string>({
-        source: () => ({ date: this.date(), formatted: this.format(this.date()) }),
+        source: () => ({ date: this.value(), formatted: this.format(this.value()) }),
         // an unreadable value keeps what was typed
         computation: ({ date, formatted }, previous) =>
             date != null && !this.adapter.isValid(date) ? (previous?.value ?? '') : formatted
@@ -457,6 +485,22 @@ export class DatetimePicker<D> implements ControlValueAccessor, Validator {
     protected readonly switcherClass = computed(() =>
         cn('mt-4 w-full justify-center', this.portrait() ? 'flex' : 'hidden max-[60rem]:flex')
     );
+
+    /** The state and the message, the accessible description of the field. */
+    protected readonly description = computed(() => {
+        const state = this.computedState();
+        const labels = this.labels();
+        const stateLabel =
+            state === 'default'
+                ? ''
+                : {
+                      success: labels.successStateLabel,
+                      information: labels.informationStateLabel,
+                      warning: labels.warningStateLabel,
+                      error: labels.errorStateLabel
+                  }[state];
+        return [stateLabel, this.message()].filter(Boolean).join(' ');
+    });
 
     private onChange: (value: D | null) => void = () => {};
     private onTouched: () => void = () => {};
@@ -500,7 +544,7 @@ export class DatetimePicker<D> implements ControlValueAccessor, Validator {
 
     /** The picked values start from the current value, or today and now. */
     private resetTemp(): void {
-        const date = this.date();
+        const date = this.value();
         const valid = date != null && this.adapter.isValid(date);
         this.tempDate.set(valid ? date : null);
         this.tempTime.set(valid ? date : this.adapter.now());
@@ -539,8 +583,9 @@ export class DatetimePicker<D> implements ControlValueAccessor, Validator {
         const time = this.tempTime() ?? a.now();
         const value = a.setTime(a.clone(day), a.getHours(time), a.getMinutes(time), a.getSeconds(time));
         this.invalid.set(!this.isValueValid(value));
-        if (a.dateTimesEqual(value, this.date())) return;
-        this.date.set(value);
+        // no change, no dateChange
+        if (a.dateTimesEqual(value, this.value())) return;
+        this.setDate(value);
         this.text.set(this.format(value));
         this.onChange(value);
     }
@@ -552,10 +597,10 @@ export class DatetimePicker<D> implements ControlValueAccessor, Validator {
         text = text.trim();
         const value = text ? this.adapter.parse(text, this.parseFormat()) : null;
         this.invalid.set(!this.isValueValid(value));
-        const date = this.date();
+        const date = this.value();
         const same = value == null || date == null ? value == date : this.adapter.dateTimesEqual(value, date);
         if (!same || (value != null && !this.adapter.isValid(value))) {
-            this.date.set(value);
+            this.setDate(value);
             this.onChange(value);
         }
         // keep what was typed, spaces included
@@ -571,8 +616,14 @@ export class DatetimePicker<D> implements ControlValueAccessor, Validator {
             return;
         }
         // already read while typing: tidy the text of a readable value
-        const date = this.date();
+        const date = this.value();
         if (date != null && this.adapter.isValid(date)) this.text.set(this.format(date));
+    }
+
+    /** A change by the user: emits `dateChange` when the value is valid, as upstream. */
+    private setDate(value: D | null): void {
+        this.value.set(value);
+        if (!this.invalid()) this.dateChange.emit(value);
     }
 
     private markTouched(): void {
@@ -633,7 +684,8 @@ export class DatetimePicker<D> implements ControlValueAccessor, Validator {
 
     writeValue(value: D | null | undefined): void {
         const date = value == null ? null : this.adapter.parse(value, this.parseFormat());
-        this.date.set(date);
+        // the form already knows the value: no dateChange
+        this.value.set(date);
         this.invalid.set(!this.isValueValid(date));
     }
 
@@ -650,7 +702,7 @@ export class DatetimePicker<D> implements ControlValueAccessor, Validator {
     }
 
     validate(): ValidationErrors | null {
-        return this.isValueValid(this.date()) ? null : { dateValidation: { valid: false } };
+        return this.isValueValid(this.value()) ? null : { dateValidation: { valid: false } };
     }
 
     protected readonly computedClass = computed(() => cn('inline-block', this.userClass()));

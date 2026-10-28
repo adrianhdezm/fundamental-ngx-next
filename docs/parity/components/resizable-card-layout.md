@@ -1,0 +1,38 @@
+## resizable-card-layout
+
+Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/resizable-card-layout) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/resizable-card-layout)
+Registry: `registry/ui/resizable-card-layout/` — 3 stories, 15 tests.
+
+### Stories vs. upstream examples
+
+| Upstream example                          | Registry story                   | Status     | Notes                                                                                                                                                                       |
+| ----------------------------------------- | -------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Resizable Card Layout                     | `ItemInputs` ("Item inputs")     | ✅ covered | Cards bound with the item inputs (`rank`, `cardWidthColSpan`, `cardHeightRowSpan`, mini spans, `resizable`); each list shows the rows that fit and updates on `stepChange`. |
+| Resizable Card Layout using Layout config | `LayoutConfig` ("Layout config") | ✅ covered | Same cards through `layoutConfig` on `fd-resizable-card-layout`.                                                                                                            |
+| Resizable Card Layout using Item config   | `Default` ("Resizable cards")    | ✅ covered | Same `[config]` per item approach.                                                                                                                                          |
+
+### Tests vs. upstream specs
+
+| Upstream behaviour                                                       | Registry test                                                                                               | Status     | Notes                                                                                                                                             |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Should create (item, layout)                                             | —                                                                                                           | ➖ n/a     |                                                                                                                                                   |
+| Width grows/shrinks in 20rem columns                                     | dragging the right edge/corner snaps the width …                                                            | ✅ covered | Grow and shrink (corner drag back to 1 column).                                                                                                   |
+| Height grows/shrinks in 1rem rows                                        | dragging the bottom edge snaps the height …                                                                 | ✅ covered |                                                                                                                                                   |
+| Emits resized when resizing completes                                    | dragging the right edge/corner …                                                                            | ✅ covered | Also checks stepChange and the event payload.                                                                                                     |
+| Reverts width when the offset is not reached                             | dragging the right edge/corner …                                                                            | ✅ covered | "less than half a column: back to one column".                                                                                                    |
+| Reverts height when the offset is not reached                            | dragging the bottom edge …                                                                                  | ✅ covered | Row rounding (5px down, 13px up).                                                                                                                 |
+| Max card width per layout size (sm/md/lg/xl)                             | layout size from the available width …; card widths are limited …                                           | ✅ covered |                                                                                                                                                   |
+| Cards are placed in the layout                                           | cards are placed by rank …                                                                                  | ✅ covered |                                                                                                                                                   |
+| Relayout after a card's width and/or height change                       | growing a card past half a column …; dragging the bottom edge …                                             | ✅ covered |                                                                                                                                                   |
+| Width not above the layout capacity                                      | card widths are limited to the columns …                                                                    | ✅ covered |                                                                                                                                                   |
+| Width not below one column                                               | a one-column card dragged left stays one column wide                                                        | ✅ covered |                                                                                                                                                   |
+| Item inputs place and size a card (no upstream spec)                     | item inputs (title, rank, cardWidthColSpan, cardHeightRowSpan, resizable) place and size a card like config | ✅ covered |                                                                                                                                                   |
+| Layout config assigns each item's config (title, rank, spans, resizable) | layoutConfig assigns title, rank, spans and resizable to the cards in content order                         | ✅ covered | Fixed: `layoutConfig` used to apply only rank and width/height spans, not the title, mini spans or `resizable`. A card's own `config` still wins. |
+
+Registry-only coverage: focusable groups named by title, arrow-key focus between cards, dashed frame and next-column indication, rank restore when shrinking back, RTL mirroring, `resizable=false`, mini header/content events, `layoutChange`.
+
+### Gaps to fill
+
+- **Stories:** none.
+- **Tests:** none.
+- **Effort:** S — tests are already thorough; two stories and three focused tests reusing the existing host.

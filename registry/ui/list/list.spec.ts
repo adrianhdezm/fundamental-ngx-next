@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
@@ -215,6 +216,10 @@ class GrowingHost {
             <li fd-list-item data-testid="message-item"><span fd-list-title>Item</span></li>
             <li fd-list-footer align="end" data-testid="footer">Footer</li>
         </ul>
+        <ul fd-list hasMessage aria-label="Success message">
+            <li fd-list-message type="success" data-testid="success-message">Saved</li>
+            <li fd-list-item><span fd-list-title>Item</span></li>
+        </ul>
         <ul fd-list aria-label="Counter">
             <li fd-list-item [counter]="1234.5" counterAriaLabel="1234 items" data-testid="counter-item">
                 <span fd-list-title>Counter</span>
@@ -251,6 +256,21 @@ class GrowingHost {
 class ContentHost {
     readonly longText = 'A very long title that does not fit into the list item and needs several lines';
 }
+
+@Component({
+    imports: IMPORTS,
+    template: `
+        <ul fd-list class="custom-list" aria-label="User classes" data-testid="list">
+            <li fd-list-item>
+                <a fd-list-link class="custom-link" href="#" data-testid="link"
+                    ><i fd-list-icon class="custom-icon" glyph="cart" data-testid="icon"></i
+                    ><span fd-list-title>Link</span></a
+                >
+            </li>
+        </ul>
+    `
+})
+class UserClassHost {}
 
 async function render<T>(type: new () => T) {
     const fixture = TestBed.createComponent(type);
@@ -341,6 +361,36 @@ describe('List', () => {
             expect(items().filter((item) => item.tabIndex === 0)).toHaveLength(1);
         });
 
+        it('setItemActive focuses the item at the index and moves the tab stop to it', async () => {
+            const { fixture, root, items } = await render(KeyboardHost);
+            const list = fixture.debugElement.query(By.directive(List)).injector.get(List);
+            const header = root.querySelector<HTMLElement>('[fd-list-group-header]')!;
+            // index 0 is the group header, so 2 is the second item
+            list.setItemActive(2);
+            await fixture.whenStable();
+            expect(document.activeElement).toBe(items()[1]);
+            expect(items()[1].tabIndex).toBe(0);
+            expect(header.tabIndex).toBe(-1);
+            expect([header, ...items()].filter((el) => el.tabIndex === 0)).toHaveLength(1);
+            await userEvent.keyboard('{ArrowDown}');
+            expect(document.activeElement).toBe(items()[2]);
+        });
+
+        it('clicking an item makes it the tab stop', async () => {
+            const { fixture, root, el, items } = await render(KeyboardHost);
+            const header = root.querySelector<HTMLElement>('[fd-list-group-header]')!;
+            await userEvent.click(items()[2]);
+            await fixture.whenStable();
+            expect(document.activeElement).toBe(items()[2]);
+            expect(items()[2].tabIndex).toBe(0);
+            expect(header.tabIndex).toBe(-1);
+            el('after').focus();
+            await userEvent.tab({ shift: true });
+            expect(document.activeElement).toBe(items()[2]);
+            await userEvent.keyboard('{ArrowUp}');
+            expect(document.activeElement).toBe(items()[1]);
+        });
+
         it('keys typed into a field inside an item stay with the field', async () => {
             const { el } = await render(KeyboardHost);
             el('field').focus();
@@ -409,6 +459,16 @@ describe('List', () => {
             await userEvent.click(items(0)[0]);
             await fixture.whenStable();
             expect(describedBy(items(0)[0])).toBe('Not selected');
+        });
+
+        it('items of a list without selection have no aria-describedby and no selection text', async () => {
+            const { root, items } = await render(KeyboardHost);
+            for (const item of items()) {
+                expect(item.hasAttribute('aria-describedby')).toBe(false);
+                expect(item.hasAttribute('aria-selected')).toBe(false);
+                expect(item.querySelector('.sr-only-sap')).toBeNull();
+            }
+            expect(root.textContent).not.toContain('Not selected');
         });
 
         it('radio items select their radio button on click and Space', async () => {
@@ -628,6 +688,25 @@ describe('List', () => {
             );
             expect(rect(el('footer')).top).toBeGreaterThanOrEqual(rect(el('message-item')).bottom);
             expect(getComputedStyle(el('footer')).justifyContent).toBe('flex-end');
+        });
+
+        it('a success message uses the success background', async () => {
+            const { el } = await render(ContentHost);
+            expect(getComputedStyle(el('success-message')).backgroundColor).toBe(
+                themed('backgroundColor', 'var(--sapSuccessBackground)')
+            );
+            expect(el('success-message').className).not.toContain('bg-sap-error-background');
+        });
+
+        it('merges a user class on the list, icon and link', async () => {
+            const { el } = await render(UserClassHost);
+            const list = el('list');
+            expect(list.classList).toContain('custom-list');
+            expect(list.classList).toContain('list-none');
+            expect(el('icon').classList).toContain('custom-icon');
+            expect(el('icon').classList).toContain('pointer-events-none');
+            expect(el('link').classList).toContain('custom-link');
+            expect(el('link').classList).toContain('no-underline');
         });
 
         it('titles truncate by default and wrap in a wrap list', async () => {

@@ -22,13 +22,16 @@ import { MessageStripAlertRef, MessageStripAlertService, type MessageStripAlertP
             [dismissible]="dismissible()"
             [noIcon]="noIcon()"
             [dismissBtnTitle]="dismissTitle()"
+            [ariaLabel]="ariaLabel()"
             (onDismiss)="dismissed.set(dismissed() + 1)"
             >Session expires soon.</fd-message-strip
         >
         <fd-message-strip id="custom" [dismissible]="false"
             ><fd-icon *fdMessageStripIcon glyph="survey" />Survey open</fd-message-strip
         >
-        <fd-message-strip id="labelled" ariaLabelledBy="ext" width="300px" minWidth="200px">Labelled</fd-message-strip>
+        <fd-message-strip id="labelled" ariaLabelledBy="ext" width="300px" minWidth="200px" marginBottom="12px"
+            >Labelled</fd-message-strip
+        >
         <span id="ext">External</span>
     `
 })
@@ -38,6 +41,7 @@ class Host {
     readonly dismissible = signal(true);
     readonly noIcon = signal(false);
     readonly dismissTitle = signal<string | null>(null);
+    readonly ariaLabel = signal<string | null>(null);
     readonly dismissed = signal(0);
 }
 
@@ -215,6 +219,40 @@ describe('MessageStrip', () => {
         (fixture.debugElement.children[0].componentInstance as MessageStrip).open();
         await stable();
         expect(visible(strip)).toBe(true);
+    });
+
+    it('dismiss() emits onDismiss and hides the strip', async () => {
+        const { fixture, host, root, stable } = await render(Host);
+        const strip = root.querySelector<HTMLElement>('#strip')!;
+        (fixture.debugElement.children[0].componentInstance as MessageStrip).dismiss();
+        await stable();
+        expect(host.dismissed()).toBe(1);
+        expect(visible(strip)).toBe(false);
+    });
+
+    it('ariaLabel sets the aria-label and marginBottom the bottom margin', async () => {
+        const { host, root, stable } = await render(Host);
+        const strip = root.querySelector<HTMLElement>('#strip')!;
+        expect(strip.hasAttribute('aria-label')).toBe(false);
+        host.ariaLabel.set('Session message');
+        await stable();
+        expect(strip.getAttribute('aria-label')).toBe('Session message');
+        const labelled = root.querySelector<HTMLElement>('#labelled')!;
+        expect(getComputedStyle(labelled).marginBottom).toBe('12px');
+    });
+
+    it('the dismiss button label follows dismissBtnTitle changes and falls back when it is empty', async () => {
+        const { host, root, stable } = await render(Host, (h) => h.dismissTitle.set('Hide message'));
+        const close = root.querySelector<HTMLButtonElement>('#strip button')!;
+        expect(close.getAttribute('aria-label')).toBe('Hide message');
+        host.dismissTitle.set('Close the warning');
+        await stable();
+        expect(close.getAttribute('aria-label')).toBe('Close the warning');
+        expect(close.title).toBe('Close the warning');
+        host.dismissTitle.set('');
+        await stable();
+        expect(close.getAttribute('aria-label')).toBe('Warning Message Strip Close');
+        expect(close.title).toBe('Warning Message Strip Close');
     });
 
     describe('auto dismiss', () => {

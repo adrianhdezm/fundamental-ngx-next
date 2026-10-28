@@ -1,9 +1,11 @@
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { Avatar } from '@/ui/avatar/avatar';
-import { AvatarGroup, AvatarGroupItem, type AvatarGroupType } from './avatar-group';
+import type { Placement } from '@/ui/popover/popover';
+import { AvatarGroup, AvatarGroupItem, type AvatarGroupOrientation, type AvatarGroupType } from './avatar-group';
 
 interface Person {
     name: string;
@@ -29,11 +31,14 @@ const NAMES = [
     imports: [AvatarGroup, AvatarGroupItem, Avatar],
     template: `
         <button id="before">Before</button>
-        <div id="wrapper" [style.width.px]="width()">
+        <div id="wrapper" [style.width.px]="width()" [style.padding-top.px]="offset()">
             <fd-avatar-group
                 size="s"
                 [type]="type()"
+                [orientation]="orientation()"
+                [placement]="placement()"
                 [maxVisibleItems]="max()"
+                [overflowButtonShape]="shape()"
                 [ariaLabel]="ariaLabel()"
                 overflowPopoverTitle="Team members"
                 (visibleCountChange)="visibleCount.set($event)"
@@ -51,6 +56,8 @@ const NAMES = [
                         <div class="details p-4">
                             <span class="details-name">{{ p.name }}</span>
                             <button class="details-action">Message {{ p.name }}</button>
+                            <!-- a widget that keeps its keys to itself -->
+                            <input class="details-stopper" aria-label="Note" (keydown)="$event.stopPropagation()" />
                         </div>
                     </ng-template>
                 }
@@ -60,8 +67,13 @@ const NAMES = [
 })
 class Host {
     readonly width = signal(300);
+    /** Room above the group, for popovers centred next to it. */
+    readonly offset = signal(0);
     readonly type = signal<AvatarGroupType>('individual');
+    readonly orientation = signal<AvatarGroupOrientation>('horizontal');
+    readonly placement = signal<Placement | undefined>(undefined);
     readonly max = signal<number | null>(null);
+    readonly shape = signal<'circle' | 'square'>('square');
     readonly ariaLabel = signal<string | null>(null);
     readonly people = signal<Person[]>(NAMES.map((name) => ({ name })));
     readonly visibleCount = signal(-1);
@@ -103,6 +115,32 @@ async function setup(configure?: (host: Host) => void) {
             await stable();
         }
     };
+}
+
+@Component({
+    imports: [AvatarGroup, AvatarGroupItem, Avatar],
+    template: `
+        @for (shape of shapes; track $index) {
+            <div style="width: 1000px">
+                <fd-avatar-group size="s" [maxVisibleItems]="2" [overflowButtonShape]="shape!">
+                    @for (name of names; track name) {
+                        <fd-avatar *fdAvatarGroupItem circle size="s" [label]="name" />
+                    }
+                </fd-avatar-group>
+            </div>
+        }
+        <div style="width: 1000px">
+            <fd-avatar-group id="default-shape" size="s" [maxVisibleItems]="2">
+                @for (name of names; track name) {
+                    <fd-avatar *fdAvatarGroupItem circle size="s" [label]="name" />
+                }
+            </fd-avatar-group>
+        </div>
+    `
+})
+class ShapeHost {
+    readonly names = NAMES.slice(0, 4);
+    readonly shapes = ['circle', 'square'] as const;
 }
 
 describe('AvatarGroup', () => {
@@ -191,6 +229,8 @@ describe('AvatarGroup', () => {
         await userEvent.click(triggers[1]);
         await stable();
         expect(body()!.querySelector('.details-name')!.textContent).toBe(NAMES[1]);
+        // the details dialog is named by the avatar's title
+        expect(body()!.getAttribute('aria-label')).toBe(NAMES[1]);
         // focus moves into the details
         await wait(50);
         expect(body()!.contains(document.activeElement)).toBe(true);
@@ -320,5 +360,187 @@ describe('AvatarGroup', () => {
             h.ariaLabel.set(null);
         });
         expect(group.querySelector('[role=list]')!.getAttribute('aria-label')).toBe('Individual avatar group');
+    });
+
+    it('the overflow button is square by default and circular with overflowButtonShape=circle', async () => {
+        const fixture = TestBed.createComponent(ShapeHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        await frame();
+        await fixture.whenStable();
+        const root = fixture.nativeElement as HTMLElement;
+        const buttons = [...root.querySelectorAll<HTMLElement>('[data-avatar-group-overflow] [role=button] > span')];
+        const radius = (el: HTMLElement) => parseFloat(getComputedStyle(el).borderTopLeftRadius);
+        const [circle, square, byDefault] = buttons;
+        expect(buttons).toHaveLength(3);
+        expect(radius(circle)).toBeGreaterThanOrEqual(circle.getBoundingClientRect().width / 2);
+        expect(radius(square)).toBeLessThan(square.getBoundingClientRect().width / 2);
+        expect(radius(byDefault)).toBe(radius(square));
+        fixture.destroy();
+    });
+
+    it('vertical groups open their popovers to the right unless placement is set', async () => {
+        const { group, body, stable, update } = await setup((h) => {
+            h.type.set('group');
+            h.width.set(1000);
+            h.max.set(4);
+            h.offset.set(200);
+        });
+        const trigger = () => group.querySelector<HTMLElement>('[role=button]')!;
+        /** Opens the group popover and returns where it is relative to the trigger. */
+        const side = async () => {
+            await userEvent.click(trigger());
+            await stable();
+            const t = trigger().getBoundingClientRect();
+            const b = body()!.getBoundingClientRect();
+            await userEvent.keyboard('{Escape}');
+            await stable();
+            if (b.left >= t.right - 1) return 'right';
+            if (b.top >= t.bottom - 1) return 'bottom';
+            if (b.bottom <= t.top + 1) return 'top';
+            return 'other';
+        };
+        expect(await side()).toBe('bottom');
+        await update((h) => h.orientation.set('vertical'));
+        expect(await side()).toBe('right');
+        await update((h) => h.placement.set('bottom'));
+        expect(await side()).toBe('bottom');
+        await update((h) => h.placement.set(undefined));
+        expect(await side()).toBe('right');
+
+        // the details popovers of an individual vertical group open to the right as well
+        await update((h) => h.type.set('individual'));
+        const avatar = group.querySelector<HTMLElement>('[data-avatar-group-item] [role=button]')!;
+        await userEvent.click(avatar);
+        await stable();
+        expect(body()!.getBoundingClientRect().left).toBeGreaterThanOrEqual(avatar.getBoundingClientRect().right - 1);
+        await userEvent.keyboard('{Escape}');
+        await stable();
+    });
+
+    it('focusing an avatar of an individual group announces its position', async () => {
+        const { group, overflowTrigger } = await setup((h) => {
+            h.width.set(1000);
+            h.max.set(5);
+        });
+        const announce = vi.spyOn(TestBed.inject(LiveAnnouncer), 'announce');
+        const triggers = [...group.querySelectorAll<HTMLElement>('[data-avatar-group-item] [role=button]')];
+        expect(triggers).toHaveLength(4);
+        triggers[1].focus();
+        expect(announce).toHaveBeenLastCalledWith('2 of 5');
+        // the overflow button is the last item of the list
+        overflowTrigger()!.focus();
+        expect(announce).toHaveBeenLastCalledWith('5 of 5');
+        announce.mockRestore();
+    });
+
+    it('a maxVisibleItems larger than what fits still leaves room for the overflow button', async () => {
+        const { group, visible, overflow } = await setup((h) => h.max.set(10));
+        const shown = visible().length;
+        expect(shown).toBeLessThan(10);
+        expect(overflow()!.textContent!.trim()).toBe(`+${NAMES.length - shown}`);
+        expect(overflow()!.getBoundingClientRect().right).toBeLessThanOrEqual(group.getBoundingClientRect().right);
+    });
+
+    it('Escape closes the overflow popover even when its content stops propagation', async () => {
+        const { overflowTrigger, body, stable } = await setup((h) => {
+            h.width.set(1000);
+            h.max.set(5);
+        });
+        await userEvent.click(overflowTrigger()!);
+        await stable();
+        body()!.querySelector<HTMLElement>('[role=list] > [role=listitem]')!.focus();
+        await userEvent.keyboard('{Enter}');
+        await stable();
+        const stopper = body()!.querySelector<HTMLElement>('.details-stopper')!;
+        stopper.focus();
+        // other keys stay with the content
+        await userEvent.keyboard('a');
+        await stable();
+        expect(body()).not.toBeNull();
+        await userEvent.keyboard('{Escape}');
+        await stable();
+        expect(body()).toBeNull();
+        expect(document.activeElement).toBe(overflowTrigger());
+    });
+
+    it('visibleCountChange follows changes of maxVisibleItems', async () => {
+        const { host, update } = await setup((h) => h.width.set(1000));
+        expect(host.visibleCount()).toBe(NAMES.length);
+        await update((h) => h.max.set(3));
+        expect(host.visibleCount()).toBe(2);
+        await update((h) => h.max.set(null));
+        expect(host.visibleCount()).toBe(NAMES.length);
+    });
+
+    it('maxVisibleItems: 0 hides every avatar, the total count hides none, and changes apply', async () => {
+        const { host, visible, overflow, update } = await setup((h) => {
+            h.width.set(1000);
+            h.max.set(0);
+        });
+        expect(visible()).toEqual([]);
+        expect(overflow()!.textContent!.trim()).toBe(`+${NAMES.length}`);
+
+        await update((h) => h.max.set(NAMES.length));
+        expect(visible()).toEqual(NAMES);
+        expect(overflow()).toBeNull();
+        expect(host.visibleCount()).toBe(NAMES.length);
+
+        await update((h) => h.max.set(3));
+        expect(visible()).toEqual(NAMES.slice(0, 2));
+        expect(overflow()!.textContent!.trim()).toBe(`+${NAMES.length - 2}`);
+        expect(host.visibleCount()).toBe(2);
+    });
+
+    it('group type respects maxVisibleItems', async () => {
+        const { group, update } = await setup((h) => {
+            h.type.set('group');
+            h.width.set(1000);
+            h.max.set(4);
+        });
+        const shown = () => group.querySelectorAll('[data-avatar-group-item]').length;
+        const count = () => group.querySelector('[data-avatar-group-overflow]')?.textContent!.trim();
+        expect(shown()).toBe(3);
+        expect(count()).toBe(`+${NAMES.length - 3}`);
+        await update((h) => h.max.set(null));
+        expect(shown()).toBe(NAMES.length);
+        expect(count()).toBeUndefined();
+    });
+
+    it('vertical orientation caps by maxVisibleItems and ignores the container width', async () => {
+        const { group, visible, overflow, update } = await setup((h) => {
+            h.orientation.set('vertical');
+            h.width.set(60);
+        });
+        // a narrow container does not hide anything in a column
+        expect(visible()).toEqual(NAMES);
+        expect(overflow()).toBeNull();
+        const avatars = [...group.querySelectorAll<HTMLElement>('[data-avatar-group-item]')];
+        expect(avatars[1].getBoundingClientRect().top).toBeGreaterThanOrEqual(
+            avatars[0].getBoundingClientRect().bottom
+        );
+
+        await update((h) => h.max.set(4));
+        expect(visible()).toEqual(NAMES.slice(0, 3));
+        expect(overflow()!.textContent!.trim()).toBe(`+${NAMES.length - 3}`);
+        // the overflow button is below the last avatar
+        const last = group.querySelectorAll<HTMLElement>('[data-avatar-group-item]')[2];
+        expect(overflow()!.getBoundingClientRect().top).toBeGreaterThanOrEqual(last.getBoundingClientRect().bottom);
+    });
+
+    it('overflowButtonShape applies to group-type groups and follows changes', async () => {
+        const { group, update } = await setup((h) => {
+            h.type.set('group');
+            h.width.set(1000);
+            h.max.set(4);
+        });
+        const button = () => group.querySelector<HTMLElement>('[data-avatar-group-overflow] > span')!;
+        const round = () =>
+            parseFloat(getComputedStyle(button()).borderTopLeftRadius) >= button().getBoundingClientRect().width / 2;
+        expect(round()).toBe(false);
+        await update((h) => h.shape.set('circle'));
+        expect(round()).toBe(true);
+        await update((h) => h.shape.set('square'));
+        expect(round()).toBe(false);
     });
 });

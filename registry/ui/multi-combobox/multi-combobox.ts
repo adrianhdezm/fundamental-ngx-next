@@ -193,8 +193,8 @@ let nextId = 0;
                         [disabled]="disabledState()"
                         [readOnly]="readonly()"
                         [attr.title]="token.label"
-                        (onCloseClick)="toggle(token, false)"
-                        (onRemove)="toggle(token, false)"
+                        (onCloseClick)="removeToken(token)"
+                        (onRemove)="removeToken(token)"
                         >{{ token.label }}</fd-token
                     >
                 }
@@ -271,24 +271,28 @@ let nextId = 0;
                     }
                     @for (row of rows(); track row.key) {
                         @if (row.header !== null) {
-                            <li
-                                role="group"
-                                class="m-0 list-none p-0"
-                                [attr.aria-labelledby]="id + '-group-' + row.key"
-                            >
-                                @if (templates().groupItemTemplate; as tpl) {
-                                    <div [id]="id + '-group-' + row.key">
-                                        <ng-container
-                                            [ngTemplateOutlet]="tpl"
-                                            [ngTemplateOutletContext]="{ $implicit: { label: row.header } }"
-                                        />
-                                    </div>
-                                } @else {
-                                    <div [id]="id + '-group-' + row.key" [class]="groupHeaderClass">
-                                        {{ row.header }}
-                                    </div>
-                                }
-                                <ul role="none" class="m-0 list-none p-0">
+                            <li role="none" class="m-0 list-none p-0">
+                                <ul
+                                    role="group"
+                                    class="m-0 list-none p-0"
+                                    [attr.aria-labelledby]="id + '-group-' + row.key"
+                                >
+                                    @if (templates().groupItemTemplate; as tpl) {
+                                        <li role="presentation" [id]="id + '-group-' + row.key">
+                                            <ng-container
+                                                [ngTemplateOutlet]="tpl"
+                                                [ngTemplateOutletContext]="{ $implicit: { label: row.header } }"
+                                            />
+                                        </li>
+                                    } @else {
+                                        <li
+                                            role="presentation"
+                                            [id]="id + '-group-' + row.key"
+                                            [class]="groupHeaderClass"
+                                        >
+                                            {{ row.header }}
+                                        </li>
+                                    }
                                     @for (entry of row.items; track entry.index) {
                                         <ng-container
                                             [ngTemplateOutlet]="optionTpl"
@@ -657,6 +661,11 @@ export class MultiCombobox<T = unknown> implements ControlValueAccessor {
     toggle(suggestion: Suggestion<T>, select = !this.isSelected(suggestion)): void {
         const rest = this.selectedItems().filter((item) => this.lookup(item) !== suggestion.id);
         this.setSelected(select ? [...rest, suggestion.value] : rest);
+    }
+
+    /** Removes the item of a token; without tokens left the focus goes to the input, as the token is gone. */
+    protected removeToken(suggestion: Suggestion<T>): void {
+        this.toggle(suggestion, false);
         if (!this.selectedItems().length) this.field()?.nativeElement.focus();
     }
 
@@ -827,12 +836,27 @@ export class MultiCombobox<T = unknown> implements ControlValueAccessor {
     protected onFocusout(event: FocusEvent): void {
         if (this.mobile()) return;
         const next = event.relatedTarget as Node | null;
-        if (
-            next &&
-            (this.elementRef.nativeElement.contains(next) || (next as Element).closest?.('.cdk-overlay-container'))
-        )
+        if (!next) {
+            // a focused token that is removed (its close button) blurs while it leaves the DOM:
+            // the focus goes back to the field and the list stays open
+            const target = event.target as Node;
+            queueMicrotask(() => {
+                if (this.destroyed) return;
+                if (!target.isConnected && this.elementRef.nativeElement.isConnected) {
+                    this.field()?.nativeElement.focus();
+                    return;
+                }
+                this.leave();
+            });
             return;
-        // a text that names exactly one item chooses it
+        }
+        if (this.elementRef.nativeElement.contains(next) || (next as Element).closest?.('.cdk-overlay-container'))
+            return;
+        this.leave();
+    }
+
+    /** The focus left the field: a text that names exactly one item chooses it, and the list closes. */
+    private leave(): void {
         const text = this.inputText();
         const match = text ? this.suggestions().filter((s) => s.label === text) : [];
         if (match.length === 1 && !this.isSelected(match[0])) this.toggle(match[0], true);

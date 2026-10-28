@@ -1,9 +1,12 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
+import { Button } from '@/ui/button/button';
 import {
     Carousel,
+    type CarouselBackgroundOptions,
     CarouselDirective,
     CarouselItem,
     CarouselItemDirective,
@@ -20,6 +23,9 @@ import {
             [vertical]="vertical()"
             [visibleSlidesCount]="count()"
             [slideTransitionDuration]="0"
+            [contentBackground]="contentBackground()"
+            [pageIndicatorBackground]="indicatorBackground()"
+            [noPaginationContainerBorder]="noBorder()"
             (slideChange)="changes.push($event)"
         >
             @for (slide of slides(); track slide) {
@@ -35,6 +41,9 @@ class Host {
     readonly loop = signal(false);
     readonly vertical = signal(false);
     readonly count = signal<number | 'auto'>(1);
+    readonly contentBackground = signal<CarouselBackgroundOptions>('translucent');
+    readonly indicatorBackground = signal<CarouselBackgroundOptions>('solid');
+    readonly noBorder = signal(false);
     readonly changes: CarouselActiveSlides[] = [];
 }
 
@@ -62,8 +71,35 @@ async function setup(config: { slides?: number; loop?: boolean; vertical?: boole
         selected: () =>
             [...root.querySelectorAll('[role=option][aria-selected=true]')].map((o) => o.textContent!.trim()),
         live: () => root.querySelector('[aria-live]')!.textContent!.replace(/\s+/g, ' ').trim(),
-        transform: () => root.querySelector<HTMLElement>('[style*="--carousel-count"]')!.style.transform
+        transform: () => root.querySelector<HTMLElement>('[style*="--carousel-count"]')!.style.transform,
+        options: () => [...root.querySelectorAll<HTMLElement>('[role=option]')],
+        track: () => root.querySelector<HTMLElement>('[style*="--carousel-count"]')!
     };
+}
+
+/** Resolves a theme variable to the colour the browser computes for it. */
+function token(variable: string): string {
+    const probe = document.createElement('div');
+    probe.style.color = `var(${variable})`;
+    document.body.appendChild(probe);
+    const color = getComputedStyle(probe).color;
+    probe.remove();
+    return color;
+}
+
+/** Drags the slides with the primary pointer along the carousel's axis, from one offset to another. */
+function drag(track: HTMLElement, axis: 'x' | 'y', from: number, to: number): void {
+    const box = track.getBoundingClientRect();
+    const point = (offset: number) =>
+        axis === 'x'
+            ? { clientX: box.left + offset, clientY: box.top + 50 }
+            : { clientX: box.left + 50, clientY: box.top + offset };
+    const fire = (type: string, target: EventTarget, offset: number) =>
+        target.dispatchEvent(new PointerEvent(type, { bubbles: true, button: 0, isPrimary: true, ...point(offset) }));
+    fire('pointerdown', track, from);
+    fire('pointermove', document, (from + to) / 2);
+    fire('pointermove', document, to);
+    fire('pointerup', document, to);
 }
 
 describe('Carousel', () => {
@@ -187,6 +223,97 @@ describe('Carousel', () => {
         await fixture.whenStable();
         expect(selected()).toEqual(['Slide 1']);
         expect(fixture.nativeElement.querySelectorAll('[role=img]').length).toBe(3);
+    });
+
+    it('contentBackground, pageIndicatorBackground and noPaginationContainerBorder apply their tokens', async () => {
+        const { fixture, host, root } = await setup();
+        const content = root.querySelector<HTMLElement>('[data-carousel-list]')!.parentElement!;
+        const indicators = root.querySelector('[role=img]')!.parentElement!.parentElement!;
+        const background = (el: HTMLElement) => getComputedStyle(el).backgroundColor;
+        // defaults: translucent content, solid page indicator, with a border
+        expect(background(content)).toBe(token('--sapBackgroundColor'));
+        expect(background(indicators)).toBe(token('--sapPageFooter_Background'));
+        expect(getComputedStyle(indicators).borderTopColor).toBe(token('--sapList_BorderColor'));
+
+        host.contentBackground.set('solid');
+        host.indicatorBackground.set('translucent');
+        host.noBorder.set(true);
+        await fixture.whenStable();
+        expect(background(content)).toBe(token('--sapGroup_ContentBackground'));
+        expect(background(indicators)).toBe(token('--sapBackgroundColor'));
+        expect(getComputedStyle(indicators).borderTopColor).toBe('rgba(0, 0, 0, 0)');
+
+        host.contentBackground.set('transparent');
+        host.indicatorBackground.set('transparent');
+        await fixture.whenStable();
+        expect(background(content)).toBe('rgba(0, 0, 0, 0)');
+        expect(background(indicators)).toBe('rgba(0, 0, 0, 0)');
+    });
+
+    it('a vertical carousel shows up and down navigation icons', async () => {
+        const { fixture, host } = await setup();
+        const glyphs = () =>
+            fixture.debugElement
+                .queryAll(By.directive(Button))
+                .map((button) => (button.componentInstance as Button).glyph());
+        expect(glyphs()).toEqual(['slim-arrow-left', 'slim-arrow-right']);
+        host.vertical.set(true);
+        await fixture.whenStable();
+        expect(glyphs()).toEqual(['slim-arrow-up', 'slim-arrow-down']);
+    });
+
+    it('changing visibleSlidesCount re-pages the slides', async () => {
+        const { fixture, host, root, selected, next, transform } = await setup();
+        expect(root.querySelectorAll('[role=img]').length).toBe(4);
+        host.count.set(2);
+        await fixture.whenStable();
+        expect(selected()).toEqual(['Slide 1', 'Slide 2']);
+        expect(root.querySelectorAll('[role=img]').length).toBe(3);
+        await userEvent.click(next());
+        await fixture.whenStable();
+        expect(selected()).toEqual(['Slide 2', 'Slide 3']);
+
+        host.count.set(4);
+        await fixture.whenStable();
+        expect(selected()).toEqual(['Slide 1', 'Slide 2', 'Slide 3', 'Slide 4']);
+        // one page: no indicators and no navigation
+        expect(root.querySelectorAll('[role=img]').length).toBe(0);
+        expect(next()).toBeNull();
+        expect(transform()).toBe('translateX(0px)');
+        // like upstream, a new count reports the shown slides
+        expect(host.changes.at(-1)!.slideDirection).toBe('None');
+        expect(host.changes.at(-1)!.activeItems.length).toBe(4);
+    });
+
+    it('aria-activedescendant and aria-hidden follow the active slide after navigating', async () => {
+        const { fixture, listbox, options, next } = await setup();
+        await userEvent.click(next());
+        await userEvent.click(next());
+        await fixture.whenStable();
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        expect(listbox.getAttribute('aria-activedescendant')).toBe(options()[2].id);
+        expect(options().map((o) => o.getAttribute('aria-hidden'))).toEqual(['true', 'true', 'false', 'true']);
+        expect(options().map((o) => o.getAttribute('aria-selected'))).toEqual(['false', 'false', 'true', 'false']);
+        expect(getComputedStyle(options()[2]).visibility).toBe('visible');
+        expect(getComputedStyle(options()[0]).visibility).toBe('hidden');
+    });
+
+    it('releasing a drag before half a slide snaps back', async () => {
+        const { fixture, host, selected, track, transform } = await setup();
+        drag(track(), 'x', 250, 150);
+        await fixture.whenStable();
+        expect(selected()).toEqual(['Slide 1']);
+        expect(transform()).toBe('translateX(0px)');
+        expect(host.changes.length).toBe(0);
+    });
+
+    it('dragging a vertical carousel moves to the next slide', async () => {
+        const { fixture, host, selected, track, transform } = await setup({ vertical: true });
+        drag(track(), 'y', 90, 10);
+        await fixture.whenStable();
+        expect(selected()).toEqual(['Slide 2']);
+        expect(transform()).toMatch(/^translateY\(-\d+px\)$/);
+        expect(host.changes.at(-1)!.slideDirection).toBe('Next');
     });
 });
 

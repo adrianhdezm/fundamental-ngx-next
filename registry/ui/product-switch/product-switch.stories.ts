@@ -1,5 +1,6 @@
-import { Component, afterNextRender, input, signal, viewChild } from '@angular/core';
+import { Component, input, linkedSignal, signal } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '@/ui/button/button';
 import { ProductSwitch, ProductSwitchBody, ProductSwitchButton, type ProductSwitchItem } from './product-switch';
 
@@ -18,7 +19,8 @@ const ALL: ProductSwitchItem[] = [
     {
         title: 'Customer Data Cloud',
         icon: 'customer-briefing',
-        avatar: { label: 'Customer Data Cloud', colorAccent: 6 }
+        // an image or glyph avatar: initials would be visible text missing from the item's name (WCAG 2.5.3)
+        avatar: { glyph: 'customer-briefing', colorAccent: 6 }
     }
 ];
 
@@ -30,7 +32,7 @@ const ALL: ProductSwitchItem[] = [
             <span class="font-sap-font-family text-sap-font-size text-sap-text-color" aria-live="polite">{{
                 chosen()
             }}</span>
-            <fd-product-switch #ps>
+            <fd-product-switch>
                 @if (custom()) {
                     <ng-template fdProductSwitchButton>
                         <button fdButton glyph="grid" label="Products" aria-haspopup="menu"></button>
@@ -51,22 +53,65 @@ class StoryProductSwitch {
     readonly list = input(false);
     readonly busy = input(false);
     readonly custom = input(false);
-    readonly autoOpen = input(false);
-    protected readonly products = signal<ProductSwitchItem[]>([]);
+    // derived from the inputs, so the first render already has the right products (and drops can reorder them)
+    protected readonly products = linkedSignal<ProductSwitchItem[]>(() =>
+        ALL.slice(0, this.count()).map((p) => ({ ...p, callback: () => undefined }))
+    );
     protected readonly chosen = signal('');
-    private readonly ps = viewChild.required<ProductSwitch>('ps');
-    constructor() {
-        queueMicrotask(() =>
-            this.products.set(ALL.slice(0, this.count()).map((p) => ({ ...p, callback: () => undefined })))
-        );
-        afterNextRender(() => this.autoOpen() && setTimeout(() => this.ps().isOpen.set(true), 50));
-    }
+}
+
+const NAVIGATION: ProductSwitchItem[] = [
+    { title: 'SAP Start', subtitle: 'Opens in new tab (default)', icon: 'home', url: 'https://www.sap.com' },
+    {
+        title: 'SAP Ariba',
+        subtitle: 'Opens in new tab (explicit)',
+        icon: 'contacts',
+        url: 'https://www.sap.com/products/spend-management/ariba-network.html',
+        target: '_blank'
+    },
+    {
+        title: 'Business Data Cloud',
+        subtitle: 'Opens in same tab',
+        icon: 'business-objects-experience',
+        url: 'https://www.sap.com/products/technology-platform/business-data-cloud.html',
+        target: '_self'
+    },
+    { title: 'Callback Only', subtitle: 'No navigation, fires callback', icon: 'action' }
+];
+
+@Component({
+    selector: 'story-product-switch-navigation',
+    imports: [ProductSwitch, ProductSwitchBody],
+    template: `
+        <div class="flex items-center justify-end gap-2">
+            <span class="font-sap-font-family text-sap-font-size text-sap-text-color" aria-live="polite">{{
+                chosen()
+            }}</span>
+            <fd-product-switch>
+                <fd-product-switch-body [products]="products" />
+            </fd-product-switch>
+        </div>
+    `
+})
+class StoryProductSwitchNavigation {
+    protected readonly chosen = signal('');
+    protected readonly products = NAVIGATION.map((p) =>
+        p.url ? p : { ...p, callback: () => this.chosen.set('Custom callback fired') }
+    );
+}
+
+/** Opens the product switch from its button (named `name`) and waits for the products. */
+function openSwitch(name = 'Product switch'): Story['play'] {
+    return async ({ canvasElement }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name }));
+        await waitFor(() => expect(document.querySelector('[role=menu] [role=menuitem]')).not.toBeNull());
+    };
 }
 
 const meta: Meta<ProductSwitch> = {
     title: 'Components/Product Switch',
     component: ProductSwitch,
-    decorators: [moduleMetadata({ imports: [StoryProductSwitch] })],
+    decorators: [moduleMetadata({ imports: [StoryProductSwitch, StoryProductSwitchNavigation] })],
     parameters: {
         docs: {
             story: { inline: false, iframeHeight: 640 },
@@ -95,18 +140,52 @@ export const Busy: Story = {
     name: 'Busy and custom button',
     render: () => ({ template: `<story-product-switch [busy]="true" [custom]="true" />` })
 };
+export const Navigation: Story = {
+    name: 'URL navigation',
+    parameters: {
+        docs: {
+            description: {
+                story:
+                    'Products with a `url` open it with `window.open` in their `target` (`_blank` by default), unless they have a `callback`. ' +
+                    'They are rendered as links, and a target other than `_self` is added to the accessible name.'
+            }
+        }
+    },
+    render: () => ({ template: `<story-product-switch-navigation />` })
+};
 export const OpenLarge: Story = {
     name: 'Open: large',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-product-switch [autoOpen]="true" />` })
+    render: () => ({ template: `<story-product-switch />` }),
+    play: openSwitch()
 };
 export const OpenMedium: Story = {
     name: 'Open: medium',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-product-switch [count]="6" [autoOpen]="true" />` })
+    render: () => ({ template: `<story-product-switch [count]="6" />` }),
+    play: openSwitch()
+};
+export const OpenTwoColumns: Story = {
+    name: 'Open: two columns',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-product-switch [count]="2" />` }),
+    play: openSwitch()
 };
 export const OpenList: Story = {
     name: 'Open: list',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-product-switch [list]="true" [autoOpen]="true" />` })
+    render: () => ({ template: `<story-product-switch [list]="true" />` }),
+    play: openSwitch()
+};
+export const OpenBusy: Story = {
+    name: 'Open: busy',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-product-switch [busy]="true" [custom]="true" />` }),
+    play: openSwitch('Products')
+};
+export const OpenNavigation: Story = {
+    name: 'Open: URL navigation',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-product-switch-navigation />` }),
+    play: openSwitch()
 };

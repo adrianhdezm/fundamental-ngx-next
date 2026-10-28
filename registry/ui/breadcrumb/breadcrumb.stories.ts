@@ -1,5 +1,6 @@
 import { Component, input, signal } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Icon } from '@/ui/icon/icon';
 import { Link } from '@/ui/link/link';
 import { Breadcrumb, BreadcrumbItem, type BreadcrumbSeparatorStyle } from './breadcrumb';
@@ -106,4 +107,20 @@ export const Overflow: Story = {
             <story-breadcrumb width="22rem" [reverse]="true" label="Reversed trail" />
         `
     })
+};
+
+export const OpenOverflow: Story = {
+    name: 'Open: collapsed items',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-breadcrumb width="22rem" />` }),
+    play: async ({ canvasElement }) => {
+        const more = await waitFor(() => {
+            const el = canvasElement.querySelector<HTMLElement>('[data-breadcrumb-more]');
+            expect(el).not.toBeNull();
+            return el!;
+        });
+        await userEvent.click(more);
+        await waitFor(() => expect(more.getAttribute('aria-expanded')).toBe('true'));
+        await waitFor(() => expect(document.querySelector('.cdk-overlay-container [role=menuitem]')).not.toBeNull());
+    }
 };

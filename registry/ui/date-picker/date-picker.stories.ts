@@ -1,7 +1,16 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
-import { DatetimeAdapter, FdDate, provideDateTimeFormats } from '@/lib/datetime';
+import { expect, userEvent, waitFor } from 'storybook/test';
+import {
+    DATE_TIME_FORMATS,
+    DatetimeAdapter,
+    FD_DATETIME_FORMATS,
+    FdDate,
+    provideDateTimeFormats,
+    type DateTimeFormats
+} from '@/lib/datetime';
+import { Button } from '@/ui/button/button';
 import { DateRange, type SpecialDayRule } from '@/ui/calendar/calendar';
 import { FormItem, FormLabel } from '@/ui/form/form';
 import { Select, SelectOption } from '@/ui/select/select';
@@ -88,21 +97,66 @@ class StoryDatePickerRange {
 
 @Component({
     selector: 'story-date-picker-disable',
-    imports: [DatePicker, Title],
+    imports: [DatePicker, Title, ReactiveFormsModule, FormItem, FormLabel],
     template: `
-        <h3 fdTitle headerSize="5" class="${heading}">Weekends disabled; typing one sets the error state</h3>
-        <fd-date-picker [(selectedDate)]="date" [disableFunction]="weekend" />
+        <form [formGroup]="form">
+            <h3 fdTitle headerSize="5" class="${heading}">Weekends disabled; typing one makes the control invalid</h3>
+            <div fd-form-item>
+                <label fd-form-label for="dp-disable-single">Date</label>
+                <fd-date-picker
+                    inputId="dp-disable-single"
+                    formControlName="date"
+                    [disableFunction]="weekend"
+                    [state]="form.controls.date.valid ? 'success' : 'error'"
+                    [message]="form.controls.date.valid ? 'The date is a weekday' : 'Pick a weekday'"
+                    [messageType]="form.controls.date.valid ? 'success' : 'error'"
+                />
+            </div>
+            <p class="${value}">
+                Touched: {{ form.controls.date.touched }}, dirty: {{ form.controls.date.dirty }}, valid:
+                {{ form.controls.date.valid }}, date: {{ form.controls.date.value?.toDateString() ?? 'none' }}
+            </p>
 
-        <h3 fdTitle headerSize="5" class="${heading}">Range starting on a weekday and ending in 2024</h3>
-        <fd-date-picker
-            type="range"
-            [(selectedRangeDate)]="range"
-            [disableRangeStartFunction]="weekend"
-            [disableRangeEndFunction]="after2024"
-        />
+            <h3 fdTitle headerSize="5" class="${heading}">Multiple dates, weekends disabled</h3>
+            <div fd-form-item>
+                <label fd-form-label for="dp-disable-multi">Dates</label>
+                <fd-date-picker
+                    inputId="dp-disable-multi"
+                    formControlName="dates"
+                    allowMultipleSelection
+                    class="w-96"
+                    [disableFunction]="weekend"
+                    [state]="form.controls.dates.valid ? 'success' : 'error'"
+                    [message]="form.controls.dates.valid ? 'All dates are weekdays' : 'Pick weekdays only'"
+                    [messageType]="form.controls.dates.valid ? 'success' : 'error'"
+                />
+            </div>
+            <p class="${value}">
+                Touched: {{ form.controls.dates.touched }}, dirty: {{ form.controls.dates.dirty }}, valid:
+                {{ form.controls.dates.valid }}, {{ form.controls.dates.value?.length ?? 0 }} dates
+            </p>
 
-        <h3 fdTitle headerSize="5" class="${heading}">Multiple dates, weekends disabled</h3>
-        <fd-date-picker [(selectedMultipleDates)]="dates" allowMultipleSelection [disableFunction]="weekend" />
+            <h3 fdTitle headerSize="5" class="${heading}">Range starting on a weekday and ending in 2024</h3>
+            <div fd-form-item>
+                <label fd-form-label for="dp-disable-range">Period</label>
+                <fd-date-picker
+                    inputId="dp-disable-range"
+                    type="range"
+                    formControlName="range"
+                    [disableRangeStartFunction]="weekend"
+                    [disableRangeEndFunction]="after2024"
+                    [state]="form.controls.range.valid ? 'success' : 'error'"
+                    [message]="form.controls.range.valid ? '' : 'Start on a weekday and end in 2024'"
+                    messageType="error"
+                />
+            </div>
+            <p class="${value}">
+                Touched: {{ form.controls.range.touched }}, dirty: {{ form.controls.range.dirty }}, valid:
+                {{ form.controls.range.valid }}, start:
+                {{ form.controls.range.value?.start?.toDateString() ?? 'none' }}, end:
+                {{ form.controls.range.value?.end?.toDateString() ?? 'none' }}
+            </p>
+        </form>
 
         <h3 fdTitle headerSize="5" class="${heading}">Navigation limited to 2024</h3>
         <fd-date-picker
@@ -113,15 +167,95 @@ class StoryDatePickerRange {
     `
 })
 class StoryDatePickerDisable {
+    protected readonly form = new FormGroup({
+        date: new FormControl<FdDate | null>(new FdDate(2024, 3, 12)),
+        dates: new FormControl<FdDate[]>([new FdDate(2024, 3, 12)]),
+        range: new FormControl<DateRange<FdDate> | null>(
+            new DateRange(new FdDate(2024, 3, 11), new FdDate(2024, 3, 15))
+        )
+    });
     protected readonly date = signal<FdDate | null | undefined>(new FdDate(2024, 3, 12));
-    protected readonly range = signal<DateRange<FdDate> | null>(null);
-    protected readonly dates = signal<FdDate[]>([]);
     protected readonly weekend = (date: FdDate) => [1, 7].includes(date.getDayOfWeek());
     protected readonly after2024 = (date: FdDate) => date.year > 2024;
     protected readonly atStart = (_: unknown, current: { year: number; month: number }, view: string) =>
         view === 'day' ? current.year <= 2024 && current.month <= 1 : current.year <= 2024;
     protected readonly atEnd = (_: unknown, current: { year: number; month: number }, view: string) =>
         view === 'day' ? current.year >= 2024 && current.month >= 12 : current.year >= 2024;
+}
+
+/** Two-digit dates and " to " between the ends of a range, for every picker below. */
+const CUSTOM_FORMATS: DateTimeFormats = {
+    ...FD_DATETIME_FORMATS,
+    display: {
+        ...FD_DATETIME_FORMATS.display,
+        dateInput: { year: '2-digit', month: '2-digit', day: '2-digit' }
+    },
+    rangeDelimiter: ' to '
+};
+
+@Component({
+    selector: 'story-date-picker-formats',
+    imports: [DatePicker, Title],
+    providers: [{ provide: DATE_TIME_FORMATS, useValue: CUSTOM_FORMATS }],
+    template: `
+        <h3 fdTitle headerSize="5" class="${heading}">Formats provided with DATE_TIME_FORMATS (two digits)</h3>
+        <fd-date-picker [(selectedDate)]="date" placeholder="mm/dd/yy" />
+
+        <h3 fdTitle headerSize="5" class="${heading}">A format of the picker (customDateTimeFormat)</h3>
+        <fd-date-picker [(selectedDate)]="date" [customDateTimeFormat]="longFormat" />
+
+        <h3 fdTitle headerSize="5" class="${heading}">Multiple dates</h3>
+        <fd-date-picker [(selectedMultipleDates)]="dates" allowMultipleSelection class="w-96" />
+
+        <h3 fdTitle headerSize="5" class="${heading}">Range, with " to " between the dates</h3>
+        <fd-date-picker type="range" [(selectedRangeDate)]="range" placeholder="mm/dd/yy to mm/dd/yy" />
+
+        <h3 fdTitle headerSize="5" class="${heading}">Multiple ranges</h3>
+        <fd-date-picker type="range" [(selectedMultipleDateRanges)]="ranges" allowMultipleSelection class="w-[32rem]" />
+    `
+})
+class StoryDatePickerFormats {
+    protected readonly longFormat = { year: '2-digit', month: 'long', day: '2-digit' };
+    protected readonly date = signal<FdDate | null | undefined>(new FdDate(2024, 3, 9));
+    protected readonly dates = signal([new FdDate(2024, 3, 4), new FdDate(2024, 3, 5), new FdDate(2024, 3, 6)]);
+    protected readonly range = signal<DateRange<FdDate> | null>(
+        new DateRange(new FdDate(2024, 3, 9), new FdDate(2024, 3, 10))
+    );
+    protected readonly ranges = signal([
+        new DateRange(new FdDate(2024, 8, 1), new FdDate(2024, 8, 6)),
+        new DateRange(new FdDate(2024, 8, 10), new FdDate(2024, 8, 15)),
+        new DateRange(new FdDate(2024, 8, 20), new FdDate(2024, 8, 25))
+    ]);
+}
+
+@Component({
+    selector: 'story-date-picker-scroll',
+    imports: [DatePicker, Title, Button],
+    template: `
+        <h3 fdTitle headerSize="5" class="${heading}">Prevent scrolling when the calendar closes</h3>
+        <p class="${value}">
+            Scroll the box so the field is partly out of view, open the calendar and close it with Escape. Scrolling to
+            the field on focus is {{ preventScroll() ? 'off' : 'on' }}.
+        </p>
+        <button
+            fdButton
+            class="my-2"
+            label="Toggle scroll on focus"
+            (click)="preventScroll.set(!preventScroll())"
+        ></button>
+        <div
+            class="h-40 overflow-auto rounded-sap-element-border-corner-radius border border-sap-group-content-border-color p-4"
+        >
+            <div class="h-32"></div>
+            <fd-date-picker [(selectedDate)]="date" [preventScrollOnFocus]="preventScroll()" [allowNull]="false" />
+            <div class="h-64"></div>
+        </div>
+        <p class="${value}">Date: {{ date()?.toDateString() ?? 'none' }}</p>
+    `
+})
+class StoryDatePickerScroll {
+    protected readonly preventScroll = signal(false);
+    protected readonly date = signal<FdDate | null | undefined>(new FdDate(2024, 3, 9));
 }
 
 @Component({
@@ -264,13 +398,16 @@ const meta: Meta<DatePicker<FdDate>> = {
     decorators: [
         moduleMetadata({
             imports: [
+                DatePicker,
                 StoryDatePickerSingle,
                 StoryDatePickerRange,
                 StoryDatePickerDisable,
                 StoryDatePickerSpecial,
                 StoryDatePickerForm,
                 StoryDatePickerLocale,
-                StoryDatePickerMobile
+                StoryDatePickerMobile,
+                StoryDatePickerFormats,
+                StoryDatePickerScroll
             ]
         })
     ],
@@ -294,3 +431,54 @@ export const SpecialDays: Story = { render: () => ({ template: `<story-date-pick
 export const Forms: Story = { render: () => ({ template: `<story-date-picker-form />` }) };
 export const Locale: Story = { render: () => ({ template: `<story-date-picker-locale />` }) };
 export const Mobile: Story = { render: () => ({ template: `<story-date-picker-mobile />` }) };
+export const CustomFormats: Story = { render: () => ({ template: `<story-date-picker-formats />` }) };
+export const PreventScrollOnFocus: Story = {
+    name: 'Prevent scroll on focus',
+    render: () => ({ template: `<story-date-picker-scroll />` })
+};
+
+/** Opens the picker with its button (or its field, in mobile mode) and waits for the calendar. */
+async function openPicker(canvasElement: HTMLElement, target: 'button' | 'input' = 'button'): Promise<void> {
+    const control = canvasElement.querySelector<HTMLElement>(
+        target === 'button' ? 'fd-date-picker button[aria-haspopup]' : 'fd-date-picker input'
+    )!;
+    await userEvent.click(control);
+    await waitFor(() => expect(document.querySelector('fd-calendar [role="grid"]')).not.toBeNull());
+}
+
+export const OpenCalendar: Story = {
+    name: 'Open: calendar',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { date: new FdDate(2024, 3, 9) },
+        template: `<fd-date-picker
+            [(selectedDate)]="date"
+            showTodayButton
+            message="Dates are local"
+            messageType="information"
+        />`
+    }),
+    play: ({ canvasElement }) => openPicker(canvasElement)
+};
+export const OpenRange: Story = {
+    name: 'Open: range',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { range: new DateRange(new FdDate(2024, 3, 4), new FdDate(2024, 3, 8)) },
+        template: `<fd-date-picker type="range" [(selectedRangeDate)]="range" rangeHoverEffect showTodayButton />`
+    }),
+    play: ({ canvasElement }) => openPicker(canvasElement)
+};
+export const OpenMobile: Story = {
+    name: 'Open: mobile',
+    tags: ['!autodocs'],
+    render: () => ({
+        props: { date: new FdDate(2024, 3, 9) },
+        template: `<fd-date-picker
+            mobile
+            [(selectedDate)]="date"
+            [mobileConfig]="{ title: 'Delivery date', approveButtonText: 'Save', cancelButtonText: 'Cancel' }"
+        />`
+    }),
+    play: ({ canvasElement }) => openPicker(canvasElement, 'input')
+};

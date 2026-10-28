@@ -605,9 +605,10 @@ export class Dialog {
             full &&
                 'fixed! inset-0! size-full! min-w-full! max-w-full! min-h-full! max-h-full! translate-none! rounded-none',
             full && '[&_[data-dialog-bar]]:rounded-none [&_[data-dialog-body]]:rounded-none',
+            // the full-size minimums give way to the maximums, and the margin centres the window
             this.mobile() &&
                 config.mobileOuterSpacing &&
-                'rounded-sap-element-border-corner-radius max-w-[calc(100vw_-_10%)]! max-h-[calc(100vh_-_6%)]!',
+                'm-auto! rounded-sap-element-border-corner-radius min-w-0! min-h-0! max-w-[calc(100vw_-_10%)]! max-h-[calc(100vh_-_6%)]!',
             this.draggable() &&
                 (this.dragging()
                     ? 'enabled-hover:[&_[data-dialog-header]]:cursor-grabbing'

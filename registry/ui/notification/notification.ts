@@ -4,7 +4,7 @@
  * Modified for fundamental-ngx-registry: rewritten with Angular signals, the Angular CDK and Tailwind CSS.
  * SPDX-License-Identifier: Apache-2.0
  */
-import { FocusTrapFactory, type FocusTrap } from '@angular/cdk/a11y';
+import { InteractivityChecker } from '@angular/cdk/a11y';
 import { Directionality } from '@angular/cdk/bidi';
 import { Overlay, type OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
@@ -22,6 +22,7 @@ import {
     Type,
     ViewContainerRef,
     afterNextRender,
+    afterRenderEffect,
     booleanAttribute,
     computed,
     contentChild,
@@ -130,12 +131,43 @@ export class NotificationHeader {
     readonly id = input(`fd-notification-header-${nextId++}`);
 }
 
-/** Avatar, content and actions of a notification. */
+/**
+ * Avatar, content and actions of a notification. The action buttons are described by the first
+ * header (`aria-describedby`), unless they already have a description.
+ */
 @Directive({
     selector: 'fd-notification-body',
     host: { class: 'relative m-0 box-border flex gap-3 p-4' }
 })
-export class NotificationBody {}
+export class NotificationBody {
+    private readonly headers = contentChildren(NotificationHeader, { descendants: true });
+    private readonly actions = contentChildren<NotificationActions>(forwardRef(() => NotificationActions));
+
+    constructor() {
+        const destroyRef = inject(DestroyRef);
+        const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+        const apply = () => {
+            const header = this.headers()[0];
+            if (!header) return;
+            const id = header.id();
+            for (const actions of this.actions()) {
+                actions.elementRef.nativeElement
+                    .querySelectorAll('button, a[fdButton]')
+                    .forEach(
+                        (button) =>
+                            button.hasAttribute('aria-describedby') || button.setAttribute('aria-describedby', id)
+                    );
+            }
+        };
+        afterRenderEffect(apply);
+        // buttons added later (e.g. by an @if) get the description too
+        afterNextRender(() => {
+            const observer = new MutationObserver(apply);
+            observer.observe(host, { childList: true, subtree: true });
+            destroyRef.onDestroy(() => observer.disconnect());
+        });
+    }
+}
 
 /** Header, paragraph, footer and status of a notification. */
 @Directive({
@@ -149,7 +181,9 @@ export class NotificationContent {}
     selector: 'fd-notification-actions',
     host: { 'data-nt-actions': '', class: 'absolute end-0 top-0 m-0 box-border flex gap-0.5 ps-1 pe-2 pt-2' }
 })
-export class NotificationActions {}
+export class NotificationActions {
+    readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+}
 
 /** A footnote, e.g. the source or the time. */
 @Directive({
@@ -594,7 +628,7 @@ export class NotificationHost {
 export class NotificationService {
     private readonly overlay = inject(Overlay);
     private readonly injector = inject(Injector);
-    private readonly focusTrapFactory = inject(FocusTrapFactory);
+    private readonly checker = inject(InteractivityChecker);
     private overlayRef: OverlayRef | null = null;
     private container: NotificationContainer | null = null;
     private readonly open$ = signal<NotificationRef[]>([]);
@@ -629,18 +663,18 @@ export class NotificationService {
         }
         hostRef.changeDetectorRef.detectChanges();
 
-        let trap: FocusTrap | null = null;
+        let releaseTrap: (() => void) | null = null;
         if (merged.shouldTrapFocus) {
             if (!this.open$().length) this.previousFocus = document.activeElement as HTMLElement | null;
             const host = hostRef.location.nativeElement as HTMLElement;
             const notification = host.querySelector<HTMLElement>('fd-notification') ?? host;
-            trap = this.focusTrapFactory.create(notification);
+            releaseTrap = this.trapTab(notification);
             notification.focus();
         }
         this.open$.update((list) => [...list, ref]);
 
         const remove = () => {
-            trap?.destroy();
+            releaseTrap?.();
             hostRef.destroy();
             this.open$.update((list) => list.filter((r) => r !== ref));
             if (!this.open$().length) {
@@ -667,6 +701,30 @@ export class NotificationService {
 
     isAnyOpened(): boolean {
         return this.open$().length > 0;
+    }
+
+    /**
+     * Keeps Tab inside the notification: Tab on its last tabbable element wraps to the notification and
+     * Shift+Tab on the notification to the last one. Unlike the CDK focus trap, this adds no `aria-hidden`
+     * focusable anchors, which axe reports (aria-hidden-focus).
+     */
+    private trapTab(notification: HTMLElement): () => void {
+        const onKeydown = (event: KeyboardEvent) => {
+            if (event.key !== 'Tab' || event.ctrlKey || event.altKey || event.metaKey) return;
+            const tabbables = [
+                notification,
+                ...[...notification.querySelectorAll<HTMLElement>('*')].filter(
+                    (el) => this.checker.isFocusable(el) && this.checker.isTabbable(el)
+                )
+            ];
+            const active = document.activeElement;
+            const edge = event.shiftKey ? tabbables[0] : tabbables[tabbables.length - 1];
+            if (active !== edge) return;
+            event.preventDefault();
+            (event.shiftKey ? tabbables[tabbables.length - 1] : tabbables[0]).focus();
+        };
+        notification.addEventListener('keydown', onKeydown);
+        return () => notification.removeEventListener('keydown', onKeydown);
     }
 
     private ensureContainer(): NotificationContainer {

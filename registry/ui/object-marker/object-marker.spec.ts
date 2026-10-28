@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
+import type { IconFont } from '@/ui/icon/icon';
 import { ObjectMarker } from './object-marker';
 
 @Component({
@@ -12,6 +13,7 @@ import { ObjectMarker } from './object-marker';
             fdObjectMarker
             id="om"
             [glyph]="glyph()"
+            [glyphFont]="glyphFont()"
             [label]="label()"
             [title]="title()"
             [clickable]="clickable()"
@@ -31,6 +33,7 @@ import { ObjectMarker } from './object-marker';
 })
 class Host {
     readonly glyph = signal<string | null>('private');
+    readonly glyphFont = signal<IconFont>('SAP-icons');
     readonly label = signal<string | null>('Locked');
     readonly title = signal<string | null>(null);
     readonly clickable = signal(false);
@@ -71,6 +74,23 @@ describe('ObjectMarker', () => {
         expect(icon()!.getBoundingClientRect().right).toBeLessThanOrEqual(
             document.getElementById('om-label')!.getBoundingClientRect().left + 0.5
         );
+    });
+
+    it('glyphFont passes the icon font to the marker icon', async () => {
+        const { fixture, host, icon } = await setup();
+        const font = () => getComputedStyle(icon()!, '::before').fontFamily;
+        expect(icon()!.dataset['glyph']).toBe(String.fromCodePoint(0xe0c8));
+        expect(font()).toContain('SAP-icons');
+        host.glyphFont.set('SAP-icons-TNT');
+        host.glyph.set('actor');
+        await fixture.whenStable();
+        expect(icon()!.dataset['glyph']).toBe(String.fromCodePoint(0xe03c));
+        expect(font()).toContain('SAP-icons-TNT');
+        host.glyphFont.set('BusinessSuiteInAppSymbols');
+        host.glyph.set('add-note');
+        await fixture.whenStable();
+        expect(icon()!.dataset['glyph']).toBe(String.fromCodePoint(0xe008));
+        expect(font()).toContain('SAP-icons-Business-Suite');
     });
 
     it('label only renders no icon', async () => {

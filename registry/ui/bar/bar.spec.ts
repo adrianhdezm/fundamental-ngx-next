@@ -65,6 +65,35 @@ class Host {
 })
 class HeaderHost {}
 
+@Component({
+    imports: [Bar, BarMiddle, BarElement],
+    template: `
+        <div fd-bar data-testid="layout-bar" aria-label="Layout bar" style="width: 600px">
+            <div fd-bar-middle data-testid="area">
+                <fd-bar-element data-testid="element" [fullWidth]="fullWidth()">
+                    <input data-testid="input" aria-label="Field" size="5" />
+                </fd-bar-element>
+            </div>
+        </div>
+        <div
+            fd-bar
+            data-testid="tall-bar"
+            aria-label="Suggestions"
+            [initialSuggestionTitle]="suggestionTitle()"
+            [initialSuggestionSubline]="suggestionSubline()"
+        >
+            <div fd-bar-left>
+                <fd-bar-element><div style="height: 64px">Suggestion</div></fd-bar-element>
+            </div>
+        </div>
+    `
+})
+class LayoutHost {
+    readonly fullWidth = signal(false);
+    readonly suggestionTitle = signal(false);
+    readonly suggestionSubline = signal(false);
+}
+
 async function setup(config: Partial<{ design: BarDesign; width: string; title: string }> = {}) {
     const fixture = TestBed.createComponent(Host);
     const host = fixture.componentInstance;
@@ -192,15 +221,60 @@ describe('Bar', () => {
         }
     });
 
-    it('inHomePage uses smaller paddings for size s', async () => {
+    it('inHomePage paddings follow every size and the default', async () => {
         const { fixture, host, bar } = await setup();
+        const padding = () => [getComputedStyle(bar()).paddingInlineStart, getComputedStyle(bar()).paddingInlineEnd];
         host.inHomePage.set(true);
-        host.size.set('s');
+        for (const [size, px] of [
+            ['', '16px'],
+            ['s', '8px'],
+            ['m_l', '32px'],
+            ['xl', '48px']
+        ] as const) {
+            host.size.set(size);
+            await fixture.whenStable();
+            expect(padding()).toEqual([px, px]);
+        }
+    });
+
+    it('fullWidth makes a bar element fill its area', async () => {
+        const fixture = TestBed.createComponent(LayoutHost);
+        document.body.appendChild(fixture.nativeElement);
         await fixture.whenStable();
-        expect(getComputedStyle(bar()).paddingInlineStart).toBe('8px');
-        host.size.set('xl');
+        const root = fixture.nativeElement as HTMLElement;
+        const el = (id: string) => root.querySelector<HTMLElement>(`[data-testid="${id}"]`)!;
+        const area = el('area');
+        expect(rect(area).width).toBe(rect(el('layout-bar')).width - 32);
+        expect(rect(el('element')).width).toBeLessThan(rect(area).width / 2);
+
+        fixture.componentInstance.fullWidth.set(true);
         await fixture.whenStable();
-        expect(getComputedStyle(bar()).paddingInlineStart).toBe('48px');
+        expect(rect(el('element')).width).toBe(rect(area).width);
+        // Its first child grows with it.
+        expect(rect(el('input')).width).toBe(rect(area).width);
+    });
+
+    it('initialSuggestionTitle and initialSuggestionSubline let the bar grow with their paddings', async () => {
+        const fixture = TestBed.createComponent(LayoutHost);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        const host = fixture.componentInstance;
+        const bar = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[data-testid="tall-bar"]')!;
+        const paddings = () => [getComputedStyle(bar).paddingTop, getComputedStyle(bar).paddingBottom];
+        // The 64px content is taller than the bar: it grows to fit, without padding.
+        expect(paddings()).toEqual(['0px', '0px']);
+        expect(rect(bar).height).toBe(64);
+
+        host.suggestionTitle.set(true);
+        await fixture.whenStable();
+        expect(paddings()).toEqual(['8px', '0px']);
+        expect(rect(bar).height).toBe(72);
+
+        host.suggestionTitle.set(false);
+        host.suggestionSubline.set(true);
+        await fixture.whenStable();
+        expect(paddings()).toEqual(['4px', '8px']);
+        expect(rect(bar).height).toBe(76);
     });
 
     it('a floating footer in a page is offset by the page size', async () => {

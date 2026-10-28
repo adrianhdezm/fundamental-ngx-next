@@ -1,7 +1,132 @@
+import { Component, signal } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
+import { InputGroup } from '@/ui/input-group/input-group';
 import { FormControl } from '@/ui/input/input';
+import { Link } from '@/ui/link/link';
+import { MultiInput } from '@/ui/multi-input/multi-input';
 import { Fieldset, FormGroup, FormGroupHeader, FormHeader, FormItem, FormLabel, FormLegend } from './form';
+import { FormInputMessageGroup } from './form-input-message-group';
 import { FormMessage } from './form-message';
+
+/** The upstream "Form Message Input Group" example: a message group around each kind of field. */
+@Component({
+    selector: 'story-form-message-group',
+    imports: [FormItem, FormLabel, FormControl, FormInputMessageGroup, FormMessage, InputGroup, MultiInput],
+    template: `
+        <div class="flex max-w-md flex-col gap-10">
+            <div fdFormItem>
+                <label fdFormLabel for="mg-1">Account Number</label>
+                <fd-form-input-message-group>
+                    <input fdFormControl id="mg-1" placeholder="Enter 10-digit account number" state="information" />
+                    <fd-form-message type="information">
+                        Your account number is shown on your monthly statement or in the mobile app under Account
+                        Settings.
+                    </fd-form-message>
+                </fd-form-input-message-group>
+            </div>
+            <div fdFormItem>
+                <label fdFormLabel for="mg-2">Password Requirements</label>
+                <fd-form-input-message-group placement="bottom" [triggers]="[]" [(isOpen)]="open">
+                    <fd-input-group
+                        inputId="mg-2"
+                        state="information"
+                        button
+                        addOnText="Show Requirements"
+                        (addOnButtonClicked)="open.set(!open())"
+                    />
+                    <fd-form-message type="information">
+                        Password must contain at least 8 characters, including one uppercase letter, one lowercase
+                        letter, one number, and one special character.
+                    </fd-form-message>
+                </fd-form-input-message-group>
+            </div>
+            <div fdFormItem>
+                <label fdFormLabel for="mg-3">Country Code</label>
+                <fd-form-input-message-group
+                    placement="bottom"
+                    [triggers]="['mouseenter', 'mouseleave', 'focusin', 'focusout']"
+                >
+                    <fd-input-group
+                        inputId="mg-3"
+                        glyph="world"
+                        glyphAriaLabel="Select country code"
+                        state="information"
+                        button
+                    />
+                    <fd-form-message type="information">
+                        Select your country code from the list. This determines your tax jurisdiction and available
+                        payment methods.
+                    </fd-form-message>
+                </fd-form-input-message-group>
+            </div>
+            <div fdFormItem>
+                <label fdFormLabel for="mg-4">Additional Comments</label>
+                <fd-form-input-message-group placement="bottom">
+                    <textarea
+                        fdFormControl
+                        id="mg-4"
+                        state="information"
+                        placeholder="Provide any additional details about your request"
+                    ></textarea>
+                    <fd-form-message type="information">
+                        Please include any relevant context or special requirements. This helps our team process your
+                        request more efficiently.
+                    </fd-form-message>
+                </fd-form-input-message-group>
+            </div>
+            <div fdFormItem>
+                <label fdFormLabel id="mg-label-5" for="mg-5">Dietary Restrictions</label>
+                <fd-form-input-message-group [triggers]="['mouseover', 'mouseout']">
+                    <fd-multi-input
+                        inputId="mg-5"
+                        placeholder="Select all that apply"
+                        state="information"
+                        [dropdownValues]="diets"
+                        [(selected)]="selectedDiets"
+                    />
+                    <fd-form-message type="information">
+                        Select all dietary restrictions that apply. This information will be shared with catering for
+                        company events.
+                    </fd-form-message>
+                </fd-form-input-message-group>
+            </div>
+            <div fdFormItem>
+                <label fdFormLabel for="mg-6">Budget Approval Code</label>
+                <fd-form-input-message-group placement="bottom" [triggers]="[]" [(isOpen)]="openRich">
+                    <fd-input-group
+                        inputId="mg-6"
+                        state="information"
+                        button
+                        addOnText="Where to Find"
+                        (addOnButtonClicked)="openRich.set(!openRich())"
+                    />
+                    <fd-form-message type="information">
+                        <div>
+                            Your approval code is sent via email when your budget request is approved. Check your inbox
+                            for messages with subject line starting with <code>[Budget Approved]</code>.
+                        </div>
+                    </fd-form-message>
+                </fd-form-input-message-group>
+            </div>
+        </div>
+    `
+})
+class StoryFormMessageGroup {
+    readonly open = signal(false);
+    readonly openRich = signal(false);
+    readonly diets = [
+        'Vegetarian',
+        'Vegan',
+        'Gluten-Free',
+        'Dairy-Free',
+        'Nut Allergy',
+        'Shellfish Allergy',
+        'Kosher',
+        'Halal'
+    ];
+    readonly selectedDiets = signal(['Vegan']);
+}
 
 const meta: Meta = {
     title: 'Components/Form',
@@ -16,7 +141,10 @@ const meta: Meta = {
                 FormItem,
                 FormLabel,
                 FormLegend,
-                FormMessage
+                FormMessage,
+                FormInputMessageGroup,
+                Link,
+                StoryFormMessageGroup
             ]
         })
     ],
@@ -86,4 +214,86 @@ export const Messages: Story = {
                 <fd-form-message type="warning" embedded>Embedded message without shadow</fd-form-message>
             </div>`
     })
+};
+
+export const MessageGroup: Story = {
+    name: 'Message group',
+    parameters: {
+        docs: {
+            description: {
+                story:
+                    'A form input message group shows the message of a field in a popover: on focus by default, on hover, ' +
+                    'or controlled with `[(isOpen)]` and no triggers (here from an input group button). It works with ' +
+                    'inputs, input groups, textareas and multi inputs, and the message can hold rich content.'
+            }
+        }
+    },
+    render: () => ({ template: `<story-form-message-group />` })
+};
+
+export const MessageStates: Story = {
+    name: 'Message states',
+    render: () => ({
+        template: `
+            <div class="flex max-w-md flex-col gap-10">
+                <div fdFormItem>
+                    <label fdFormLabel for="ms-info">Employee ID</label>
+                    <fd-form-input-message-group>
+                        <input fdFormControl id="ms-info" placeholder="e.g., EMP12345" state="information" />
+                        <fd-form-message type="information">Your employee ID can be found on your company badge or ID card.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="ms-warning">Cost Center</label>
+                    <fd-form-input-message-group>
+                        <input fdFormControl id="ms-warning" placeholder="e.g., CC-1000" state="warning" />
+                        <fd-form-message type="warning">This cost center will be retired next quarter. Please check <a fdLink href="#">Available Cost Centers</a>.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="ms-error">Email Address</label>
+                    <fd-form-input-message-group>
+                        <input fdFormControl id="ms-error" placeholder="your.name&#64;company.com" state="error" />
+                        <fd-form-message type="error">Please enter a valid email address in the format <b>name&#64;domain.com</b>.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+                <div fdFormItem>
+                    <label fdFormLabel for="ms-success">Username</label>
+                    <fd-form-input-message-group>
+                        <input fdFormControl id="ms-success" placeholder="Choose a unique username" state="success" />
+                        <fd-form-message type="success">Great! This username is available and meets all requirements.</fd-form-message>
+                    </fd-form-input-message-group>
+                </div>
+            </div>`
+    })
+};
+
+/** Waits until the message popover holds the given text. */
+async function waitForMessage(text: string): Promise<void> {
+    await waitFor(() =>
+        expect(document.querySelector('.cdk-overlay-container fd-form-message')?.textContent).toContain(text)
+    );
+}
+
+/** Focuses the first field so axe checks the open message popover. */
+export const OpenMessageGroup: Story = {
+    name: 'Open: message group',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-form-message-group />` }),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(canvasElement.querySelector<HTMLInputElement>('#mg-1')!);
+        await waitForMessage('monthly statement');
+    }
+};
+
+/** Opens the controlled message with rich content from its input-group button. */
+export const OpenRichMessage: Story = {
+    name: 'Open: rich message',
+    tags: ['!autodocs'],
+    render: () => ({ template: `<story-form-message-group />` }),
+    play: async ({ canvasElement }) => {
+        const group = canvasElement.querySelector<HTMLInputElement>('#mg-6')!.closest('fd-input-group')!;
+        await userEvent.click(group.querySelector<HTMLButtonElement>('button')!);
+        await waitForMessage('Budget Approved');
+    }
 };

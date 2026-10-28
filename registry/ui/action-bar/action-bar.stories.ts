@@ -1,5 +1,7 @@
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { Button } from '@/ui/button/button';
+import { Menu, MenuInteractive, MenuItem, MenuTitle, MenuTrigger } from '@/ui/menu/menu';
 import {
     ActionBar,
     ActionBarActions,
@@ -16,7 +18,12 @@ const IMPORTS = [
     ActionBarTitle,
     ActionBarActions,
     ActionBarDescription,
-    Button
+    Button,
+    Menu,
+    MenuItem,
+    MenuInteractive,
+    MenuTitle,
+    MenuTrigger
 ];
 const col = 'flex flex-col gap-8';
 const label = 'm-0 mb-2 text-sap-font-small-size text-sap-content-label-color';
@@ -33,6 +40,15 @@ const bar = (opts: { back?: boolean; title?: string; description?: string; size?
         </div>
         ${opts.description === '' ? '' : `<p fd-action-bar-description ${opts.back === false ? '' : 'withBackBtn'}>${opts.description ?? 'Action bar description'}</p>`}
     </div>`;
+
+/** The overflow button and its menu of page actions; `menuInputs` adds inputs to the menu. */
+const actionsMenu = (menuInputs = '') => `
+    <button fdButton variant="transparent" glyph="overflow" ariaLabel="More" [fdMenuTrigger]="menu"></button>
+    <fd-menu #menu ariaLabel="Page actions" placement="bottom-end" ${menuInputs}>
+        ${['Edit', 'Delete', 'Assign', 'Expire', 'Archive']
+            .map((a) => `<li fd-menu-item><div fd-menu-interactive><span fd-menu-title>${a}</span></div></li>`)
+            .join('')}
+    </fd-menu>`;
 
 const meta: Meta<ActionBar> = {
     title: 'Components/Action Bar',
@@ -82,18 +98,52 @@ export const Sizes: Story = {
     })
 };
 
-export const Mobile: Story = {
-    name: 'Small screen',
+export const ContextualMenu: Story = {
+    name: 'Contextual menu',
     render: () => ({
         template: `
-            <p class="${label}">Below a 600px wide viewport the back button and description are hidden; resize the window to see it.</p>
-            <div fd-action-bar size="s">
+            <div fd-action-bar>
                 <div fd-action-bar-header>
-                    <div fd-action-bar-back><button fdButton variant="transparent" glyph="navigation-left-arrow" ariaLabel="Back"></button></div>
                     <div fd-action-bar-title>Page Title</div>
-                    <div fd-action-bar-actions><button fdButton variant="transparent" glyph="overflow" ariaLabel="More actions"></button></div>
+                    <div fd-action-bar-actions>${actionsMenu()}</div>
                 </div>
-                <p fd-action-bar-description withBackBtn>Action bar description</p>
             </div>`
     })
+};
+
+const MOBILE = `
+    <p class="${label}">Below a 600px wide viewport the back button and description are hidden; resize the window to see it. The overflow button opens the actions in a mobile menu.</p>
+    <div fd-action-bar size="s">
+        <div fd-action-bar-header>
+            <div fd-action-bar-back><button fdButton variant="transparent" glyph="navigation-left-arrow" ariaLabel="Back"></button></div>
+            <div fd-action-bar-title>Page Title</div>
+            <div fd-action-bar-actions>${actionsMenu(`mobile [mobileConfig]="{ title: 'Actions', hasCloseButton: true }"`)}</div>
+        </div>
+        <p fd-action-bar-description withBackBtn>Action bar description</p>
+    </div>`;
+
+export const Mobile: Story = {
+    name: 'Small screen',
+    render: () => ({ template: MOBILE })
+};
+
+/** Clicks the overflow button and waits until its menu shows the actions. */
+async function openActions(canvasElement: HTMLElement): Promise<void> {
+    const more = canvasElement.querySelector<HTMLElement>('button[aria-label=More]')!;
+    await userEvent.click(more);
+    await waitFor(() => expect(more.getAttribute('aria-expanded')).toBe('true'));
+    await waitFor(() => expect(document.querySelector('.cdk-overlay-container [role=menuitem]')).not.toBeNull());
+}
+
+export const OpenContextualMenu: Story = {
+    ...ContextualMenu,
+    name: 'Open: contextual menu',
+    tags: ['!autodocs'],
+    play: ({ canvasElement }) => openActions(canvasElement)
+};
+export const OpenMobile: Story = {
+    ...Mobile,
+    name: 'Open: mobile actions',
+    tags: ['!autodocs'],
+    play: ({ canvasElement }) => openActions(canvasElement)
 };

@@ -289,10 +289,10 @@ export class Menu extends MenuList {
                 focusAutoCapture: this.focusAutoCapture(),
                 restoreFocusOnClose: this.restoreFocusOnClose(),
                 fixedPosition: this.fixedPosition(),
-                fillControlMode: this.fillControlMode(),
+                fillControlMode: this.fillControlMode() ?? cfg.fillControlMode ?? null,
                 // inline submenus must not be clipped by the scrolling wrapper
                 disableScrollbar: this.disableScrollbar() || this.hasSubmenus(),
-                additionalBodyClass: this.additionalBodyClass(),
+                additionalBodyClass: this.additionalBodyClass() ?? cfg.additionalBodyClass ?? null,
                 noArrow: true,
                 bodyRole: null
             });
@@ -306,7 +306,8 @@ export class Menu extends MenuList {
         effect((onCleanup) => {
             const trigger = this.trigger();
             if (!trigger || !this.mobile()) return;
-            const toggle = () => this.toggle();
+            // a disabled menu ignores its trigger, like the popover does on desktop
+            const toggle = () => !this.disabled() && this.toggle();
             trigger.addEventListener('click', toggle);
             onCleanup(() => trigger.removeEventListener('click', toggle));
         });
@@ -923,10 +924,10 @@ export class MenuTitle {
 
     protected readonly computedClass = computed(() =>
         cn(
-            'm-0 my-1 box-border w-full p-0 text-start font-sap-font-family text-sap-font-size text-(--mi-tc) whitespace-normal',
+            'm-0 my-1 box-border w-full p-0 text-start font-sap-font-family text-sap-font-size text-(--mi-tc)',
             'has-[+[fd-menu-item-input]]:w-fit has-[+[fd-menu-item-input]]:min-w-fit',
             TEXT_IN_ICON_LIST,
-            this.truncate() && 'truncate',
+            this.truncate() ? 'truncate' : 'whitespace-normal',
             this.userClass()
         )
     );
@@ -953,8 +954,8 @@ export class MenuSubtitle {
     readonly userClass = input<ClassValue>('', { alias: 'class' });
     protected readonly computedClass = computed(() =>
         cn(
-            'm-0 mb-1 box-border w-full p-0 text-start font-sap-font-family text-sap-font-size text-sap-content-label-color whitespace-normal',
-            this.truncate() && 'truncate',
+            'm-0 mb-1 box-border w-full p-0 text-start font-sap-font-family text-sap-font-size text-sap-content-label-color',
+            this.truncate() ? 'truncate' : 'whitespace-normal',
             this.userClass()
         )
     );
@@ -1175,7 +1176,7 @@ export class MenuTrigger {
 
     protected openFromKeyboard(event: Event): void {
         const menu = this.menu();
-        if (!menu || menu.isOpen()) return;
+        if (!menu || menu.isOpen() || menu.disabled()) return;
         event.preventDefault();
         menu.open();
     }

@@ -633,6 +633,8 @@ export class TabList implements TabsContext {
     protected readonly spyPaused = signal(false);
     /** The tab that has (or last had) the focus. */
     private readonly focusedLink = signal<HTMLElement | null>(null);
+    /** Whether the selected tab is the default one, not one chosen by the user or `selectTab()`. */
+    private defaultSelected = false;
 
     constructor() {
         // one tab stop: the focused, the selected or the first enabled tab
@@ -647,18 +649,28 @@ export class TabList implements TabsContext {
             untracked(() => links.forEach((l) => l.tabbable.set(l === stop)));
             void selected;
         });
-        // select the default (or first enabled) tab, also when the tabs change
+        // select the default (or first enabled) tab, also when the tabs change; the ids are tracked
+        // because bound ids (e.g. in a @for) arrive after the tabs, and until a tab is chosen the
+        // selection follows the default
         let previous: readonly TabPanel[] = [];
         effect(() => {
             const tabs = this.tabs();
+            const defaultId = this.defaultTab();
+            tabs.forEach((t) => t.id());
             untracked(() => {
                 const changed = tabs !== previous;
                 previous = tabs;
                 const current = this.selected();
-                if (current && tabs.includes(current) && !(changed && this.selectDefaultOnTabsChange())) return;
                 const fallback =
-                    tabs.find((t) => !t.disabled() && t.id() === this.defaultTab()) ?? tabs.find((t) => !t.disabled());
+                    tabs.find((t) => !t.disabled() && t.id() === defaultId) ?? tabs.find((t) => !t.disabled());
+                const keep =
+                    current &&
+                    tabs.includes(current) &&
+                    !(changed && this.selectDefaultOnTabsChange()) &&
+                    !(this.defaultSelected && fallback !== current);
+                if (keep) return;
                 if (fallback && fallback !== current) this.select(fallback, false);
+                this.defaultSelected = !!fallback;
             });
         });
     }
@@ -683,6 +695,7 @@ export class TabList implements TabsContext {
     /** Selects a tab; `expand = false` collapses it in collapsible tab lists. */
     expandTab(tab: TabPanel, expand: boolean): void {
         if (tab.disabled()) return;
+        this.defaultSelected = false;
         if (!expand) {
             if (this.collapsibleTabs() && this.selected() === tab) {
                 this.selected.set(null);
@@ -707,6 +720,7 @@ export class TabList implements TabsContext {
     protected onSpyChange(element: HTMLElement | undefined): void {
         const tab = this.tabs().find((t) => t.elementRef.nativeElement === element);
         if (tab && tab !== this.selected()) {
+            this.defaultSelected = false;
             this.selected.set(tab);
             this.emitChange(tab);
         }

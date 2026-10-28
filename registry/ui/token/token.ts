@@ -84,7 +84,8 @@ export class Token {
     readonly onCloseClick = output<MouseEvent | undefined>();
     /** Emitted by `Tokenizer.removeSelectedTokens()`. */
     readonly onRemove = output<void>();
-    readonly onTokenClick = output<MouseEvent>();
+    /** The token was clicked, or Enter or Space was pressed on it. */
+    readonly onTokenClick = output<MouseEvent | KeyboardEvent>();
     readonly onTokenKeydown = output<KeyboardEvent>();
     readonly elementFocused = output<boolean>();
 
@@ -146,8 +147,10 @@ export class Token {
         this.wrapper().focus();
     }
 
+    /** Handles a click on the close icon; without the click event nothing is emitted, as upstream. */
     closeClickHandler(event?: MouseEvent): void {
-        event?.stopPropagation();
+        if (!event) return;
+        event.stopPropagation();
         if (!this.disabled() && !this.readOnly()) this.onCloseClick.emit(event);
     }
 
@@ -157,6 +160,7 @@ export class Token {
 
     protected onKeydown(event: KeyboardEvent): void {
         this.onTokenKeydown.emit(event);
+        if (event.key === 'Enter' || event.key === ' ') this.onTokenClick.emit(event);
     }
 }
 
@@ -209,8 +213,13 @@ export class TokenizerInput {
                     <ng-content select="fd-token" />
                 </div>
                 @if (hiddenCount() > 0) {
-                    @if (showOverflowPopover()) {
-                        <fd-popover placement="bottom-start" [noArrow]="false" [(isOpen)]="overflowOpen">
+                    @if (showOverflowPopover() && externalHiddenCount() === 0) {
+                        <fd-popover
+                            placement="bottom-start"
+                            [noArrow]="false"
+                            [bodyAriaLabel]="tokenizerLabel()"
+                            [(isOpen)]="overflowOpen"
+                        >
                             <fd-popover-control>
                                 <span
                                     role="button"
@@ -252,6 +261,7 @@ export class TokenizerInput {
                             [class]="moreClass"
                             (click)="moreClickedEvent.emit()"
                             (keydown.enter)="moreClickedEvent.emit()"
+                            (keydown.space)="$event.preventDefault(); moreClickedEvent.emit()"
                             >{{ moreText() }}</span
                         >
                     }
@@ -302,7 +312,10 @@ export class Tokenizer {
     readonly moreTerm = input('{count} more');
     /** Lists the hidden tokens in a popover; otherwise only `moreClickedEvent` emits. */
     readonly showOverflowPopover = input(true, { transform: booleanAttribute });
-    /** Tokens hidden by the owner (e.g. a multi-input), counted in the overflow link. */
+    /**
+     * Tokens hidden by the owner (e.g. a multi-input), counted in the overflow link. While it is above 0 the
+     * owner shows the hidden tokens: the link only emits `moreClickedEvent`, without the popover.
+     */
     readonly externalHiddenCount = input(0);
     /** Keeps the tokens expanded, e.g. while a value help is open. */
     readonly open = input(false, { transform: booleanAttribute });
@@ -437,8 +450,9 @@ export class Tokenizer {
         this.focused.set(false);
     }
 
-    private onTokenClick(token: Token, index: number, event: MouseEvent): void {
-        if (token.disabled()) return;
+    private onTokenClick(token: Token, index: number, event: MouseEvent | KeyboardEvent): void {
+        // Enter and Space on a token are handled in onKeydown
+        if (token.disabled() || event instanceof KeyboardEvent) return;
         event.stopPropagation();
         token.focus();
         const tokens = this.tokens();

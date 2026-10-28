@@ -7,7 +7,8 @@ import {
     type StatusIndicatorColor,
     type StatusIndicatorFillDirection,
     type StatusIndicatorFillingType,
-    type StatusIndicatorLabelPosition
+    type StatusIndicatorLabelPosition,
+    type StatusIndicatorSize
 } from './status-indicator';
 
 const SQUARE = 'M0,0 L10,0 L10,10 L0,10 Z';
@@ -32,6 +33,8 @@ const SQUARE = 'M0,0 L10,0 L10,10 L0,10 Z';
             [ariaValueText]="ariaValueText()"
             [clickable]="clickable()"
             [focusable]="focusable()"
+            [size]="size()"
+            [labelSize]="labelSize()"
             (click)="clicks = clicks + 1"
         />
     `
@@ -50,6 +53,8 @@ class Host {
     readonly ariaValueText = signal<string | null>(null);
     readonly clickable = signal(false);
     readonly focusable = signal(false);
+    readonly size = signal<StatusIndicatorSize>('md');
+    readonly labelSize = signal<StatusIndicatorSize>('sm');
     clicks = 0;
 }
 
@@ -312,5 +317,30 @@ describe('StatusIndicator', () => {
         element().focus();
         await userEvent.keyboard('{Enter}');
         expect(host.clicks).toBe(2);
+    });
+
+    it('size sm, md, lg and xl render increasing sizes', async () => {
+        const { host, svg, update } = await setup();
+        const sizes: StatusIndicatorSize[] = ['sm', 'md', 'lg', 'xl'];
+        const rects: DOMRect[] = [];
+        for (const size of sizes) {
+            await update(() => host.size.set(size));
+            rects.push(svg().getBoundingClientRect());
+        }
+        // sm 30×22, md 45×30, lg 80×55, xl 145×100 (px at 16px root)
+        expect(rects.map((r) => Math.round(r.height))).toEqual([22, 30, 55, 100]);
+        expect(rects.map((r) => Math.round(r.width))).toEqual([30, 45, 80, 145]);
+    });
+
+    it('labelSize changes the label font size', async () => {
+        const { host, label, update } = await setup();
+        const sizes: StatusIndicatorSize[] = ['sm', 'md', 'lg', 'xl'];
+        const fonts: number[] = [];
+        for (const size of sizes) {
+            await update(() => host.labelSize.set(size));
+            fonts.push(parseFloat(getComputedStyle(label()!).fontSize));
+        }
+        for (let i = 1; i < fonts.length; i++) expect(fonts[i]).toBeGreaterThan(fonts[i - 1]);
+        expect(fonts.slice(2)).toEqual([18, 30]);
     });
 });

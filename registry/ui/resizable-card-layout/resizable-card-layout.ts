@@ -156,18 +156,24 @@ export class ResizableCardItem implements FocusableOption {
     readonly miniHeaderReached = output<ResizedEvent>();
     readonly miniContentReached = output<ResizedEvent>();
 
+    /** Configuration given by the layout's `layoutConfig` (set by the layout); the card's own `config` wins. */
+    readonly layoutItemConfig = signal<ResizableCardItemConfig | null>(null);
+    private readonly itemConfig = computed(() => this.config() ?? this.layoutItemConfig());
+
     private readonly autoRank = nextRank++;
-    readonly title = computed(() => this.config()?.title ?? this.titleInput() ?? null);
-    readonly resizable = computed(() => this.config()?.resizable ?? this.resizableInput());
-    readonly rank = linkedSignal(() => this.config()?.rank ?? this.rankInput() ?? this.autoRank);
+    readonly title = computed(() => this.itemConfig()?.title ?? this.titleInput() ?? null);
+    readonly resizable = computed(() => this.itemConfig()?.resizable ?? this.resizableInput());
+    readonly rank = linkedSignal(() => this.itemConfig()?.rank ?? this.rankInput() ?? this.autoRank);
     prevRank = 0;
-    readonly cardWidthColSpan = linkedSignal(() => this.config()?.cardWidthColSpan ?? this.widthSpanInput());
-    readonly cardHeightRowSpan = linkedSignal(() => this.config()?.cardHeightRowSpan ?? this.heightSpanInput() ?? 0);
+    readonly cardWidthColSpan = linkedSignal(() => this.itemConfig()?.cardWidthColSpan ?? this.widthSpanInput());
+    readonly cardHeightRowSpan = linkedSignal(
+        () => this.itemConfig()?.cardHeightRowSpan ?? this.heightSpanInput() ?? 0
+    );
     readonly cardMiniHeaderRowSpan = computed(
-        () => this.config()?.cardMiniHeaderRowSpan ?? this.miniHeaderSpanInput() ?? 0
+        () => this.itemConfig()?.cardMiniHeaderRowSpan ?? this.miniHeaderSpanInput() ?? 0
     );
     readonly cardMiniContentRowSpan = computed(
-        () => this.config()?.cardMiniContentRowSpan ?? this.miniContentSpanInput() ?? 0
+        () => this.itemConfig()?.cardMiniContentRowSpan ?? this.miniContentSpanInput() ?? 0
     );
 
     readonly cardWidth = linkedSignal(
@@ -189,7 +195,9 @@ export class ResizableCardItem implements FocusableOption {
     readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     private maxColumns = 4;
     /** Span chosen by configuration or by resizing, restored when the layout is wide enough. */
-    private readonly originalWidthSpan = linkedSignal(() => this.config()?.cardWidthColSpan ?? this.widthSpanInput());
+    private readonly originalWidthSpan = linkedSignal(
+        () => this.itemConfig()?.cardWidthColSpan ?? this.widthSpanInput()
+    );
     private prevX = 0;
     private prevY = 0;
     private prevCardWidth = 0;
@@ -491,7 +499,7 @@ export class ResizableCardLayout {
         effect(() => {
             const size = this.layoutSize();
             const cards = this.cards();
-            cards.forEach((card) => (card.config(), card.widthSpanInput()));
+            cards.forEach((card) => (card.config(), card.layoutItemConfig(), card.widthSpanInput()));
             untracked(() => cards.forEach((card) => card.verifyUpdateCardWidth(size)));
         });
         // re-place the cards whenever their rank or size or the layout size changes
@@ -509,13 +517,8 @@ export class ResizableCardLayout {
         cards: readonly ResizableCardItem[],
         config: ResizableCardLayoutConfig | null | undefined
     ): void {
-        cards.forEach((card, index) => {
-            const item = config?.[index];
-            if (!item || card.config()) return;
-            if (item.rank) card.rank.set(item.rank);
-            if (item.cardWidthColSpan) card.cardWidthColSpan.set(item.cardWidthColSpan);
-            if (item.cardHeightRowSpan) card.cardHeightRowSpan.set(item.cardHeightRowSpan);
-        });
+        // like upstream, the whole item configuration applies: title, rank, spans and resizable
+        cards.forEach((card, index) => card.layoutItemConfig.set(config?.[index] ?? null));
     }
 
     /** Re-applies the column limits and places all cards. */

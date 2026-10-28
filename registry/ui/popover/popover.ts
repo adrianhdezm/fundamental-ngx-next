@@ -4,7 +4,7 @@
  * Modified for fundamental-ngx-registry: rewritten with Angular signals, the Angular CDK and Tailwind CSS.
  * SPDX-License-Identifier: Apache-2.0
  */
-import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { InteractivityChecker } from '@angular/cdk/a11y';
 import { Directionality } from '@angular/cdk/bidi';
 import {
     type ConnectedOverlayPositionChange,
@@ -178,7 +178,7 @@ const ARROW_ALIGN_Y: Record<ArrowAlign, string> = {
  */
 @Component({
     selector: 'fd-popover-body',
-    imports: [CdkTrapFocus, NgTemplateOutlet],
+    imports: [NgTemplateOutlet],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'block max-h-full max-w-full',
@@ -188,7 +188,7 @@ const ARROW_ALIGN_Y: Record<ArrowAlign, string> = {
         <div
             #surface
             [class]="surfaceClass()"
-            [cdkTrapFocus]="focusTrapped()"
+            (keydown)="trapTab($event)"
             [style.min-width]="fillWidth() !== null && fillMode() === 'at-least' ? fillWidth() + 'px' : minWidth()"
             [style.width]="fillWidth() !== null && fillMode() === 'equal' ? fillWidth() + 'px' : resizedWidth()"
             [style.max-width]="bodyMaxWidth() !== null ? bodyMaxWidth() + 'px' : maxWidth()"
@@ -244,7 +244,7 @@ export class PopoverBody {
     readonly closeRequest = output<void>();
 
     readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
-    readonly trapFocus = viewChild(CdkTrapFocus);
+    private readonly checker = inject(InteractivityChecker);
     private readonly surface = viewChild.required<ElementRef<HTMLElement>>('surface');
     private readonly dir = inject(Directionality, { optional: true });
 
@@ -307,18 +307,50 @@ export class PopoverBody {
         }
     }
 
-    /** Moves focus to the first tabbable element of the body. */
+    /** Moves focus to the first tabbable element of the body (or the one marked `cdkFocusRegionStart`). */
     focusFirstTabbable(): void {
         requestAnimationFrame(() => {
-            const trap = this.trapFocus()?.focusTrap;
-            if (trap) trap.focusFirstTabbableElement();
-            else
-                this.surface()
-                    .nativeElement.querySelector<HTMLElement>(
-                        '[tabindex]:not([tabindex="-1"]), a[href], button:not([disabled]), input:not([disabled]), select, textarea'
-                    )
-                    ?.focus();
+            const surface = this.surface().nativeElement;
+            const start = surface.querySelector<HTMLElement>('[cdkFocusRegionStart], [cdk-focus-region-start]');
+            (start ?? this.tabbables()[0])?.focus();
         });
+    }
+
+    /**
+     * Keeps Tab inside the body while `focusTrapped`: Tab on the last tabbable element wraps to the first and
+     * Shift+Tab on the first to the last. Unlike the CDK focus trap, this adds no `aria-hidden` focusable anchors,
+     * which axe reports (aria-hidden-focus) and which upstream's focus trap does not render either.
+     */
+    protected trapTab(event: KeyboardEvent): void {
+        if (event.key !== 'Tab' || event.ctrlKey || event.altKey || event.metaKey || !this.focusTrapped()) return;
+        const tabbables = this.tabbables();
+        if (!tabbables.length) {
+            event.preventDefault();
+            return;
+        }
+        const active = document.activeElement;
+        const inside = !!active && this.surface().nativeElement.contains(active);
+        // tabbable elements the browser would move to from the focused element
+        const ahead = inside
+            ? tabbables.filter((el) =>
+                  event.shiftKey
+                      ? el.compareDocumentPosition(active) & Node.DOCUMENT_POSITION_FOLLOWING
+                      : active.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING
+              )
+            : [];
+        // wrap around when focus would leave the body
+        const target = ahead.length ? null : event.shiftKey ? tabbables[tabbables.length - 1] : tabbables[0];
+        if (target) {
+            event.preventDefault();
+            target.focus();
+        }
+    }
+
+    /** Tabbable elements of the body, in DOM order. */
+    private tabbables(): HTMLElement[] {
+        return [...this.surface().nativeElement.querySelectorAll<HTMLElement>('*')].filter(
+            (el) => this.checker.isFocusable(el) && this.checker.isTabbable(el)
+        );
     }
 
     protected startResize(event: PointerEvent): void {
@@ -858,10 +890,9 @@ export class Popover {
     );
 
     constructor() {
-        // inputs and config -> service
+        // inputs and config -> service; an input left unset keeps the value of the config object
         effect(() => {
-            this.service.refreshConfiguration({
-                ...this.config(),
+            const inputs: PopoverConfig = {
                 placement: this.placement(),
                 cdkPositions: this.cdkPositions(),
                 fixedPosition: this.fixedPosition(),
@@ -886,7 +917,9 @@ export class Popover {
                 bodyAriaLabel: this.bodyAriaLabel(),
                 bodyAriaLabelledBy: this.bodyAriaLabelledBy(),
                 bodyId: `${this.id()}-body`
-            });
+            };
+            const set = Object.fromEntries(Object.entries(inputs).filter(([, v]) => v !== undefined));
+            this.service.refreshConfiguration({ ...this.config(), ...set });
         });
         // content without <fd-popover-body> renders inside a default body
         effect(() => {
@@ -897,7 +930,12 @@ export class Popover {
         effect(() => {
             const t = this.trigger();
             const el = t ? (t instanceof ElementRef ? t.nativeElement : t) : this.origin()?.nativeElement;
-            if (el) this.service.initialise(el, { template: this.bodyTemplate(), vcr: this.vcr });
+            if (!el) return;
+            this.service.initialise(el, { template: this.bodyTemplate(), vcr: this.vcr });
+            // isOpen set before the trigger existed (e.g. on creation) opens now
+            untracked(() => {
+                if (this.isOpen() && !this.service.isOpen()) this.service.open();
+            });
         });
         // isOpen model <-> service
         let previous = false;
@@ -910,9 +948,13 @@ export class Popover {
                 if (!open && this.service.isOpen()) this.service.close();
             });
         });
+        // only changes of the service state reach the model, so an isOpen that could not open yet is kept
+        let serviceOpen = false;
         effect(() => {
             const open = this.service.isOpen();
             untracked(() => {
+                if (open === serviceOpen) return;
+                serviceOpen = open;
                 if (open !== this.isOpen()) {
                     if (open) this.beforeOpen.emit();
                     previous = open;

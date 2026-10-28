@@ -1,7 +1,8 @@
-import { Component, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
-import { FdDate } from '@/lib/datetime';
+import { DatetimeAdapter, FdDate } from '@/lib/datetime';
+import { Button } from '@/ui/button/button';
 import { Title } from '@/ui/title/title';
 import { Time } from './time';
 
@@ -48,6 +49,10 @@ class StoryTimeBasic {
                 <fd-time [(time)]="time" [elementsAtOnce]="5" data-density="compact" />
             </div>
             <div>
+                <h3 fdTitle headerSize="5" class="${heading}">Tablet</h3>
+                <fd-time [(time)]="time" tablet [displaySeconds]="false" />
+            </div>
+            <div>
                 <h3 fdTitle headerSize="5" class="${heading}">Form control, disabled</h3>
                 <fd-time [(ngModel)]="model" disabled />
             </div>
@@ -59,10 +64,56 @@ class StoryTimeOptions {
     protected model = new FdDate(2024, 3, 9, 18, 0, 0);
 }
 
+@Component({
+    selector: 'story-time-programmatic',
+    imports: [Time, Title, Button],
+    template: `
+        <h3 fdTitle headerSize="5" class="${heading}">Programmatically changed time</h3>
+        <fd-time [(time)]="time" />
+        <p class="${value}">Selected time: {{ time().hour }}h {{ time().minute }}m {{ time().second }}s</p>
+        <button fdButton label="Set hours to 11" (click)="setHours(11)"></button>
+    `
+})
+class StoryTimeProgrammatic {
+    private readonly adapter = inject<DatetimeAdapter<FdDate>>(DatetimeAdapter);
+    protected readonly time = signal(new FdDate(2024, 3, 9, 12, 0, 0));
+
+    protected setHours(hours: number): void {
+        this.time.set(this.adapter.setHours(this.time(), hours));
+    }
+}
+
+@Component({
+    selector: 'story-time-reactive-form',
+    imports: [Time, Title, ReactiveFormsModule],
+    template: `
+        <form [formGroup]="form">
+            <h3 fdTitle headerSize="5" class="${heading}">Select time</h3>
+            <fd-time formControlName="time" />
+            <p class="${value}">
+                Time:
+                @if (form.controls.time.value; as time) {
+                    {{ time.hour }}h {{ time.minute }}m {{ time.second }}s
+                } @else {
+                    none
+                }
+            </p>
+            <p class="${value}">Touched: {{ form.touched }}, dirty: {{ form.dirty }}, valid: {{ form.valid }}</p>
+        </form>
+    `
+})
+class StoryTimeReactiveForm {
+    protected readonly form = new FormGroup({ time: new FormControl<FdDate | null>(null) });
+}
+
 const meta: Meta<Time<FdDate>> = {
     title: 'Components/Time',
     component: Time,
-    decorators: [moduleMetadata({ imports: [StoryTimeBasic, StoryTimeOptions] })],
+    decorators: [
+        moduleMetadata({
+            imports: [StoryTimeBasic, StoryTimeOptions, StoryTimeProgrammatic, StoryTimeReactiveForm]
+        })
+    ],
     parameters: {
         docs: {
             description: {
@@ -78,3 +129,5 @@ type Story = StoryObj<Time<FdDate>>;
 
 export const Basic: Story = { render: () => ({ template: `<story-time-basic />` }) };
 export const Options: Story = { render: () => ({ template: `<story-time-options />` }) };
+export const Programmatic: Story = { render: () => ({ template: `<story-time-programmatic />` }) };
+export const ReactiveForm: Story = { render: () => ({ template: `<story-time-reactive-form />` }) };

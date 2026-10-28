@@ -147,7 +147,12 @@ export class OverflowExpand {
                             [ngTemplateOutletContext]="{ $implicit: hiddenItems() }"
                         />
                     } @else {
-                        <fd-popover placement="bottom" [noArrow]="false">
+                        <!-- the popover is a dialog: named like its "N more" control -->
+                        <fd-popover
+                            placement="bottom"
+                            [noArrow]="false"
+                            [bodyAriaLabel]="moreItemsButtonText()(hiddenItems().length)"
+                        >
                             <fd-popover-control>
                                 <button
                                     fdButton

@@ -1,5 +1,7 @@
 import { moduleMetadata, type Meta, type StoryObj } from '@analogjs/storybook-angular';
+import { Avatar } from '@/ui/avatar/avatar';
 import { Button } from '@/ui/button/button';
+import { List, ListContent, ListItem, ListSubline, ListTitle } from '@/ui/list/list';
 import { Panel, PanelContent, PanelTitle } from './panel';
 
 const lorem =
@@ -8,7 +10,22 @@ const lorem =
 const meta: Meta<Panel> = {
     title: 'Components/Panel',
     component: Panel,
-    decorators: [moduleMetadata({ imports: [Panel, PanelTitle, PanelContent, Button] })],
+    decorators: [
+        moduleMetadata({
+            imports: [
+                Panel,
+                PanelTitle,
+                PanelContent,
+                Button,
+                Avatar,
+                List,
+                ListItem,
+                ListContent,
+                ListTitle,
+                ListSubline
+            ]
+        })
+    ],
     parameters: {
         docs: {
             description: {
@@ -59,6 +76,50 @@ export const Fixed: Story = {
             <fd-panel [expanded]="true" transparent expandAriaLabel="Transparent panel">
                 <h4 fd-panel-title>Transparent panel</h4>
                 <div fd-panel-content ariaLabel="Transparent content">${lorem}</div>
+            </fd-panel>`
+    })
+};
+
+export const Customizable: Story = {
+    name: 'Customizable (transparent, no radius, no padding)',
+    render: () => ({
+        props: { expanded: true, expanded2: true },
+        template: `
+            <fd-panel transparent noRadius [(expanded)]="expanded" expandAriaLabel="Accounts" expandAriaLabelledBy="panel-custom-title-1">
+                <h5 fd-panel-title id="panel-custom-title-1">Accounts</h5>
+                <button fdButton variant="transparent" glyph="add-employee" ariaLabel="Add account" title="Add account"></button>
+                <div fd-panel-content noPadding ariaLabel="Accounts">
+                    <ul fd-list subline aria-label="Accounts">
+                        <li fd-list-item interactive>
+                            <fd-avatar size="s" label="Jane Doe" />
+                            <div fd-list-content>
+                                <div fd-list-title>Jane Doe</div>
+                                <div fd-list-subline>Software Developer</div>
+                                <div fd-list-subline>Walldorf</div>
+                            </div>
+                        </li>
+                        <li fd-list-item interactive>
+                            <fd-avatar size="s" glyph="group" ariaLabel="Team" />
+                            <div fd-list-content>
+                                <div fd-list-title>Design team</div>
+                                <div fd-list-subline>12 members</div>
+                            </div>
+                        </li>
+                        <li fd-list-item interactive active>
+                            <fd-avatar size="s" label="John Doe" image="assets/person.svg" />
+                            <div fd-list-content>
+                                <div fd-list-title>John Doe</div>
+                                <div fd-list-subline>Product Owner</div>
+                                <div fd-list-subline>Berlin</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </fd-panel>
+            <fd-panel noRadius [(expanded)]="expanded2" expandAriaLabel="Notes" expandAriaLabelledBy="panel-custom-title-2" class="mt-8">
+                <h5 fd-panel-title id="panel-custom-title-2">Notes</h5>
+                <button fdButton variant="transparent" glyph="add-employee" ariaLabel="Add account" title="Add account"></button>
+                <div fd-panel-content transparent ariaLabel="Notes">${lorem}</div>
             </fd-panel>`
     })
 };

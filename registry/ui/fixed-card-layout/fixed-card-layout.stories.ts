@@ -25,6 +25,7 @@ const CARDS = [
             </p>
             <fd-fixed-card-layout
                 [maxColumns]="maxColumns()"
+                [cardMinimumWidth]="cardMinimumWidth()"
                 [columnsWidthConfig]="widthConfig()"
                 [disableDragDrop]="disableDragDrop()"
                 (layoutChange)="columns.set($event.numberOfColumns)"
@@ -55,6 +56,7 @@ const CARDS = [
 })
 class StoryFixedCardLayout {
     readonly maxColumns = input(10);
+    readonly cardMinimumWidth = input(320);
     readonly widthConfig = input<ColumnsWidthConfig | null>(null);
     readonly disableDragDrop = input(false);
     protected readonly cards = CARDS;
@@ -105,4 +107,14 @@ export const ColumnWidths: Story = {
 export const DisabledDragDrop: Story = {
     name: 'Drag and drop disabled',
     render: () => ({ template: `<story-fixed-card-layout [disableDragDrop]="true" />` })
+};
+
+export const Mobile: Story = {
+    name: 'Mobile display',
+    render: () => ({ template: `<div class="w-88 max-w-full"><story-fixed-card-layout /></div>` })
+};
+
+export const CardMinimumWidth: Story = {
+    name: 'Custom card minimum width',
+    render: () => ({ template: `<story-fixed-card-layout [cardMinimumWidth]="400" />` })
 };

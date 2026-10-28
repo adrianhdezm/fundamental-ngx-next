@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, type TrackByFunction } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
@@ -41,7 +41,13 @@ const POSTS: Post[] = [
     ],
     template: `
         <div [style.width.px]="width()">
-            <fd-timeline [dataSource]="posts()" [axis]="axis()" [layout]="layout()" ariaLabel="Activity">
+            <fd-timeline
+                [dataSource]="posts()"
+                [axis]="axis()"
+                [layout]="layout()"
+                [trackBy]="trackBy()"
+                ariaLabel="Activity"
+            >
                 <fd-timeline-node
                     *fdTimelineNodeDef="let post of posts(); let i = index"
                     [ariaLabel]="post.title"
@@ -64,6 +70,7 @@ class Host {
     readonly posts = signal<Post[] | null>(POSTS);
     readonly axis = signal<TimelineAxis>('vertical');
     readonly layout = signal<TimelineSidePosition>('right');
+    readonly trackBy = signal<TrackByFunction<Post> | undefined>(undefined);
 }
 
 @Component({
@@ -83,12 +90,20 @@ class TemplatesHost {
 
 const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
 
-async function setup(config: Partial<{ axis: TimelineAxis; layout: TimelineSidePosition; posts: Post[] | null }> = {}) {
+async function setup(
+    config: Partial<{
+        axis: TimelineAxis;
+        layout: TimelineSidePosition;
+        posts: Post[] | null;
+        trackBy: TrackByFunction<Post>;
+    }> = {}
+) {
     const fixture = TestBed.createComponent(Host);
     const host = fixture.componentInstance;
     if (config.axis) host.axis.set(config.axis);
     if (config.layout) host.layout.set(config.layout);
     if (config.posts !== undefined) host.posts.set(config.posts);
+    if (config.trackBy) host.trackBy.set(config.trackBy);
     document.body.appendChild(fixture.nativeElement);
     const root = fixture.nativeElement as HTMLElement;
     const stable = async () => {
@@ -312,5 +327,50 @@ describe('Timeline', () => {
         document.documentElement.removeAttribute('dir');
         expect(arrow(nodes()[0]).rotate).toBe('45deg');
         expect(arrow(nodes()[0]).right).toBe('-7px');
+    });
+
+    it('with trackBy, replacing the data keeps the DOM nodes of unchanged items', async () => {
+        const { host, nodes, stable } = await setup({ trackBy: (_, post) => post.title });
+        const before = nodes();
+        host.posts.set(POSTS.map((post) => ({ ...post })));
+        await stable();
+        const after = nodes();
+        expect(after).toHaveLength(5);
+        after.forEach((node, i) => expect(node).toBe(before[i]));
+        // a changed item is re-rendered, the others are kept
+        host.posts.set(POSTS.map((post, i) => (i === 2 ? { ...post, title: 'Changed' } : { ...post })));
+        await stable();
+        const changed = nodes();
+        expect(changed[2]).not.toBe(before[2]);
+        expect(changed[2].getAttribute('aria-label')).toBe('Changed');
+        [0, 1, 3, 4].forEach((i) => expect(changed[i]).toBe(before[i]));
+    });
+
+    it('without trackBy, new data objects re-render the nodes', async () => {
+        const { host, nodes, stable } = await setup();
+        const before = nodes();
+        host.posts.set(POSTS.map((post) => ({ ...post })));
+        await stable();
+        const after = nodes();
+        expect(after).toHaveLength(5);
+        after.forEach((node, i) => {
+            expect(node).not.toBe(before[i]);
+            expect(node.getAttribute('aria-label')).toBe(POSTS[i].title);
+        });
+    });
+
+    it('appending an item adds a node and extends the previous line', async () => {
+        const { host, nodes, parts, stable } = await setup();
+        expect(parts(nodes()[4]).line.style.opacity).toBe('0');
+        host.posts.set([...POSTS, { title: 'Sixth', text: 'One more.' }]);
+        await stable();
+        const all = nodes();
+        expect(all).toHaveLength(6);
+        expect(all[5].getAttribute('aria-label')).toBe('Sixth');
+        const { line } = parts(all[4]);
+        expect(line.style.opacity).toBe('');
+        const next = parts(all[5]).marker.getBoundingClientRect();
+        expect(line.getBoundingClientRect().bottom + 4).toBeCloseTo(next.top, 0);
+        expect(parts(all[5]).line.style.opacity).toBe('0');
     });
 });

@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 import { FD_DEFAULT_TITLE_SIZE, Title, type HeaderSize } from './title';
 
@@ -146,5 +147,12 @@ describe('Title', () => {
         document.body.appendChild(probe);
         expect(getComputedStyle(el('long')).color).toBe(getComputedStyle(probe).color);
         probe.remove();
+    });
+
+    it('exposes the host element through elementRef', async () => {
+        const { fixture, el } = await render(Host);
+        const titles = fixture.debugElement.queryAll(By.directive(Title));
+        const sized = titles.find((title) => title.nativeElement === el('sized'))!;
+        expect((sized.componentInstance as Title).elementRef.nativeElement).toBe(el('sized'));
     });
 });

@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
@@ -19,7 +20,11 @@ import { Switch } from './switch';
             >Wi-Fi</fd-switch
         >
         <span id="ext">External</span>
-        <fd-switch id="two-way" [(checked)]="checked" (checkedChange)="changes.set([...changes(), $event])"
+        <fd-switch
+            id="two-way"
+            name="notifications"
+            [(checked)]="checked"
+            (checkedChange)="changes.set([...changes(), $event])"
             >Two-way</fd-switch
         >
     `
@@ -215,5 +220,33 @@ describe('Switch', () => {
         await stable();
         expect(slider.getBoundingClientRect().height).toBe(20);
         expect(slider.getBoundingClientRect().width).toBe(32);
+    });
+
+    it('name lands on the native input', async () => {
+        const { root, input } = await setup();
+        expect(root.querySelector<HTMLInputElement>('#two-way input')!.name).toBe('notifications');
+        expect(input.hasAttribute('name')).toBe(false);
+    });
+
+    it('each switch gets a unique generated id', async () => {
+        const fixtures = [TestBed.createComponent(ReactiveHost), TestBed.createComponent(ReactiveHost)];
+        const ids: string[] = [];
+        for (const fixture of fixtures) {
+            document.body.appendChild(fixture.nativeElement);
+            await fixture.whenStable();
+            const element = (fixture.nativeElement as HTMLElement).querySelector('fd-switch')!;
+            expect(element.id).toMatch(/^fd-switch-\d+$/);
+            expect(element.querySelector('input')!.id).toBe(`${element.id}-input`);
+            ids.push(element.id);
+        }
+        expect(new Set(ids).size).toBe(2);
+    });
+
+    it('focus() focuses the native input', async () => {
+        const { fixture, input } = await setup();
+        const component = fixture.debugElement.query(By.directive(Switch)).componentInstance as Switch;
+        expect(document.activeElement).not.toBe(input);
+        component.focus();
+        expect(document.activeElement).toBe(input);
     });
 });

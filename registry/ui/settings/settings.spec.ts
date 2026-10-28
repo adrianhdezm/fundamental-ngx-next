@@ -8,7 +8,8 @@ import {
     SettingsContent,
     SettingsListArea,
     SettingsListContainer,
-    SettingsListItem
+    SettingsListItem,
+    SettingsSpacing
 } from './settings';
 
 @Component({
@@ -18,6 +19,7 @@ import {
         SettingsListArea,
         SettingsListContainer,
         SettingsListItem,
+        SettingsSpacing,
         List,
         ListItem,
         ListLink,
@@ -42,12 +44,19 @@ import {
         </div>
         <ng-template #account><div fd-settings-content class="account">Account view</div></ng-template>
         <ng-template #language><div fd-settings-content class="language">Language view</div></ng-template>
-        <ng-template #detail><div fd-settings-content class="detail">Detail view</div></ng-template>
+        <ng-template #detail>
+            <div fd-settings-content class="detail">
+                Detail view
+                <div fd-settings-spacing size="large"></div>
+            </div>
+        </ng-template>
+        <ng-template #more><div fd-settings-content class="more">More view</div></ng-template>
     `
 })
 class Host {
     readonly container = viewChild.required<SettingsContainer>('container');
     readonly detail = viewChild.required<TemplateRef<unknown>>('detail');
+    readonly more = viewChild.required<TemplateRef<unknown>>('more');
 }
 
 const wait = (ms = 50) => new Promise((r) => setTimeout(r, ms));
@@ -117,5 +126,56 @@ describe('SettingsContainer', () => {
         await wait();
         expect(root.querySelector('[fd-settings-list-area]')).not.toBeNull();
         expect(document.activeElement?.textContent?.trim()).toBe('Language');
+    });
+
+    it('spacing is hidden from assistive technology', async () => {
+        const { host } = await setup();
+        host.container().pushView(host.detail(), 'Details');
+        await wait();
+        const spacing = document.querySelector('[fd-settings-spacing]')!;
+        expect(spacing.getAttribute('role')).toBe('presentation');
+        expect(spacing.getAttribute('aria-hidden')).toBe('true');
+        expect(spacing.getBoundingClientRect().height).toBeGreaterThan(0);
+    });
+
+    it('two pushed views go back one at a time', async () => {
+        const { host, root } = await setup();
+        host.container().pushView(host.detail(), 'Details');
+        host.container().pushView(host.more(), 'More');
+        await wait();
+        expect(title()).toBe('More');
+        expect(root.querySelector('.more')).not.toBeNull();
+        expect(root.querySelector('.detail')).toBeNull();
+        await userEvent.click(back()!);
+        await wait();
+        expect(title()).toBe('Details');
+        expect(root.querySelector('.detail')).not.toBeNull();
+        await userEvent.click(back()!);
+        await wait();
+        expect(title()).toBe('User Account');
+        expect(root.querySelector('.account')).not.toBeNull();
+        expect(back()).toBeNull();
+    });
+
+    it('selecting another item clears the pushed views', async () => {
+        const { host, root } = await setup();
+        host.container().pushView(host.detail(), 'Details');
+        host.container().pushView(host.more(), 'More');
+        await wait();
+        await userEvent.click(item('Language'));
+        await wait();
+        expect(title()).toBe('Language');
+        expect(root.querySelector('.language')).not.toBeNull();
+        expect(root.querySelector('.more')).toBeNull();
+        expect(back()).toBeNull();
+    });
+
+    it('popView on an empty stack keeps the item view', async () => {
+        const { host, root } = await setup();
+        host.container().popView();
+        await wait();
+        expect(title()).toBe('User Account');
+        expect(root.querySelector('.account')).not.toBeNull();
+        expect(back()).toBeNull();
     });
 });

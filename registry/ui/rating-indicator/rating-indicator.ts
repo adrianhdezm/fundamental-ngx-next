@@ -88,6 +88,7 @@ interface Star {
                 <fd-popover
                     placement="top"
                     [noArrow]="false"
+                    [bodyAriaLabel]="totalRatingsLabel()"
                     [triggers]="['mouseenter', 'mouseleave', 'focusin', 'focusout']"
                 >
                     <fd-popover-control>
