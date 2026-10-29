@@ -45,7 +45,7 @@ import {
 import { type IconFont } from '@/ui/icon/icon';
 import { type FormState } from '@/ui/input/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/ui/input-group/input-group';
-import { LIST_DROPDOWN_ITEM, ListMessage } from '@/ui/list/list';
+import { LIST_DROPDOWN_ITEM, ListGroupHeader, ListMessage, ListTitle } from '@/ui/list/list';
 import { Popover, PopoverBody, PopoverControl, type PopoverFillMode } from '@/ui/popover/popover';
 import { Title } from '@/ui/title/title';
 
@@ -132,6 +132,8 @@ let nextId = 0;
         DialogBody,
         DialogFooter,
         DialogCloseButton,
+        ListGroupHeader,
+        ListTitle,
         Title
     ],
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => Combobox), multi: true }],
@@ -271,12 +273,8 @@ let nextId = 0;
                                 class="m-0 list-none p-0"
                                 [attr.aria-labelledby]="comboboxId() + '-group-' + g"
                             >
-                                <li
-                                    role="presentation"
-                                    class="flex h-sap-element-line-height items-end border-b-(length:--sapList_BorderWidth) border-solid border-sap-list-group-header-border-color bg-sap-list-group-header-background px-[0.9375rem] py-0 font-sap-font-family text-sap-font-size font-bold text-sap-list-group-header-text-color"
-                                    [id]="comboboxId() + '-group-' + g"
-                                >
-                                    {{ group.key }}
+                                <li fdListGroupHeader role="presentation" [id]="comboboxId() + '-group-' + g">
+                                    <span fdListTitle>{{ group.key }}</span>
                                 </li>
                                 @for (entry of group.items; track entry.index) {
                                     <ng-container

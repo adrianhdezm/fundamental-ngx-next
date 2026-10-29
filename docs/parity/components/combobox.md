@@ -1,7 +1,7 @@
 ## combobox
 
 Upstream: [docs](https://sap.github.io/fundamental-ngx/#/core/combobox) · [source](https://github.com/SAP/fundamental-ngx/tree/main/libs/core/combobox)
-Registry: `registry/ui/combobox/` — 13 stories, 27 tests.
+Registry: `registry/ui/combobox/` — 14 stories, 27 tests.
 
 ### Stories vs. upstream examples
 
@@ -15,9 +15,9 @@ Registry: `registry/ui/combobox/` — 13 stories, 27 tests.
 | Display Object Property              | Templates, Forms                                         | ✅ covered | `displayFn` on product objects                                            |
 | Open State Control                   | Behaviour                                                | ✅ covered | Logs `openChange` below the field instead of an alert                     |
 | Observable Async Example             | Behaviour                                                | ✅ covered | `[dropdownValues]="values$ \| async"`                                     |
-| Custom Item Template                 | Templates ("Templates, bylines and groups")              | ✅ covered | `*fdComboboxItem` with icons, `itemClicked`                               |
+| Custom Item Template                 | Templates ("Templates, columns and bylines")             | ✅ covered | `*fdComboboxItem` with icons, `itemClicked`                               |
 | Combobox with Two Columns            | Templates                                                | ✅ covered | `fdListTitle` + `fdListSecondary`                                         |
-| Combobox with Groups                 | Templates                                                | ✅ covered | `groupFn`                                                                 |
+| Combobox with Groups                 | Groups, Open: groups                                     | ✅ covered | Upstream data: `groupFn` into Fruits and Vegetables, `displayFn`          |
 | Custom Height Example                | Standard                                                 | ✅ covered | `maxHeight="250px"`                                                       |
 | Return results including search term | Standard                                                 | ✅ covered | `includes` variant                                                        |
 | Reactive Form                        | Forms                                                    | ✅ covered | communicateByObject, required, list message, touched/dirty                |

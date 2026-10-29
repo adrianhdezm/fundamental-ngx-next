@@ -239,6 +239,14 @@ describe('MultiCombobox', () => {
         expect(document.getElementById(groups[1].getAttribute('aria-labelledby')!)?.textContent?.trim()).toBe(
             'Vegetable'
         );
+        // the header is a list group header: its title in the header font, on a 2rem line at the bottom
+        const header = document.getElementById(groups[0].getAttribute('aria-labelledby')!)!;
+        const title = header.querySelector<HTMLElement>('[fd-list-title], [fdListTitle]')!;
+        expect(header.hasAttribute('tabindex')).toBe(false);
+        expect(getComputedStyle(header).alignItems).toBe('flex-end');
+        expect(getComputedStyle(title).lineHeight).toBe('32px');
+        expect(getComputedStyle(title).fontWeight).toBe('700');
+        expect(title.getBoundingClientRect().bottom).toBeCloseTo(header.getBoundingClientRect().bottom - 1, 0);
     });
 
     describe('options', () => {

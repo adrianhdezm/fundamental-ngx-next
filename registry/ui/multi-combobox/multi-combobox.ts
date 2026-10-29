@@ -44,7 +44,7 @@ import {
     type DialogRef
 } from '@/ui/dialog/dialog';
 import { type FormState } from '@/ui/input/input';
-import { LIST_CHECK_GLYPH, LIST_DROPDOWN_CHECK, LIST_DROPDOWN_ITEM } from '@/ui/list/list';
+import { LIST_CHECK_GLYPH, LIST_DROPDOWN_CHECK, LIST_DROPDOWN_ITEM, ListGroupHeader, ListTitle } from '@/ui/list/list';
 import { Popover, PopoverBody, PopoverControl, type PopoverFillMode } from '@/ui/popover/popover';
 import { Title } from '@/ui/title/title';
 import { Token, Tokenizer, TokenizerInput } from '@/ui/token/token';
@@ -129,6 +129,8 @@ let nextId = 0;
         DialogBody,
         DialogFooter,
         DialogCloseButton,
+        ListGroupHeader,
+        ListTitle,
         Title
     ],
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => MultiCombobox), multi: true }],
@@ -285,12 +287,8 @@ let nextId = 0;
                                             />
                                         </li>
                                     } @else {
-                                        <li
-                                            role="presentation"
-                                            [id]="id + '-group-' + row.key"
-                                            [class]="groupHeaderClass"
-                                        >
-                                            {{ row.header }}
+                                        <li fdListGroupHeader role="presentation" [id]="id + '-group-' + row.key">
+                                            <span fdListTitle>{{ row.header }}</span>
                                         </li>
                                     }
                                     @for (entry of row.items; track entry.index) {
@@ -1062,9 +1060,6 @@ export class MultiCombobox<T = unknown> implements ControlValueAccessor {
             }[state]
         );
     });
-
-    protected readonly groupHeaderClass =
-        'flex h-sap-element-line-height items-end border-b-(length:--sapList_BorderWidth) border-solid border-sap-list-group-header-border-color bg-sap-list-group-header-background px-[0.9375rem] py-0 font-sap-font-family text-sap-font-size font-bold text-sap-list-group-header-text-color';
 }
 
 /** Reads a dot path from an object. */
