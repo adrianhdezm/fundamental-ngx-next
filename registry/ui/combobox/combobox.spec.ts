@@ -428,6 +428,14 @@ describe('Combobox', () => {
         ).toEqual(['Fruit', 'Vegetable']);
         expect(groups.map((g) => g.querySelectorAll('[role=option]').length)).toEqual([2, 1]);
         expect(groups[0].parentElement!.getAttribute('role')).toBe('none');
+        // the header is a list group header: its title in the header font, on a 2rem line at the bottom
+        const header = document.getElementById(groups[0].getAttribute('aria-labelledby')!)!;
+        const title = header.querySelector<HTMLElement>('[fd-list-title], [fdListTitle]')!;
+        expect(header.hasAttribute('tabindex')).toBe(false);
+        expect(getComputedStyle(header).alignItems).toBe('flex-end');
+        expect(getComputedStyle(title).lineHeight).toBe('32px');
+        expect(getComputedStyle(title).fontWeight).toBe('700');
+        expect(title.getBoundingClientRect().bottom).toBeCloseTo(header.getBoundingClientRect().bottom - 1, 0);
     });
 
     it('inside a dialog, Escape closes the list but not the dialog', async () => {

@@ -64,7 +64,7 @@ export class ActionBarBack {}
     },
     template: `
         <h2
-            class="m-0 truncate p-0 font-sap-font-header-family text-sap-font-header3-size leading-[inherit] font-normal text-sap-group-title-text-color"
+            class="m-0 truncate p-0 font-sap-font-header-family text-sap-font-header3-size leading-7 font-normal text-sap-text-color"
         >
             <ng-content />
         </h2>

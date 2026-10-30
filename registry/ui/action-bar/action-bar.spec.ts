@@ -153,6 +153,14 @@ describe('ActionBar', () => {
         expect(heading().textContent!.trim()).toBe('Page Title');
     });
 
+    it('the title is tall enough for its descenders', async () => {
+        const { heading } = await setup({ title: 'Typography' });
+        const range = document.createRange();
+        range.selectNodeContents(heading());
+        // the heading clips its overflow: its box must hold the glyphs' full ascent and descent
+        expect(rect(heading()).height).toBeGreaterThanOrEqual(range.getBoundingClientRect().height - 0.5);
+    });
+
     it('a long title truncates on one line', async () => {
         const { heading } = await setup({ width: '400px', title: LONG });
         const style = getComputedStyle(heading());

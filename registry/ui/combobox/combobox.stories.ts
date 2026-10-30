@@ -276,34 +276,61 @@ class StoryComboboxSearch {
                     </div>
                 </ng-template>
             </div>
-            <div fdFormItem>
-                <label fdFormLabel for="cb-tpl-4">Groups</label>
-                <fd-combobox
-                    inputId="cb-tpl-4"
-                    placeholder="Type some text..."
-                    maxHeight="250px"
-                    [displayFn]="display"
-                    [groupFn]="group"
-                    [dropdownValues]="products"
-                    [(ngModel)]="four"
-                />
-            </div>
         </div>
     `
 })
 class StoryComboboxTemplates {
     protected readonly products = PRODUCTS;
     protected readonly display = (item: Product | null | undefined) => item?.name ?? '';
-    protected readonly group: ComboboxGroupFunction<Product> = (items) =>
-        items.reduce<Record<string, Product[]>>((groups, item) => {
-            (groups[item.type] ??= []).push(item);
-            return groups;
-        }, {});
     protected readonly one = signal('');
     protected readonly two = signal('');
     protected readonly three = signal('');
-    protected readonly four = signal('');
     protected readonly clicked = signal<unknown>(null);
+}
+
+interface GroupItem {
+    name: string;
+    type: 'Fruits' | 'Vegetables';
+}
+
+@Component({
+    selector: 'story-combobox-groups',
+    imports: [Combobox, FormItem, FormLabel, FormsModule],
+    template: `
+        <div class="flex max-w-lg flex-col gap-4">
+            <div fdFormItem>
+                <label fdFormLabel for="cb-groups">Groups</label>
+                <fd-combobox
+                    inputId="cb-groups"
+                    maxHeight="250px"
+                    placeholder="Type some text..."
+                    [groupFn]="group"
+                    [displayFn]="display"
+                    [dropdownValues]="values"
+                    [(ngModel)]="term"
+                />
+                <small class="${text}">Search term: {{ term() }}</small>
+            </div>
+        </div>
+    `
+})
+class StoryComboboxGroups {
+    protected readonly values: GroupItem[] = [
+        { name: 'Apple', type: 'Fruits' },
+        { name: 'Banana', type: 'Fruits' },
+        { name: 'Pineapple', type: 'Fruits' },
+        { name: 'Strawberry', type: 'Fruits' },
+        { name: 'Broccoli', type: 'Vegetables' },
+        { name: 'Carrot', type: 'Vegetables' },
+        { name: 'Jalapeño', type: 'Vegetables' },
+        { name: 'Spinach', type: 'Vegetables' }
+    ];
+    protected readonly display = (item: GroupItem | null | undefined) => item?.name ?? '';
+    protected readonly group: ComboboxGroupFunction<GroupItem> = (items) => ({
+        Fruits: items.filter((item) => item.type === 'Fruits'),
+        Vegetables: items.filter((item) => item.type === 'Vegetables')
+    });
+    protected readonly term = signal('');
 }
 
 @Component({
@@ -552,6 +579,7 @@ const meta: Meta<Combobox> = {
                 StoryComboboxStandard,
                 StoryComboboxSearch,
                 StoryComboboxTemplates,
+                StoryComboboxGroups,
                 StoryComboboxForms,
                 StoryComboboxMobile,
                 StoryComboboxBehaviour,
@@ -598,9 +626,10 @@ export const Playground: Story = {
 export const Standard: Story = { render: () => ({ template: `<story-combobox-standard />` }) };
 export const Search: Story = { name: 'Search and clear', render: () => ({ template: `<story-combobox-search />` }) };
 export const Templates: Story = {
-    name: 'Templates, bylines and groups',
+    name: 'Templates, columns and bylines',
     render: () => ({ template: `<story-combobox-templates />` })
 };
+export const Groups: Story = { render: () => ({ template: `<story-combobox-groups />` }) };
 export const Forms: Story = { render: () => ({ template: `<story-combobox-forms />` }) };
 export const Mobile: Story = { render: () => ({ template: `<story-combobox-mobile />` }) };
 export const Behaviour: Story = {
@@ -634,9 +663,8 @@ export const OpenDropdown: Story = {
 export const OpenGroups: Story = {
     name: 'Open: groups',
     tags: ['!autodocs'],
-    render: () => ({ template: `<story-combobox-templates />` }),
-    play: ({ canvasElement }) =>
-        openCombobox(canvasElement, 'fd-combobox:has(#cb-tpl-4)', '[role=listbox] [role=group] [role=option]')
+    render: () => ({ template: `<story-combobox-groups />` }),
+    play: ({ canvasElement }) => openCombobox(canvasElement, 'fd-combobox', '[role=listbox] [role=group] [role=option]')
 };
 export const OpenListMessage: Story = {
     name: 'Open: list message',
